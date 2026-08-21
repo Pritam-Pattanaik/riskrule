@@ -1,0 +1,89 @@
+/**
+ * Centralized API client for TradeVault backend.
+ * Automatically attaches JWT token from localStorage.
+ */
+
+// Determine the API base URL.
+// 1. If VITE_API_URL env var is explicitly set, always use it.
+// 2. Otherwise, use relative '/api' which works perfectly for both:
+//    - Local Development: Routes through the Vite proxy.
+//    - Production (Vercel): Routes through vercel.json rewrites.
+function resolveBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  return '/api';
+}
+
+export const BASE_URL = resolveBaseUrl();
+
+function getToken(): string | null {
+  const token = localStorage.getItem('token');
+  if (token && token !== 'cookie' && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
+    return token.trim();
+  }
+  return null;
+}
+
+let csrfToken: string | null = null;
+
+export async function getCsrfToken(): Promise<string> {
+  if (csrfToken) return csrfToken;
+  try {
+    const res = await fetch(`${BASE_URL}/auth/csrf`, { credentials: 'include' });
+    const data = await res.json();
+    csrfToken = data.csrfToken;
+    return csrfToken || '';
+  } catch (err) {
+    console.error('Failed to fetch CSRF token', err);
+    return '';
+  }
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method || 'GET');
+  let csrf = '';
+  
+  if (isMutation) {
+    csrf = await getCsrfToken();
+  }
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    'x-requested-with': 'XMLHttpRequest', // Legacy Anti-CSRF header
+    ...(csrf ? { 'CSRF-Token': csrf } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers,
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({ error: res.statusText }));
+    const error: any = new Error(errData.error || `HTTP ${res.status}`);
+    error.status = res.status;
+    error.code = errData.code;
+    error.brokerStatus = errData.brokerStatus;
+    throw error;
+  }
+
+  // Handle 204 No Content
+  if (res.status === 204) return undefined as T;
+  return res.json();
+}
+
+export const api = {
+  get: <T>(path: string) => request<T>(path, { method: 'GET' }),
+  post: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  put: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+};

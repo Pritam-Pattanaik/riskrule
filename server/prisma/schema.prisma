@@ -1,0 +1,435 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String    @unique
+  password  String
+  fullName  String?   @map("full_name")
+  avatarUrl String?   @map("avatar_url")
+  timezone  String?   @default("Asia/Kolkata")
+  role      String    @default("USER")
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt         DateTime? @default(now()) @map("updated_at")
+  tokenVersion      Int       @default(0) @map("token_version")
+
+  trades             Trade[]
+  strategies         Strategy[]
+  journalEntries     JournalEntry[]
+  aiInsights         AiInsight[]
+  aiConversations    AiConversation[]
+  coachMemories      CoachMemory[]
+  brokerConnections  BrokerConnection[]
+  tradingRules       TradingRule?
+  auditLogs          AuditLog[]
+  notes              Note[]
+  weeklyReviews      WeeklyReview[]
+  monthlyReflections MonthlyReflection[]
+  goals              Goal[]
+  notifications      Notification[]
+  flowPreferences    Json?     @default("{}") @map("flow_preferences")
+
+  optionAlerts       OptionAlert[]
+  alertHistory       AlertHistory[]
+  passwordResetTokens PasswordResetToken[]
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  tokenHash   String   @unique @map("token_hash")
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model BrokerConnection {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  broker       String
+  apiKey       String?   @map("api_key")
+  apiSecret    String?   @map("api_secret")
+  accessToken  String?   @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  tokenExpiry  DateTime? @map("token_expiry")
+  clientId     String?   @map("client_id")
+  isActive     Boolean?  @default(false) @map("is_active")
+  lastSyncedAt DateTime? @map("last_synced_at")
+  metadata     String?
+  createdAt    DateTime? @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("broker_connections")
+}
+
+model Strategy {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  name        String
+  description String?
+  rules       String?
+  market      String[]
+  timeframe   String?
+  isActive    Boolean?  @default(true) @map("is_active")
+  isDefault   Boolean?  @default(false) @map("is_default")
+  createdAt   DateTime? @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades Trade[]
+
+  @@map("strategies")
+}
+
+model Trade {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  broker           String
+  brokerTradeId    String?   @map("broker_trade_id")
+  brokerOrderKey   String?   @map("broker_order_key") // Stable idempotency key: exchangeTradeId || orderId. Prevents duplicate inserts.
+  date             DateTime
+  exitTime         DateTime? @map("exit_time")
+  isCarryForward   Boolean   @default(false) @map("is_carry_forward")
+  symbol           String
+  market           String
+  instrumentType   String    @map("instrument_type")
+  direction        String?
+  entryPrice       Decimal?  @map("entry_price")
+  exitPrice        Decimal?  @map("exit_price")
+  quantity         Decimal?
+  pnl              Decimal?
+  charges          Decimal?
+  netPnl           Decimal?  @map("net_pnl")
+  status           String?
+  strategyId       String?   @map("strategy_id") @db.Uuid
+  setupDescription String?   @map("setup_description")
+  mindset          String?
+  decisionNotes    String?   @map("decision_notes")
+  learnings        String?
+  disciplineScore   Int?      @map("discipline_score")
+  disciplineRawScore Float?   @map("discipline_raw_score")
+  disciplineReasons Json?     @map("discipline_reasons")
+  disciplineSignals Json?     @map("discipline_signals")
+  disciplineBreakdown Json?   @map("discipline_breakdown")
+  behaviourProfile Json?      @map("behaviour_profile")
+  confidence      Float?      @map("confidence")
+  tradingStyle    String?     @map("trading_style")
+  disciplineVersion Int?      @default(1) @map("discipline_version")
+  isManualOverride  Boolean?  @default(false) @map("is_manual_override")
+  manualScore       Int?      @map("manual_score")
+  computedAt        DateTime? @map("computed_at")
+  tags             String[]
+  source           String?
+  stopLoss         Decimal?  @map("stop_loss")
+  mistakes         String[]
+  checklist        Json?
+  createdAt        DateTime? @default(now()) @map("created_at")
+  updatedAt        DateTime? @default(now()) @map("updated_at")
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy    Strategy?       @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  aiInsights  AiInsight[]
+  screenshots Screenshot[]
+
+  @@unique([userId, broker, brokerOrderKey], name: "unique_broker_order") // Partial unique: enforced only when brokerOrderKey IS NOT NULL
+  @@index([userId, date])
+  @@index([userId, broker])
+  @@index([userId, status])
+  @@index([userId, market])
+  @@index([userId, createdAt])
+  @@index([userId, date, broker]) // Composite for incremental sync queries
+  @@index([userId, status, date]) // Composite for analytics queries
+  @@index([userId, disciplineScore]) // Composite for discipline analytics
+  @@map("trades")
+}
+
+model JournalEntry {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  date              DateTime  @db.Date
+  marketBias        String?   @map("market_bias")
+  keyLevels         String?   @map("key_levels")
+  watchlist         String?
+  newsNotes         String?   @map("news_notes")
+  reflection        String?
+  whatWentWell      String?   @map("what_went_well")
+  whatToImprove     String?   @map("what_to_improve")
+  mood              String?
+  overallDiscipline Int?      @map("overall_discipline")
+  createdAt         DateTime? @default(now()) @map("created_at")
+  updatedAt         DateTime? @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("journal_entries")
+}
+
+model AiInsight {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  type                String?
+  tradeId             String?   @map("trade_id") @db.Uuid
+  content             String
+  tradesAnalyzedCount Int?      @map("trades_analyzed_count")
+  dateRangeStart      DateTime? @map("date_range_start")
+  dateRangeEnd        DateTime? @map("date_range_end")
+  createdAt           DateTime? @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trade Trade? @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  @@map("ai_insights")
+}
+
+model AiConversation {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  title      String
+  isPinned   Boolean   @default(false) @map("is_pinned")
+  isArchived Boolean   @default(false) @map("is_archived")
+  createdAt  DateTime? @default(now()) @map("created_at")
+  updatedAt  DateTime? @default(now()) @map("updated_at")
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String    @map("conversation_id") @db.Uuid
+  role           String // "user" | "assistant"
+  content        String
+  createdAt      DateTime? @default(now()) @map("created_at")
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_messages")
+}
+
+model CoachMemory {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  patternType   String    @map("pattern_type")
+  title         String
+  description   String
+  severity      String    @default("warning")
+  count         Int       @default(0)
+  previousCount Int       @default(0) @map("previous_count")
+  avgPnl        Decimal?  @map("avg_pnl")
+  detectedAt    DateTime? @default(now()) @map("detected_at")
+  updatedAt     DateTime? @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("coach_memory")
+}
+
+model TradingRule {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String    @unique @map("user_id") @db.Uuid
+  windowStart        String?   @map("window_start")
+  windowEnd          String?   @map("window_end")
+  maxTradesPerDay    Int?      @map("max_trades_per_day")
+  maxDailyLoss       Decimal?  @map("max_daily_loss")
+  maxLossPerTrade    Decimal?  @map("max_loss_per_trade")
+  allowedInstruments String[]  @map("allowed_instruments")
+  allowedMarkets     String[]  @map("allowed_markets")
+  createdAt          DateTime? @default(now()) @map("created_at")
+  updatedAt          DateTime? @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("trading_rules")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId    String?  @map("admin_id") @db.Uuid
+  action     String
+  targetType String   @map("target_type")
+  targetId   String?  @map("target_id")
+  details    String?
+  timestamp  DateTime @default(now())
+
+  admin User? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key       String    @unique
+  value     String
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  @@map("system_settings")
+}
+
+model WeeklyReview {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  weekOf    DateTime @db.Date
+  content   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("weekly_reviews")
+}
+
+model MonthlyReflection {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  month     String
+  answers   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("monthly_reflections")
+}
+
+model Goal {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  description String
+  type        String
+  target      Int?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completions GoalCompletion[]
+
+  @@map("goals")
+}
+
+model GoalCompletion {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goalId    String   @map("goal_id") @db.Uuid
+  date      DateTime @db.Date
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@map("goal_completions")
+}
+
+model Screenshot {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tradeId   String   @map("trade_id") @db.Uuid
+  url       String
+  label     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  trade Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  @@map("screenshots")
+}
+
+model Note {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  title       String?
+  content     String
+  category    String   @default("Personal Notes")
+  tags        String[]
+  isFavorite  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+  attachments Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
+
+model Notification {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  title        String
+  description  String
+  category     String   // 'Trading' | 'Risk' | 'Market' | 'AI' | 'Reports'
+  priority     String   // 'Critical' | 'Warning' | 'Success' | 'Information'
+  isRead       Boolean  @default(false) @map("is_read")
+  displayScope String   @default("both") @map("display_scope") // 'global' | 'in-app' | 'both'
+  actionLabel  String?  @map("action_label")
+  actionUrl    String?  @map("action_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, category])
+  @@map("notifications")
+}
+
+model OptionAlert {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  symbol          String    @db.VarChar(20)
+  expiryDate      DateTime? @db.Date @map("expiry_date")
+  alertType       String    @db.VarChar(30) @map("alert_type")
+  strike          Int?
+  optionType      String?   @db.Char(2) @map("option_type")
+  threshold       Decimal   @db.Decimal(12, 4)
+  thresholdUnit   String    @db.VarChar(10) @map("threshold_unit")
+  direction       String    @db.VarChar(10)
+  notifyMethod    String[]  @default(["websocket"]) @map("notify_method")
+  isActive        Boolean   @default(true) @map("is_active")
+  cooldownSeconds Int       @default(300) @map("cooldown_seconds")
+  name            String?   @db.VarChar(100)
+  createdAt       DateTime? @default(now()) @map("created_at")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  history AlertHistory[]
+
+  @@index([userId, symbol])
+  @@index([userId, isActive])
+  @@index([symbol, isActive, strike, optionType])
+  @@map("option_alerts")
+}
+
+model AlertHistory {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertId        String?   @map("alert_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  symbol         String    @db.VarChar(20)
+  strike         Int?
+  alertType      String    @db.VarChar(30) @map("alert_type")
+  triggeredAt    DateTime  @default(now()) @map("triggered_at") @db.Timestamptz
+  triggerValue   Decimal   @db.Decimal(12, 4) @map("trigger_value")
+  thresholdValue Decimal   @db.Decimal(12, 4) @map("threshold_value")
+  aiExplanation  String?   @map("ai_explanation") @db.Text
+  wasRead        Boolean   @default(false) @map("was_read")
+  deliveryStatus Json?     @map("delivery_status")
+
+  alert OptionAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, triggeredAt(sort: Desc)])
+  @@index([userId, wasRead])
+  @@map("alert_history")
+}

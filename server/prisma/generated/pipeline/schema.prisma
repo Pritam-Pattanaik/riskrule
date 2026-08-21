@@ -1,0 +1,297 @@
+// ─── Pipeline Database Schema ─────────────────────────────────────────────────
+// This schema targets the Supabase (free tier) database.
+// It contains write-heavy, append-only data that was burning the Neon quota:
+//   - News Engine pipeline (ingest → triage → score → deliver)
+//   - Timeseries (OI, IV, PCR history)
+//   - Pipeline metrics & watchlists
+//
+// Models here reference userId/tradeId as plain UUID strings (no @relation)
+// because User and Trade live in the Neon (core) database.
+// ──────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/pipeline"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PIPELINE_DATABASE_URL")
+}
+
+// ─── News Engine: Ingestion & Processing ──────────────────────────────────────
+
+model NewsRawItem {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  source        String // "NSE" | "BSE" | "RBI" | "PIB" | "NEWSDATA" | "MACRO"
+  externalId    String?  @map("external_id")
+  dedupeHash    String   @unique @map("dedupe_hash")
+  headline      String
+  body          String?
+  url           String?
+  publishedAt   DateTime @map("published_at")
+  rawPayload    Json     @map("raw_payload")
+  status        String   @default("PENDING")
+  failureReason String?  @map("failure_reason")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  triage NewsTriage?
+  impact NewsImpact?
+
+  @@index([source, status])
+  @@index([publishedAt])
+  @@index([status, createdAt])
+  @@map("news_raw_items")
+}
+
+model NewsTriage {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rawItemId    String   @unique @map("raw_item_id") @db.Uuid
+  relevant     Boolean
+  category     String
+  urgency      String
+  modelVersion String   @map("model_version")
+  latencyMs    Int      @map("latency_ms")
+  tokensIn     Int?     @map("tokens_in")
+  tokensOut    Int?     @map("tokens_out")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  rawItem NewsRawItem @relation(fields: [rawItemId], references: [id], onDelete: Cascade)
+
+  @@index([relevant, urgency])
+  @@map("news_triage")
+}
+
+model NewsImpact {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rawItemId           String   @unique @map("raw_item_id") @db.Uuid
+  sectorImpact        String[] @map("sector_impact")
+  direction           String
+  confidence          String
+  rationale           String
+  historicalAnalogues Json     @map("historical_analogues")
+  mode                String   @default("EDUCATIONAL_MODE")
+  disclaimer          String
+  modelVersion        String   @map("model_version")
+  latencyMs           Int      @map("latency_ms")
+  tokensIn            Int?     @map("tokens_in")
+  tokensOut           Int?     @map("tokens_out")
+  humanReviewRequired Boolean  @default(true) @map("human_review_required")
+  humanApproved       Boolean? @map("human_approved")
+  humanNotes          String?  @map("human_notes")
+  complianceAuditId   String   @unique @map("compliance_audit_id") @db.Uuid
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  rawItem   NewsRawItem    @relation(fields: [rawItemId], references: [id], onDelete: Cascade)
+  auditLog  NewsAuditLog   @relation(fields: [complianceAuditId], references: [id])
+  backtests NewsBacktest[]
+
+  @@index([direction, confidence])
+  @@index([createdAt])
+  @@map("news_impact")
+}
+
+model NewsAuditLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rawItemId        String   @map("raw_item_id") @db.Uuid
+  inputSnapshot    Json     @map("input_snapshot")
+  outputSnapshot   Json     @map("output_snapshot")
+  modelId          String   @map("model_id")
+  promptVersion    String   @map("prompt_version")
+  mode             String   @default("EDUCATIONAL_MODE")
+  compliancePassed Boolean  @map("compliance_passed")
+  complianceNotes  String?  @map("compliance_notes")
+  disclaimer       String
+  timestamp        DateTime @default(now())
+
+  impact NewsImpact?
+
+  @@index([rawItemId])
+  @@index([timestamp])
+  @@map("news_audit_logs")
+}
+
+model NewsBacktest {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  impactId        String    @map("impact_id") @db.Uuid
+  sector          String
+  taggedDirection String    @map("tagged_direction")
+  session1Return  Float?    @map("session1_return")
+  session3Return  Float?    @map("session3_return")
+  session5Return  Float?    @map("session5_return")
+  directionMatch1 Boolean?  @map("direction_match_1")
+  directionMatch3 Boolean?  @map("direction_match_3")
+  directionMatch5 Boolean?  @map("direction_match_5")
+  measuredAt      DateTime? @map("measured_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  impact NewsImpact @relation(fields: [impactId], references: [id], onDelete: Cascade)
+
+  @@index([sector, taggedDirection])
+  @@map("news_backtests")
+}
+
+model NewsDigest {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type      String
+  date      DateTime @db.Date
+  content   Json
+  itemCount Int      @default(0) @map("item_count")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([type, date])
+  @@index([date])
+  @@map("news_digests")
+}
+
+model PipelineMetric {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  metricName String   @map("metric_name")
+  value      Float
+  source     String?
+  tags       Json?
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  @@index([metricName, recordedAt])
+  @@map("pipeline_metrics")
+}
+
+// ─── News Engine: User-Facing Data ────────────────────────────────────────────
+
+model EnrichedNews {
+  id                String   @id
+  headline          String
+  url               String
+  publishedAt       Int
+  source            String
+  image             String?
+  originalSummary   String?
+  aiSummary         String?
+  tldr              String?
+  whyItMatters      String?
+  categories        String[]
+  sectors           String[]
+  companies         String[]
+  financialTerms    Json?
+  historicalContext String?
+  shortTermImpact   String?
+  longTermImpact    String?
+  whatToWatchNext   String?
+  riskFactors       String?
+  probability       Int?
+  confidence        Int?
+  marketImpact      Json?
+  relatedArticles   Json?
+
+  bookmarks  NewsBookmark[]
+  tradeLinks TradeNewsLink[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("enriched_news")
+}
+
+model NewsBookmark {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  newsId    String   @map("news_id")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  news EnrichedNews @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, newsId])
+  @@map("news_bookmarks")
+}
+
+model TradeNewsLink {
+  id      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tradeId String  @map("trade_id") @db.Uuid
+  newsId  String  @map("news_id")
+  reason  String?
+
+  news EnrichedNews @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@unique([tradeId, newsId])
+  @@map("trade_news_links")
+}
+
+model UserWatchlist {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  type      String
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, type, value])
+  @@index([userId])
+  @@map("user_watchlist")
+}
+
+// ─── Flow Intelligence: Timeseries ────────────────────────────────────────────
+
+model OiHistory {
+  time              DateTime @map("time") @db.Timestamptz
+  symbol            String   @db.VarChar(20)
+  expiryDate        DateTime @map("expiry_date") @db.Date
+  strikePrice       Int      @map("strike_price")
+  optionType        String   @map("option_type") @db.Char(2)
+  openInterest      BigInt   @map("open_interest")
+  oiChange          Int?     @map("oi_change")
+  volume            BigInt
+  ltp               Decimal  @db.Decimal(10, 2)
+  impliedVolatility Decimal? @map("implied_volatility") @db.Decimal(8, 4)
+  delta             Decimal? @db.Decimal(8, 6)
+  gamma             Decimal? @db.Decimal(10, 8)
+  theta             Decimal? @db.Decimal(8, 4)
+  vega              Decimal? @db.Decimal(8, 4)
+
+  @@id([time, symbol, expiryDate, strikePrice, optionType])
+  @@index([symbol, expiryDate, strikePrice, optionType, time])
+  @@map("oi_history")
+}
+
+model IvHistory {
+  time         DateTime @map("time") @db.Timestamptz
+  symbol       String   @db.VarChar(20)
+  indiaVix     Decimal  @map("india_vix") @db.Decimal(8, 4)
+  atmIv        Decimal? @map("atm_iv") @db.Decimal(8, 4)
+  ivPercentile Decimal? @map("iv_percentile") @db.Decimal(5, 2)
+
+  @@id([time, symbol])
+  @@map("iv_history")
+}
+
+model PcrHistory {
+  time        DateTime @map("time") @db.Timestamptz
+  symbol      String   @db.VarChar(20)
+  expiryDate  DateTime @map("expiry_date") @db.Date
+  pcrOi       Decimal  @map("pcr_oi") @db.Decimal(8, 4)
+  pcrVolume   Decimal  @map("pcr_volume") @db.Decimal(8, 4)
+  callOiTotal BigInt?  @map("call_oi_total")
+  putOiTotal  BigInt?  @map("put_oi_total")
+
+  @@id([time, symbol, expiryDate])
+  @@map("pcr_history")
+}
+
+model FlowAiBrief {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  symbol        String    @db.VarChar(20)
+  expiryDate    DateTime? @map("expiry_date") @db.Date
+  briefType     String    @map("brief_type") @db.VarChar(20)
+  headline      String    @db.Text
+  observations  Json
+  action        String    @db.Text
+  confidence    Int       @db.SmallInt
+  marketContext Json?     @map("market_context")
+  modelUsed     String?   @map("model_used") @db.VarChar(100)
+  tokensUsed    Int?      @map("tokens_used")
+  generatedAt   DateTime  @default(now()) @map("generated_at") @db.Timestamptz
+  expiresAt     DateTime  @map("expires_at") @db.Timestamptz
+  isValid       Boolean   @default(true) @map("is_valid")
+
+  @@index([symbol, briefType, generatedAt(sort: Desc)])
+  @@index([symbol, briefType, expiresAt])
+  @@map("flow_ai_briefs")
+}

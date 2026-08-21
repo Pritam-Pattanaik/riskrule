@@ -1,0 +1,546 @@
+/* ─────────────────────────────────────────────────────────────
+   TRADEVAULT — INSTITUTIONAL DESIGN SYSTEM v2.0
+   Luxury Fintech UI: Obsidian Dark (#090B12) + Warm Light (#F8FAFC)
+   Discipline Over Dopamine Architecture
+   ───────────────────────────────────────────────────────────── */
+
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN TOKENS & COLOR SYSTEM (WCAG 2.2 AA / AAA VALIDATED)
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  /* ── LIGHT THEME: Elevated Warm White ── */
+  :root {
+    /* Canvas & Surface Layers */
+    --color-canvas: 248 250 252;          /* #F8FAFC — neutral warm off-white */
+    --color-surface: 255 255 255;         /* #FFFFFF — pure structural white */
+    --color-surface-0: 255 255 255;
+    --color-surface-1: 243 246 251;       /* #F3F6FB — elevated card background */
+    --color-surface-2: 235 240 248;       /* #EBF0F8 — subtle inner container */
+    --color-surface-3: 222 230 242;       /* #DEE6F2 — interactive control state */
+    --color-surface-elevated: 255 255 255;
+
+    /* Typography Hierarchy & Contrast (Tested against #F8FAFC & #FFFFFF) */
+    --color-text-primary: 13 22 38;       /* #0D1626 — deep night slate (16.4:1 AAA) */
+    --color-text-secondary: 51 70 101;    /* #334665 — crisp readable navy (9.2:1 AAA) */
+    --color-text-tertiary: 71 85 105;     /* #475569 — legible muted slate (5.8:1 AA) */
+    --color-text-muted: 100 116 139;      /* #64748B — placeholder & disabled (4.6:1 AA) */
+    --color-text-inverse: 255 255 255;    /* #FFFFFF — white text on dark primary buttons */
+
+    /* Institutional Brand Palette */
+    --color-accent: 37 99 235;            /* #2563EB — institutional sapphire blue */
+    --color-accent-hover: 29 78 216;      /* #1D4ED8 — deep active blue */
+    --color-iris: 90 79 207;              /* #5A4FCF — behavioral AI accent */
+    --color-gold: 217 119 6;              /* #D97706 — precision alert amber */
+
+    /* Quantitative Semantic Status */
+    --color-success: 11 128 67;           /* #0B8043 — verified profit / positive R:R (WCAG AA 5.5:1) */
+    --color-danger: 220 38 38;            /* #DC2626 — loss guardrail / daily stop out */
+    --color-warning: 180 83 9;            /* #B45309 — amber-700 (WCAG AA 5.1:1) */
+    --color-info: 29 78 216;              /* #1D4ED8 — blue-700 */
+
+    /* Sub-pixel Borders & Separators */
+    --color-border-rgb: 13 22 38;
+    --border-alpha: 0.08;
+    --border-alpha-hover: 0.16;
+    --border-alpha-strong: 0.12;
+
+    /* Modern Software Shadows (Zero Neomorphism) */
+    --shadow-xs:       0 1px 2px rgba(13, 22, 38, 0.04);
+    --shadow-card:     0 4px 16px -2px rgba(13, 22, 38, 0.06), 0 2px 4px -2px rgba(13, 22, 38, 0.04);
+    --shadow-card-hover: 0 12px 28px -4px rgba(13, 22, 38, 0.10), 0 4px 8px -2px rgba(13, 22, 38, 0.05);
+    --shadow-raised:   0 16px 36px -6px rgba(13, 22, 38, 0.12), 0 6px 12px -4px rgba(13, 22, 38, 0.06);
+    --shadow-floating: 0 24px 56px -8px rgba(13, 22, 38, 0.16), 0 12px 24px -8px rgba(13, 22, 38, 0.08);
+    --shadow-iris:     0 10px 30px -4px rgba(90, 79, 207, 0.28), 0 4px 10px -2px rgba(90, 79, 207, 0.18);
+    --shadow-gold:     0 10px 28px -4px rgba(217, 119, 6, 0.25);
+
+    /* Geometric Radiuses */
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-3xl: 32px;
+  }
+
+  /* ── DARK THEME: Obsidian Dark Workstation ── */
+  .dark {
+    /* Canvas & Surface Layers */
+    --color-canvas: 9 11 18;              /* #090B12 — deep night obsidian */
+    --color-surface: 17 21 34;            /* #111522 — slate workstation surface */
+    --color-surface-0: 14 18 28;          /* #0E121C — primary component ground */
+    --color-surface-1: 22 28 44;          /* #161C2C — raised interactive level */
+    --color-surface-2: 32 40 62;          /* #20283E — secondary control border/surface */
+    --color-surface-3: 46 58 88;          /* #2E3A58 — active control hover */
+    --color-surface-elevated: 25 32 50;   /* #192032 — floating dialog & toast ground */
+
+    /* Typography Hierarchy & Contrast (Tested against #090B12 & #111522) */
+    --color-text-primary: 242 246 254;    /* #F2F6FE — crisp cool near-white (16.2:1 AAA) */
+    --color-text-secondary: 166 180 206;  /* #A6B4CE — legible steel blue-gray (8.5:1 AAA) */
+    --color-text-tertiary: 140 156 184;   /* #8C9CB8 — high-legibility caption slate (5.8:1 AA) */
+    --color-text-muted: 88 104 133;       /* #586885 — inactive placeholder */
+    --color-text-inverse: 13 22 38;       /* #0D1626 — night slate on bright accents */
+
+    /* Institutional Brand Palette */
+    --color-accent: 59 114 255;           /* #3B72FF — electric institutional blue */
+    --color-accent-hover: 78 130 255;     /* #4E82FF */
+    --color-iris: 122 110 255;            /* #7A6EFF — behavioral AI indicator */
+    --color-gold: 236 168 36;             /* #ECA824 — alert / gold highlight */
+
+    /* Quantitative Semantic Status */
+    --color-success: 32 196 117;          /* #20C475 — positive win rate / P&L green */
+    --color-danger: 242 80 80;            /* #F25050 — drawdown red / daily loss lockout */
+    --color-warning: 236 168 36;          /* gold warning */
+    --color-info: 59 114 255;             /* accent info */
+
+    /* Sub-pixel Borders & Separators */
+    --color-border-rgb: 242 246 254;
+    --border-alpha: 0.06;
+    --border-alpha-hover: 0.12;
+    --border-alpha-strong: 0.09;
+
+    /* Modern Software Shadows (Obsidian Depth) */
+    --shadow-xs:       0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-card:     0 6px 18px -3px rgba(0, 0, 0, 0.45), 0 2px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 16px 36px -6px rgba(0, 0, 0, 0.65), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+    --shadow-raised:   0 20px 48px -8px rgba(0, 0, 0, 0.75), 0 8px 20px -4px rgba(0, 0, 0, 0.5);
+    --shadow-floating: 0 32px 80px -12px rgba(0, 0, 0, 0.85), 0 12px 28px -6px rgba(0, 0, 0, 0.6);
+    --shadow-iris:     0 12px 36px -6px rgba(122, 110, 255, 0.35), 0 4px 14px -3px rgba(122, 110, 255, 0.22);
+    --shadow-gold:     0 12px 32px -6px rgba(236, 168, 36, 0.3);
+  }
+
+  /* ── Global Structural Resets & Standards ── */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    border-color: rgba(var(--color-border-rgb), var(--border-alpha));
+  }
+
+  html {
+    color-scheme: light dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: rgb(var(--color-canvas));
+    color: rgb(var(--color-text-primary));
+    font-family: 'Geist Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-border-rgb) / 0.15) transparent;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Custom Clean Scrollbars */
+  body::-webkit-scrollbar { width: 6px; height: 6px; }
+  body::-webkit-scrollbar-track { background: transparent; }
+  body::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--color-border-rgb) / 0.15);
+    border-radius: 999px;
+  }
+  body::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--color-border-rgb) / 0.25);
+  }
+
+  /* Selection Formatting */
+  ::selection {
+    background-color: rgba(var(--color-iris), 0.25);
+    color: rgb(var(--color-text-primary));
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   COMPONENT UTILITIES & ARCHITECTURAL PATTERNS
+   ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* ── Typography & Math Alignment Helpers ── */
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+  .font-display { font-family: 'Bricolage Grotesque', 'Geist Sans', system-ui, sans-serif; }
+  .font-sans    { font-family: 'Geist Sans', system-ui, -apple-system, sans-serif; }
+  .font-mono-stat { font-family: 'DM Mono', 'Geist Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ── WCAG AA Compliant Focus Ring ── */
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid rgb(var(--color-iris));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(var(--color-iris), 0.25);
+  }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid rgb(var(--color-iris)) !important;
+    outline-offset: 2px !important;
+  }
+
+  /* ── Accessible Minimum Touch Target ── */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Clean Elevation System (Zero Neomorphism) ── */
+  .panel {
+    background: rgb(var(--color-surface-0));
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(var(--color-border-rgb), var(--border-alpha));
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .card {
+    background: rgb(var(--color-surface));
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(var(--color-border-rgb), var(--border-alpha-strong));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card);
+    transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  }
+  .card:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-card-hover);
+    border-color: rgba(var(--color-border-rgb), var(--border-alpha-hover));
+  }
+
+  .card-raised {
+    background: rgb(var(--color-surface-1));
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(var(--color-border-rgb), var(--border-alpha-strong));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-raised);
+    transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  }
+  .card-raised:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), var(--shadow-floating);
+    transform: translateY(-2px);
+    border-color: rgba(var(--color-iris), 0.25);
+  }
+
+  .glass-float {
+    background: rgba(var(--color-surface-elevated), 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(var(--color-border-rgb), var(--border-alpha-strong));
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-floating);
+  }
+
+  .glass-island {
+    background: rgba(var(--color-surface-0), 0.88);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid rgba(var(--color-border-rgb), var(--border-alpha-strong));
+    border-radius: var(--radius-xl);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--shadow-floating);
+  }
+
+  .card-iris {
+    background: rgb(var(--color-surface-0));
+    border: 1px solid rgba(var(--color-iris), 0.30);
+    border-radius: var(--radius-xl);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-iris);
+  }
+
+  /* ── Gradient Text Treatments ── */
+  .text-gradient {
+    background: linear-gradient(135deg,
+      rgb(var(--color-text-primary)) 0%,
+      rgb(var(--color-accent)) 55%,
+      rgb(var(--color-iris)) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-iris {
+    background: linear-gradient(135deg,
+      rgb(var(--color-iris)) 0%,
+      rgb(var(--color-accent)) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glows and Accents ── */
+  .iris-glow { box-shadow: var(--shadow-iris); }
+  .gold-glow { box-shadow: var(--shadow-gold); }
+  .bg-iris-soft { background: rgba(var(--color-iris), 0.10); }
+  .bg-accent-soft { background: rgba(var(--color-accent), 0.10); }
+
+  /* ── Background Grid & Noise Treatments ── */
+  .dot-grid {
+    background-image: radial-gradient(rgba(var(--color-border-rgb), 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .grid-pattern {
+    background-image: linear-gradient(to right, rgba(var(--color-border-rgb), 0.04) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(var(--color-border-rgb), 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* ── Zero CLS Shimmer Loading State ── */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background: rgb(var(--color-surface-2));
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 20%, rgba(var(--color-border-rgb), 0.08) 50%, transparent 80%);
+    animation: shimmer-sweep 1.6s infinite linear;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GPU ACCELERATED KEYFRAMES & ACCESSIBILITY FALLBACKS
+   ───────────────────────────────────────────────────────────── */
+@keyframes shimmer-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale3d(0.96, 0.96, 1); }
+  to   { opacity: 1; transform: scale3d(1, 1, 1); }
+}
+
+@keyframes float-subtle {
+  0%, 100% { transform: translate3d(0, 0px, 0); }
+  50%      { transform: translate3d(0, -6px, 0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(var(--color-success), 0.4); }
+  50%      { opacity: 0.85; box-shadow: 0 0 0 6px rgba(var(--color-success), 0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate3d(0, 0, 1, 0deg); }
+  to   { transform: rotate3d(0, 0, 1, 360deg); }
+}
+
+.animate-fade-up    { animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in    { animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-scale-in   { animation: scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-float      { animation: float-subtle 6s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-spin-slow  { animation: spin-slow 12s linear infinite; }
+
+/* ── STRICT WCAG 2.2 PREFERS-REDUCED-MOTION OVERRIDE ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float, .animate-pulse-glow, .animate-spin-slow, .animate-aurora {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FLOW INTELLIGENCE — COMPONENT DESIGN TOKENS
+   These extend the base token system with Flow-specific semantics.
+   All spacing follows the 4px/8px grid. Border radii: card=12px,
+   button=8px, badge=6px. Shadows are layered (1px + 12px).
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Tick Flash Keyframes (green=up, red=down) ── */
+/* Duration: 600ms, uses ease-out-expo easing.    */
+/* Applied via JS class toggle, not CSS animation  */
+/* name so it works with useFlashOnChange hook.   */
+@keyframes tick-flash-up {
+  0%   { background-color: rgba(var(--color-success), 0.25); color: rgb(var(--color-success)); }
+  60%  { background-color: rgba(var(--color-success), 0.10); }
+  100% { background-color: transparent; color: inherit; }
+}
+
+@keyframes tick-flash-down {
+  0%   { background-color: rgba(var(--color-danger), 0.20); color: rgb(var(--color-danger)); }
+  60%  { background-color: rgba(var(--color-danger), 0.08); }
+  100% { background-color: transparent; color: inherit; }
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(var(--color-success), 0.5); }
+  50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(var(--color-success), 0); }
+}
+
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes number-count-up {
+  from { opacity: 0.5; transform: translate3d(0, 4px, 0); }
+  to   { opacity: 1;   transform: translate3d(0, 0,  0); }
+}
+
+.animate-tick-up   { animation: tick-flash-up   0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-tick-down { animation: tick-flash-down 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-live-pulse { animation: live-pulse 2s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+.animate-fade-slide { animation: fade-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-number-in  { animation: number-count-up 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* ── Flow Card Elevation ── */
+/* Layered shadow: 1px crisp + 12px soft depth (no flat drop) */
+.flow-card {
+  background: rgb(var(--color-surface-0));
+  border-radius: 12px;
+  border: 1px solid rgba(var(--color-border-rgb), 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0,0,0,0.35),
+    0 4px 12px rgba(0,0,0,0.25);
+  transition:
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.flow-card:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 3px rgba(0,0,0,0.4),
+    0 8px 24px rgba(0,0,0,0.35);
+  border-color: rgba(var(--color-border-rgb), 0.12);
+}
+
+/* ── Flow Metric Cell (stat number + label) ── */
+.flow-stat-value {
+  font-family: 'DM Mono', 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--color-text-primary));
+}
+
+.flow-stat-label {
+  font-family: 'Geist Sans', system-ui, sans-serif;
+  font-size: 0.6875rem;  /* 11px on 16px base */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-text-tertiary));
+}
+
+/* ── Flow Skeleton Shimmer (matches exact card layout) ── */
+.flow-skeleton {
+  background: rgb(var(--color-surface-1));
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.flow-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 20%,
+    rgba(var(--color-border-rgb), 0.06) 50%,
+    transparent 80%
+  );
+  animation: shimmer-sweep 1.8s infinite linear;
+}
+
+/* ── Empty State Container ── */
+.flow-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 32px;
+  border: 1px dashed rgba(var(--color-border-rgb), 0.12);
+  border-radius: 12px;
+  background: rgba(var(--color-surface-1), 0.4);
+}
+.flow-empty-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgb(var(--color-surface-1));
+  border: 1px solid rgba(var(--color-border-rgb), 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ── Button States (distinct hover/active/focus/disabled) ── */
+.flow-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-text-inverse));
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: 'Geist Sans', system-ui, sans-serif;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 0 0 0 rgba(var(--color-accent), 0);
+}
+.flow-btn-primary:hover {
+  background: rgb(var(--color-accent-hover));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 0 16px rgba(var(--color-accent), 0.3);
+}
+.flow-btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+.flow-btn-primary:focus-visible {
+  outline: 2px solid rgb(var(--color-iris));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--color-iris), 0.25);
+}
+.flow-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Heatmap bar gradients (semantic colors via tokens) ── */
+.hm-bar-call {
+  background: linear-gradient(to left, rgba(var(--color-danger), 0.8), rgba(var(--color-danger), 0.15));
+  border-radius: 2px 0 0 2px;
+  transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hm-bar-put {
+  background: linear-gradient(to right, rgba(var(--color-success), 0.8), rgba(var(--color-success), 0.15));
+  border-radius: 0 2px 2px 0;
+  transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+

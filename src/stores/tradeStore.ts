@@ -1,0 +1,124 @@
+import { create } from 'zustand';
+import { Trade } from '../types';
+import { api } from '../lib/api';
+import { useAnalyticsStore } from './analyticsStore';
+
+// ─── Type adapters (DB → Frontend) ───────────────────────────────────────────
+// The DB returns numeric fields as strings (Prisma Decimal type).
+// This normalizes them back to numbers.
+function normalize(raw: any): Trade {
+  return {
+    id: raw.id,
+    date: raw.date instanceof Date ? raw.date.toISOString() : raw.date,
+    symbol: raw.symbol,
+    market: raw.market,
+    instrumentType: raw.instrumentType,
+    direction: raw.direction,
+    entryPrice: parseFloat(raw.entryPrice ?? '0') || 0,
+    exitPrice: parseFloat(raw.exitPrice ?? '0') || 0,
+    quantity: parseFloat(raw.quantity ?? '0') || 0,
+    pnl: parseFloat(raw.pnl ?? '0') || 0,
+    charges: parseFloat(raw.charges ?? '0') || 0,
+    netPnl: parseFloat(raw.netPnl ?? '0') || 0,
+    status: raw.status,
+    strategyId: raw.strategyId ?? undefined,
+    strategyName: raw.strategyName ?? undefined,
+    setupDescription: raw.setupDescription ?? undefined,
+    mindset: raw.mindset ?? undefined,
+    decisionNotes: raw.decisionNotes ?? undefined,
+    learnings: raw.learnings ?? undefined,
+    disciplineScore: raw.disciplineScore ?? undefined,
+    disciplineRawScore: raw.disciplineRawScore ?? undefined,
+    confidence: raw.confidence ?? undefined,
+    tradingStyle: raw.tradingStyle ?? undefined,
+    behaviourProfile: raw.behaviourProfile ?? undefined,
+    disciplineSignals: raw.disciplineSignals ?? undefined,
+    disciplineBreakdown: raw.disciplineBreakdown ?? undefined,
+    disciplineReasons: raw.disciplineReasons ?? undefined,
+    isManualOverride: raw.isManualOverride ?? undefined,
+    manualScore: raw.manualScore ?? undefined,
+    tags: raw.tags ?? undefined,
+    source: raw.source ?? 'manual',
+    exitTime: raw.exitTime instanceof Date ? raw.exitTime.toISOString() : raw.exitTime,
+    isCarryForward: !!raw.isCarryForward,
+    stopLoss: raw.stopLoss ? parseFloat(raw.stopLoss) : null,
+    mistakes: raw.mistakes || [],
+    checklist: raw.checklist || {},
+  };
+}
+
+interface TradeState {
+  trades: Trade[];
+  loading: boolean;
+  error: string | null;
+  dailySummaries: Record<string, any>;
+  // Actions
+  fetchTrades: () => Promise<void>;
+  addTrade: (trade: Omit<Trade, 'id'>) => Promise<void>;
+  updateTrade: (id: string, updates: Partial<Trade>) => Promise<void>;
+  deleteTrade: (id: string) => Promise<void>;
+  clearAll: () => void;
+}
+
+export const useTradeStore = create<TradeState>((set) => ({
+  trades: [],
+  loading: false,
+  error: null,
+  dailySummaries: {},
+
+  fetchTrades: async () => {
+    set({ loading: true, error: null });
+    try {
+      const [raw, summaries] = await Promise.all([
+        api.get<any[]>('/trades'),
+        api.get<Record<string, any>>('/trades/summary/daily').catch(() => ({}))
+      ]);
+      set({ trades: raw.map(normalize), dailySummaries: summaries, loading: false });
+    } catch (err: any) {
+      console.error('fetchTrades error:', err);
+      set({ error: err.message, loading: false });
+    }
+  },
+
+  addTrade: async (tradeData) => {
+    try {
+      const raw = await api.post<any>('/trades', tradeData);
+      const newTrade = normalize(raw);
+      set((state) => ({ trades: [newTrade, ...state.trades] }));
+      useAnalyticsStore.getState().invalidate();
+      useAnalyticsStore.getState().fetchAnalytics().catch(() => {});
+    } catch (err: any) {
+      console.error('addTrade error:', err);
+      set({ error: err.message });
+    }
+  },
+
+  updateTrade: async (id, updates) => {
+    try {
+      const raw = await api.patch<any>(`/trades/${id}`, updates);
+      const updated = normalize(raw);
+      set((state) => ({
+        trades: state.trades.map((t) => (t.id === id ? updated : t)),
+      }));
+      useAnalyticsStore.getState().invalidate();
+      useAnalyticsStore.getState().fetchAnalytics().catch(() => {});
+    } catch (err: any) {
+      console.error('updateTrade error:', err);
+      set({ error: err.message });
+    }
+  },
+
+  deleteTrade: async (id) => {
+    try {
+      await api.delete(`/trades/${id}`);
+      set((state) => ({ trades: state.trades.filter((t) => t.id !== id) }));
+      useAnalyticsStore.getState().invalidate();
+      useAnalyticsStore.getState().fetchAnalytics().catch(() => {});
+    } catch (err: any) {
+      console.error('deleteTrade error:', err);
+      set({ error: err.message });
+    }
+  },
+
+  clearAll: () => set({ trades: [] }),
+}));

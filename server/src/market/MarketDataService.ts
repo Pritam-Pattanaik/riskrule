@@ -1,0 +1,332 @@
+/**
+ * MarketDataService — Central Market Data Orchestrator
+ *
+ * Responsibilities:
+ * - Provider waterfall: Yahoo → MoneyControl
+ * - Redis-backed caching with intelligent TTL
+ * - In-memory stale cache as Redis fallback (serves last-known-good data)
+ * - In-flight request deduplication (same symbol = same Promise)
+ * - Response validation before storing
+ * - Provider health monitoring
+ * - Symbol normalization
+ * - Logging and metrics
+ *
+ * This is the ONLY class the routes talk to.
+ * Frontend never knows which provider served the data.
+ */
+
+import { MarketQuote } from './types';
+import { redis, cache } from '../lib/redis';
+import { logger } from '../lib/logger';
+import { YahooFinanceProvider } from './providers/YahooFinanceProvider';
+import { MoneyControlProvider } from './providers/MoneyControlProvider';
+import {
+  ChartCandle, SectorQuote,
+  TRACKED_SYMBOLS, SECTOR_SYMBOLS, TIMEFRAME_MAP,
+  SymbolDefinition, ProviderName,
+} from './types';
+import { IMarketProvider } from './providers/IMarketProvider';
+
+// ─── Cache Keys ───────────────────────────────────────────────────────────────
+
+const CACHE_KEYS = {
+  quotes: 'market:quotes:v2',
+  chart: (symbol: string, interval: string, range: string) =>
+    `market:chart:v2:${symbol}:${interval}:${range}`,
+  sectors: 'market:sectors:v2',
+};
+
+const QUOTE_TTL_SEC = 60;      // 60 seconds — rate-limit friendly
+const SECTOR_TTL_SEC = 120;    // 2 minutes for sectors
+
+// ─── In-Flight Deduplication ──────────────────────────────────────────────────
+
+const inFlight = new Map<string, Promise<any>>();
+
+function dedup<T>(key: string, factory: () => Promise<T>): Promise<T> {
+  const existing = inFlight.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const promise = factory().finally(() => inFlight.delete(key));
+  inFlight.set(key, promise);
+  return promise;
+}
+
+// ─── In-Memory Stale Cache ────────────────────────────────────────────────────
+// Serves last-known-good data when Redis is unavailable AND all providers fail.
+// This prevents the frontend from going blank after a transient network hiccup.
+
+interface StaleEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const staleCache = new Map<string, StaleEntry<any>>();
+const STALE_MAX_AGE_MS = 24 * 60 * 60_000; // serve stale data for up to 24 hours during temporary API outages
+
+function getStale<T>(key: string): T | null {
+  const entry = staleCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > STALE_MAX_AGE_MS) {
+    staleCache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+function setStale<T>(key: string, data: T): void {
+  staleCache.set(key, { data, timestamp: Date.now() });
+}
+
+// ─── Redis helper — never throws ─────────────────────────────────────────────
+
+async function getFromCache(key: string): Promise<string | null> {
+  try {
+    return await cache.get(key);
+  } catch {
+    return null;
+  }
+}
+
+async function setInCache(key: string, value: string, ttlSec: number): Promise<void> {
+  try {
+    await cache.setex(key, ttlSec, value);
+  } catch {
+    // Redis unavailable — stale cache handles it
+  }
+}
+
+// ─── MarketDataService ────────────────────────────────────────────────────────
+
+class MarketDataService {
+  private providers: IMarketProvider[];
+  private activeProvider: ProviderName = 'yahoo';
+  private lastProviderSwitch: number = 0;
+
+  constructor() {
+    this.providers = [
+      new YahooFinanceProvider(),
+      new MoneyControlProvider(),
+    ];
+  }
+
+  // ─── Provider Waterfall ───────────────────────────────────────────────────
+
+  private async fetchQuotesFromProviders(symbols: SymbolDefinition[]): Promise<MarketQuote[]> {
+    for (const provider of this.providers) {
+      if (!provider.isHealthy()) {
+        logger.warn(`[MarketDataService] Provider '${provider.name}' unhealthy — skipping`);
+        continue;
+      }
+
+      const quotes = await provider.fetchQuotes(symbols);
+      if (quotes.length > 0) {
+        if (this.activeProvider !== provider.name) {
+          logger.warn(`[MarketDataService] ⚡ Provider switched: ${this.activeProvider} → ${provider.name}`);
+          this.activeProvider = provider.name as ProviderName;
+          this.lastProviderSwitch = Date.now();
+        }
+        return quotes;
+      }
+    }
+
+    logger.error('[MarketDataService] ALL providers failed — returning empty quotes');
+    return [];
+  }
+
+  private async fetchChartFromProviders(symbol: string, interval: string, range: string): Promise<ChartCandle[]> {
+    for (const provider of this.providers) {
+      if (!provider.isHealthy()) continue;
+
+      const candles = await provider.fetchChart(symbol, interval, range);
+      if (candles.length > 0) return candles;
+    }
+
+    logger.error(`[MarketDataService] All providers failed for chart: ${symbol}`);
+    return [];
+  }
+
+  // ─── Public: Get Quotes ───────────────────────────────────────────────────
+
+  async getQuotes(symbols: SymbolDefinition[] = TRACKED_SYMBOLS): Promise<MarketQuote[]> {
+    const cacheKey = CACHE_KEYS.quotes;
+
+    // 1. Try Redis (hot cache)
+    const cached = await getFromCache(cacheKey);
+    if (cached) {
+      try {
+        const parsed: MarketQuote[] = JSON.parse(cached);
+        if (parsed.length > 0) return parsed;
+      } catch { /* ignore */ }
+    }
+
+    // 2. Deduped live fetch
+    return dedup(cacheKey, async () => {
+      let quotes = await this.fetchQuotesFromProviders(symbols);
+
+      if (quotes.length > 0) {
+        // Merge with stale cache to handle partial results (e.g., rate limits)
+        if (quotes.length < symbols.length) {
+          const stale = getStale<MarketQuote[]>(cacheKey) || [];
+          const merged = [...quotes];
+          const fetchedIds = new Set(quotes.map(q => q.id));
+          for (const s of stale) {
+            if (!fetchedIds.has(s.id)) merged.push(s);
+          }
+          quotes = merged;
+        }
+
+        await setInCache(cacheKey, JSON.stringify(quotes), QUOTE_TTL_SEC);
+        setStale(cacheKey, quotes); // update stale cache on success
+        return quotes;
+      }
+
+      // 3. All providers failed — serve stale data rather than empty
+      const stale = getStale<MarketQuote[]>(cacheKey);
+      if (stale && stale.length > 0) {
+        logger.warn('[MarketDataService] Serving stale quote data (all providers temporarily failed)');
+        return stale;
+      }
+
+      return [];
+    });
+  }
+
+  // ─── Public: Get Sectors ──────────────────────────────────────────────────
+
+  async getSectors(): Promise<SectorQuote[]> {
+    const cacheKey = CACHE_KEYS.sectors;
+    const STALE_RAW_KEY = 'market:sector-raw:v2';
+
+    const cached = await getFromCache(cacheKey);
+    if (cached) {
+      try {
+        const parsed: SectorQuote[] = JSON.parse(cached);
+        if (parsed.length > 0) return parsed;
+      } catch { /* ignore */ }
+    }
+
+    return dedup(cacheKey, async () => {
+      // Fetch ONLY sector symbols — not all tracked symbols.
+      // TRACKED_SYMBOLS are already fetched by getQuotes() / MarketWorker on a separate cycle.
+      // Fetching both here was causing ~2× Yahoo requests per poll (MKT-02 fix).
+      let quotes = await this.fetchQuotesFromProviders(SECTOR_SYMBOLS);
+
+      if (quotes.length > 0) {
+        // Merge with stale cache to handle partial results (e.g. some sectors 429'd)
+        if (quotes.length < SECTOR_SYMBOLS.length) {
+          const staleQuotes = getStale<MarketQuote[]>(STALE_RAW_KEY) || [];
+          const merged = [...quotes];
+          const fetchedIds = new Set(quotes.map(q => q.id));
+          for (const s of staleQuotes) {
+            if (!fetchedIds.has(s.id)) merged.push(s);
+          }
+          quotes = merged;
+        }
+        setStale(STALE_RAW_KEY, quotes);
+
+        const sectorQuotes: SectorQuote[] = quotes
+          .filter(q => SECTOR_SYMBOLS.some(s => s.id === q.id))
+          .map(q => ({
+            id: q.id,
+            name: q.name,
+            symbol: q.symbol,
+            changePercent: q.changePercent,
+            volume: q.volume,
+            isLive: true,
+            provider: q.provider,
+          }));
+
+        await setInCache(cacheKey, JSON.stringify(sectorQuotes), SECTOR_TTL_SEC);
+        setStale(cacheKey, sectorQuotes);
+        return sectorQuotes;
+      }
+
+      // Stale fallback
+      const stale = getStale<SectorQuote[]>(cacheKey);
+      if (stale && stale.length > 0) {
+        logger.warn('[MarketDataService] Serving stale sector data');
+        return stale;
+      }
+
+      return [];
+    });
+  }
+
+  // ─── Public: Get Chart ────────────────────────────────────────────────────
+
+  async getChart(symbolOrId: string, timeframe: string): Promise<ChartCandle[]> {
+    // Resolve short ID to Yahoo ticker (e.g. 'nifty' → '^NSEI')
+    const allSymbols = [...TRACKED_SYMBOLS, ...SECTOR_SYMBOLS];
+    const def = allSymbols.find(s => s.id === symbolOrId || s.symbol === symbolOrId);
+    const yahooTicker = def ? def.symbol : symbolOrId;
+
+    const tf = TIMEFRAME_MAP[timeframe] ?? TIMEFRAME_MAP['1D'];
+    const cacheKey = CACHE_KEYS.chart(yahooTicker, tf.interval, tf.range);
+
+    // Try Redis first
+    const cached = await getFromCache(cacheKey);
+    if (cached) {
+      try {
+        const parsed: ChartCandle[] = JSON.parse(cached);
+        if (parsed.length > 0) return parsed;
+      } catch { /* ignore */ }
+    }
+
+    // Deduped live fetch
+    return dedup(cacheKey, async () => {
+      const candles = await this.fetchChartFromProviders(yahooTicker, tf.interval, tf.range);
+
+      if (candles.length > 0) {
+        await setInCache(cacheKey, JSON.stringify(candles), tf.cacheTtlSec);
+        setStale(cacheKey, candles);
+        return candles;
+      }
+
+      // Stale fallback
+      const stale = getStale<ChartCandle[]>(cacheKey);
+      if (stale && stale.length > 0) {
+        logger.warn(`[MarketDataService] Serving stale chart for ${yahooTicker}`);
+        return stale;
+      }
+
+      return [];
+    });
+  }
+
+  // ─── Public: Health Status ────────────────────────────────────────────────
+
+  getHealthStatus() {
+    return {
+      activeProvider: this.activeProvider,
+      lastProviderSwitch: this.lastProviderSwitch,
+      providers: Object.fromEntries(
+        this.providers.map(p => [
+          p.name,
+          {
+            name: p.name,
+            healthy: p.isHealthy(),
+            failCount: (p as any).failCount ?? 0,
+            lastSuccessAt: (p as any).lastSuccessAt ?? null,
+            lastFailAt: (p as any).lastFailAt ?? null,
+          }
+        ])
+      ),
+      inFlightRequests: inFlight.size,
+      staleCacheEntries: staleCache.size,
+      lastUpdate: Date.now(),
+    };
+  }
+
+  // ─── Public: Force Refresh (bypass cache) ────────────────────────────────
+
+  async forceRefreshQuotes(): Promise<MarketQuote[]> {
+    try { await redis.del(CACHE_KEYS.quotes); } catch { /* ignore */ }
+    staleCache.delete(CACHE_KEYS.quotes);
+    return this.getQuotes();
+  }
+}
+
+// ─── Singleton Export ─────────────────────────────────────────────────────────
+
+export const marketDataService = new MarketDataService();
