@@ -29,7 +29,7 @@ interface FlowState {
   clearError: () => void;
   
   // Actions
-  fetchIntelligence: () => Promise<void>;
+  fetchIntelligence: (isBackground?: boolean) => Promise<void>;
   fetchNarrative: () => Promise<void>;
 }
 

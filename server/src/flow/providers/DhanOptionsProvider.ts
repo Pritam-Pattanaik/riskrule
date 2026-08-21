@@ -26,39 +26,8 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
     this.accessToken = accessToken || process.env.DHAN_ACCESS_TOKEN || null;
   }
 
-<<<<<<< HEAD
   async connect(): Promise<void> {
     await this.reloadCredentials();
-=======
-  public async reloadCredentials(): Promise<boolean> {
-    try {
-      const broker = await prisma.brokerConnection.findFirst({
-        where: { broker: 'dhan' as any, isActive: true },
-      });
-      const token = broker?.accessToken || broker?.apiKey;
-      if (broker && broker.clientId && token) {
-        this.clientId = broker.clientId;
-        this.accessToken = token;
-        this.isUnauthorized = false;
-        logger.info('[DhanOptionsProvider] Dynamic credential reload succeeded with active Dhan broker connection');
-        if (this.subscribedSymbols.size > 0 && this.callback && !this.pollInterval) {
-          this.startPolling();
-        }
-        return true;
-      }
-    } catch (_e) {
-      // non-fatal
-    }
-    return Boolean(this.clientId && this.accessToken && !this.isUnauthorized);
-  }
-
-  async connect(): Promise<void> {
-    await this.reloadCredentials();
-
-    this.mockFallback = new MockProvider();
-    await this.mockFallback.connect();
-
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     this.isConnected = true;
     logger.info(`[DhanOptionsProvider] Initialized (has broker credentials: ${Boolean(this.accessToken)})`);
   }
@@ -147,7 +116,6 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
     return Boolean(this.clientId && this.accessToken && !this.isUnauthorized);
   }
 
-<<<<<<< HEAD
   public getBrokerStatus(): 'connected' | 'expired' | 'missing' {
     if (this.isUnauthorized) return 'expired';
     if (!this.clientId || !this.accessToken) return 'missing';
@@ -186,120 +154,6 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
           const nearest = json.data[0];
           this.expiryCache.set(scripId, { expiry: nearest, fetchedAt: Date.now() });
           return nearest;
-=======
-  private async fetchSymbolChain(symbol: string): Promise<void> {
-    const scripId = DHAN_SCRIP_IDS[symbol];
-    if (!scripId || !this.accessToken || !this.clientId) return;
-
-    const expiry = SpotService.getNearestExpiry(symbol);
-
-    try {
-      const res = await fetch(`${DHAN_BASE_URL}/optionchain`, {
-        method: 'POST',
-        headers: {
-          'access-token': this.accessToken,
-          'client-id': this.clientId,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          UnderlyingScrip: scripId,
-          UnderlyingSeg: 'IDX_I',
-          Expiry: expiry,
-        }),
-      });
-
-      if (res.status === 401) {
-        this.isUnauthorized = true;
-        logger.warn(`[DhanOptionsProvider] Dhan access token expired or invalid (HTTP 401). Falling back to institutional simulation feed. Re-authenticate Dhan in Settings to resume live stream.`);
-        return;
-      }
-
-      if (res.status === 429) {
-        logger.warn(`[DhanOptionsProvider] Rate limit reached for ${symbol} (HTTP 429) — backing off`);
-        return;
-      }
-
-      if (!res.ok) {
-        logger.warn(`[DhanOptionsProvider] Option chain request failed for ${symbol}: HTTP ${res.status}`);
-        return;
-      }
-
-      const json = await res.json();
-      
-      // Extract live index spot price directly from Dhan option chain response
-      const liveSpot = Number(json?.data?.last_price || json?.data?.lastPrice || 0);
-      if (liveSpot > 0) {
-        await SpotService.setLiveSpot(symbol, liveSpot);
-      }
-
-      const ocData = json?.data?.oc;
-      if (!ocData || typeof ocData !== 'object') return;
-
-      const now = Date.now();
-
-      for (const strikeStr of Object.keys(ocData)) {
-        const strikeObj = ocData[strikeStr];
-        const strikePrice = parseFloat(strikeStr);
-        if (isNaN(strikePrice) || strikePrice <= 0) continue;
-
-        // CE tick
-        if (strikeObj.ce) {
-          const ce = strikeObj.ce;
-          const tick: OptionTick = {
-            symbol,
-            expiryDate: expiry,
-            strikePrice,
-            optionType: 'CE',
-            ltp: Number(ce.last_price || ce.ltp || 0),
-            openInterest: Number(ce.oi || ce.open_interest || 0),
-            volume: Number(ce.volume || 0),
-            timestamp: now,
-            impliedVolatility: ce.implied_volatility ? Number(ce.implied_volatility) : undefined,
-          };
-          this.callback?.(tick);
-        }
-
-        // PE tick
-        if (strikeObj.pe) {
-          const pe = strikeObj.pe;
-          const tick: OptionTick = {
-            symbol,
-            expiryDate: expiry,
-            strikePrice,
-            optionType: 'PE',
-            ltp: Number(pe.last_price || pe.ltp || 0),
-            openInterest: Number(pe.oi || pe.open_interest || 0),
-            volume: Number(pe.volume || 0),
-            timestamp: now,
-            impliedVolatility: pe.implied_volatility ? Number(pe.implied_volatility) : undefined,
-          };
-          this.callback?.(tick);
-        }
-      }
-    } catch (err: any) {
-      logger.warn(`[DhanOptionsProvider] Error polling option chain for ${symbol}: ${err.message}`);
-    }
-  }
-
-  private startPolling(): void {
-    const poll = async () => {
-      if (!this.isConnected || !this.callback) return;
-
-      if (!this.hasValidCredentials()) {
-        await this.reloadCredentials();
-        if (!this.hasValidCredentials()) return;
-      }
-
-      const symbols = Array.from(this.subscribedSymbols);
-      for (let i = 0; i < symbols.length; i++) {
-        if (!this.isConnected || !this.callback || this.isUnauthorized) break;
-        const symbol = symbols[i];
-        await this.fetchSymbolChain(symbol);
-
-        // Stagger requests by 3.5s to respect Dhan's 1 req / 3 sec rate limit
-        if (i < symbols.length - 1) {
-          await new Promise(res => setTimeout(res, 3500));
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
         }
       }
     } catch (_e) {}
@@ -431,14 +285,8 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
       await this.pollNow();
     };
 
-<<<<<<< HEAD
     // Initial fetch + periodic interval (8s interval for smooth data flow without rate limits)
     poll().catch(() => {});
     this.pollInterval = setInterval(poll, 8000);
-=======
-    // Initial fetch + periodic interval spaced for staggered symbols
-    poll().catch(() => {});
-    this.pollInterval = setInterval(poll, 12000);
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
   }
 }

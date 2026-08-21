@@ -209,6 +209,8 @@ export interface FlowIntelligence {
   supportOI?: number;
   resistanceStrike?: number;
   resistanceOI?: number;
+  maxPutOI?: number;
+  maxCallOI?: number;
   pcrOI: number;
   pcrVol?: number;
   pcrSignal: PCRSignalType;
@@ -230,10 +232,6 @@ export interface FlowIntelligence {
   agreementCount: number;
   overallBias: OverallBias;
   meaningfulStrikes: MeaningfulStrike[];
-  supportStrike?: number;
-  resistanceStrike?: number;
-  maxPutOI?: number;
-  maxCallOI?: number;
   isMarketClosed?: boolean;
   brokerStatus?: 'connected' | 'expired' | 'missing';
   brokerMessage?: string | null;

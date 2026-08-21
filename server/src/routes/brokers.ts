@@ -6,8 +6,6 @@ import { lockService } from '../services/lockService';
 import { createNotification } from '../services/notificationService';
 import { flowDataWorker } from '../flow/workers/FlowDataWorker';
 
-import { flowDataWorker } from '../flow/workers/FlowDataWorker';
-
 const router = Router();
 
 // ─── GET /api/brokers ─────────────────────────────────────────────────────────
@@ -134,11 +132,7 @@ router.delete('/:broker', authenticate, async (req: AuthRequest, res: Response) 
       where: { userId: req.userId!, broker },
     });
     if (broker === 'dhan') {
-<<<<<<< HEAD
       flowDataWorker.reloadProvider().catch(err => console.error('[Brokers] Flow provider reload error:', err));
-=======
-      flowDataWorker.reloadCredentials().catch(() => {});
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     }
     res.json({ success: true });
   } catch (err: any) {
@@ -164,11 +158,7 @@ router.patch('/:broker/token', authenticate, async (req: AuthRequest, res: Respo
       data: { apiKey, isActive: true },
     });
     if (broker === 'dhan') {
-<<<<<<< HEAD
       flowDataWorker.reloadProvider().catch(err => console.error('[Brokers] Flow provider reload error:', err));
-=======
-      flowDataWorker.reloadCredentials().catch(() => {});
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     }
     res.json({ success: true });
   } catch (err: any) {

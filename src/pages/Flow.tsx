@@ -1,14 +1,8 @@
 import React, { useEffect } from 'react';
-<<<<<<< HEAD
 import { Link } from 'react-router-dom';
 import { useFlowSSE } from '../hooks/useFlowSSE';
 import { useFlowStore } from '../stores/flowStore';
 import { AlertTriangle, RefreshCw, KeyRound, PlugZap, Moon, ExternalLink } from 'lucide-react';
-=======
-import { useFlowSSE } from '../hooks/useFlowSSE';
-import { useFlowStore } from '../stores/flowStore';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
 
 import { FlowHeader } from '../components/flow/FlowHeader';
 import { FlowStatCards } from '../components/flow/FlowStatCards';
@@ -22,21 +16,15 @@ export default function Flow() {
   const fetchIntelligence = useFlowStore(s => s.fetchIntelligence);
   const error             = useFlowStore(s => s.error);
   const isLoading         = useFlowStore(s => s.isLoading);
-<<<<<<< HEAD
   const brokerStatus      = useFlowStore(s => s.brokerStatus);
   const brokerError       = useFlowStore(s => s.brokerError);
   const isMarketClosed    = useFlowStore(s => s.isMarketClosed);
 
   // Initial load
-=======
-
-  // Load data on mount
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
   useEffect(() => {
     fetchIntelligence(false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-<<<<<<< HEAD
   // Real-time polling every 5 seconds for live PCR, Support, Resistance & Spot updates
   useEffect(() => {
     const interval = setInterval(() => {
@@ -45,8 +33,6 @@ export default function Flow() {
     return () => clearInterval(interval);
   }, [fetchIntelligence]);
 
-=======
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
   return (
     <div className="flex flex-col min-h-full gap-5 pb-12 animate-fade-slide">
 
@@ -146,7 +132,6 @@ export default function Flow() {
         </div>
       )}
 
-<<<<<<< HEAD
       {/* ── 5 Stat Cards (Top Row: Market Mood, Support, Resistance, Spot Price, PCR Total) ── */}
       <FlowStatCards />
 
@@ -155,19 +140,6 @@ export default function Flow() {
 
       {/* ── AI Flow Summary (Bottom Row) ── */}
       <FlowNarrative />
-=======
-      {/* ── 5 Stat Cards ── */}
-      <FlowStatCards />
-
-      {/* ── Single Section Content: Market Turnover & AI Flow Narrative ── */}
-      <div className="flex flex-col gap-5 animate-fade-slide">
-        {/* Market Turnover Panel */}
-        <SentimentPanel />
-
-        {/* AI Flow Narrative (Listings) */}
-        <FlowNarrative />
-      </div>
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     </div>
   );
 }

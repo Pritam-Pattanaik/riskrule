@@ -25,7 +25,6 @@ export function FlowNarrative() {
   const putWall = intelligence?.meaningfulStrikes?.find(s => s.reasons?.includes('highest_put_oi') || s.strike === intelligence?.supportStrike);
   const callWall = intelligence?.meaningfulStrikes?.find(s => s.reasons?.includes('highest_call_oi') || s.strike === intelligence?.resistanceStrike);
 
-<<<<<<< HEAD
   const supportStrike = intelligence?.supportStrike ?? putWall?.strike;
   const resistanceStrike = intelligence?.resistanceStrike ?? callWall?.strike;
   const supportOI = intelligence?.maxPutOI ?? putWall?.putOI;
@@ -56,12 +55,6 @@ export function FlowNarrative() {
   );
 
   if (!narrative && !intelligence) return null;
-=======
-  const callWall = intelligence?.meaningfulStrikes?.find(s => s.reasons?.includes('highest_call_oi') || s.label.includes('Call Wall'));
-  const putWall = intelligence?.meaningfulStrikes?.find(s => s.reasons?.includes('highest_put_oi') || s.label.includes('Put Wall'));
-  const suppStrike = intelligence?.supportStrike || putWall?.strike || 0;
-  const resStrike  = intelligence?.resistanceStrike || callWall?.strike || 0;
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
 
   return (
     <div className="p-5 rounded-[12px] border border-[rgba(var(--color-border-rgb),0.08)] bg-[rgb(var(--color-surface-1))] relative">
@@ -88,7 +81,6 @@ export function FlowNarrative() {
           </ul>
         </div>
         
-<<<<<<< HEAD
         {derivedWatchPoints.length > 0 && (
           <div className="pt-3 border-t border-[rgba(var(--color-border-rgb),0.06)]">
             <h4 className="text-[11px] font-extrabold text-secondary uppercase tracking-wider mb-2.5">KEY WATCH POINTS</h4>
@@ -110,18 +102,6 @@ export function FlowNarrative() {
             <p className="text-[12px] text-[rgb(var(--color-warning))] font-medium">
               Note: {narrative.uncertainty}
             </p>
-=======
-        {narrative.watchPoints.length > 0 && (
-          <div className="pt-3 border-t border-[rgba(var(--color-border-rgb),0.06)]">
-            <h5 className="text-[12px] font-bold text-secondary uppercase tracking-wider mb-1.5">Key Watch Points</h5>
-            <div className="flex flex-wrap gap-2">
-              {narrative.watchPoints.map((wp, i) => (
-                <span key={i} className="px-2.5 py-1 rounded-[6px] bg-surface-2 text-[12px] font-medium text-primary">
-                  {wp}
-                </span>
-              ))}
-            </div>
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
           </div>
         )}
       </div>
@@ -198,21 +178,13 @@ export function FlowNarrative() {
               <div className="flex justify-between">
                 <span className="text-secondary">Resistance (Max Call OI):</span>
                 <span className="font-mono font-bold text-danger">
-<<<<<<< HEAD
                   {resistanceStrike ? `${resistanceStrike.toLocaleString()} ${resistanceOI ? `(${(resistanceOI / 100000).toFixed(1)}L OI)` : ''}` : 'None'}
-=======
-                  {resStrike > 0 ? resStrike.toLocaleString() : 'None'}
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-secondary">Support (Max Put OI):</span>
                 <span className="font-mono font-bold text-success">
-<<<<<<< HEAD
                   {supportStrike ? `${supportStrike.toLocaleString()} ${supportOI ? `(${(supportOI / 100000).toFixed(1)}L OI)` : ''}` : 'None'}
-=======
-                  {suppStrike > 0 ? suppStrike.toLocaleString() : 'None'}
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
                 </span>
               </div>
               <div className="flex justify-between pt-1 border-t border-border/50">

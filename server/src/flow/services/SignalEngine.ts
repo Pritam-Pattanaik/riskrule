@@ -77,11 +77,13 @@ export interface FlowIntelligence {
   spotChangePct:   number;
   isSpotLive:      boolean;
 
-  // Support & Resistance (Full Chain Walls)
-  supportStrike:    number;
-  supportOI:        number;
-  resistanceStrike: number;
-  resistanceOI:     number;
+  // Support & Resistance (Highest Put OI / Highest Call OI)
+  supportStrike?:    number;
+  supportOI?:        number;
+  resistanceStrike?: number;
+  resistanceOI?:     number;
+  maxPutOI?:         number;
+  maxCallOI?:        number;
 
   // PCR
   pcrOI:           number;
@@ -114,12 +116,6 @@ export interface FlowIntelligence {
   agreementScore:  number;  // 0-100
   agreementCount:  number;  // how many of 4 signals agree
   overallBias:     OverallBias;
-
-  // Support & Resistance (Highest Put OI / Highest Call OI)
-  supportStrike?:    number;
-  resistanceStrike?: number;
-  maxPutOI?:         number;
-  maxCallOI?:        number;
 
   // Market & Broker State
   isMarketClosed?: boolean;
@@ -277,21 +273,8 @@ export class SignalEngine {
     // Map agreement count (1-4) to score (20-80)
     const agreementScore = Math.round((agreementCount / 4) * 100);
 
-    // ── Support & Resistance (Maximum Put OI / Maximum Call OI) ──────────────
-    let supportStrike = 0;
-    let maxPutOI = 0;
-    let resistanceStrike = 0;
-    let maxCallOI = 0;
-
-    for (const tick of chain) {
-      if (tick.optionType === 'PE' && tick.openInterest > maxPutOI) {
-        maxPutOI = tick.openInterest;
-        supportStrike = tick.strikePrice;
-      } else if (tick.optionType === 'CE' && tick.openInterest > maxCallOI) {
-        maxCallOI = tick.openInterest;
-        resistanceStrike = tick.strikePrice;
-      }
-    }
+    const maxPutOI = fallbackSupportOI > 0 ? fallbackSupportOI : (supportOI > 0 ? supportOI : 0);
+    const maxCallOI = fallbackResistanceOI > 0 ? fallbackResistanceOI : (resistanceOI > 0 ? resistanceOI : 0);
 
     // ── Meaningful Strikes ─────────────────────────────────────────────────────
     const meaningfulStrikes = StrikeSelector.select(chain, spotPrice, maxPain, spotChangePct);
@@ -305,20 +288,9 @@ export class SignalEngine {
       spotChangePct,
       isSpotLive,
 
-<<<<<<< HEAD
       pcrOI:       pcrResult.isValid ? pcrResult.value : 1.0,
       pcrSignal:   pcrResult.isValid ? pcrSignal : 'neutral',
       pcrIsValid:  pcrResult.isValid,
-=======
-      supportStrike,
-      supportOI,
-      resistanceStrike,
-      resistanceOI,
-
-      pcrOI:       pcrResult.callOI > 0 ? pcrResult.value : 1.00,
-      pcrSignal,
-      pcrIsValid:  pcrResult.callOI > 0,
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
       totalCallOI: pcrResult.callOI,
       totalPutOI:  pcrResult.putOI,
 

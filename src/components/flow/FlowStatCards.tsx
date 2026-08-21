@@ -96,15 +96,9 @@ export function FlowStatCards() {
 
   if (isLoading && !intelligence) {
     return (
-<<<<<<< HEAD
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flow-skeleton h-[96px] rounded-[12px]" />
-=======
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flow-skeleton h-[92px] rounded-[12px]" />
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
         ))}
       </div>
     );
@@ -114,11 +108,7 @@ export function FlowStatCards() {
 
   const {
     overallBias, agreementScore, spotPrice, spotChangePct, spotChange,
-<<<<<<< HEAD
     pcrOI, pcrSignal, pcrIsValid,
-=======
-    pcrOI, pcrSignal,
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     meaningfulStrikes,
     supportStrike: directSupport,
     resistanceStrike: directResistance,
@@ -132,22 +122,11 @@ export function FlowStatCards() {
   const putStrike = directSupport ?? putWall?.strike ?? 0;
   const callStrike = directResistance ?? callWall?.strike ?? 0;
 
-  const suppStrike = intelligence.supportStrike || putWall?.strike || 0;
-  const resStrike  = intelligence.resistanceStrike || callWall?.strike || 0;
-
-<<<<<<< HEAD
   // Calculate support and resistance distance & percentage from spot
   const putDistPts = spotPrice > 0 && putStrike > 0 ? Math.round(spotPrice - putStrike) : 0;
   const putDistPct = spotPrice > 0 && putStrike > 0 ? ((spotPrice - putStrike) / spotPrice) * 100 : 0;
-=======
-  const suppDistPts = spotPrice > 0 && suppStrike > 0 ? (spotPrice - suppStrike) : 0;
-  const suppDistPct = spotPrice > 0 && suppStrike > 0 ? (suppDistPts / spotPrice) * 100 : 0;
 
-  const resDistPts = spotPrice > 0 && resStrike > 0 ? (resStrike - spotPrice) : 0;
-  const resDistPct = spotPrice > 0 && resStrike > 0 ? (resDistPts / spotPrice) * 100 : 0;
-
-  const isSpotUp = spotChange >= 0;
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
+  const isSpotUp = (spotChange ?? 0) >= 0;
 
   const callDistPts = spotPrice > 0 && callStrike > 0 ? Math.round(callStrike - spotPrice) : 0;
   const callDistPct = spotPrice > 0 && callStrike > 0 ? ((callStrike - spotPrice) / spotPrice) * 100 : 0;
@@ -163,11 +142,7 @@ export function FlowStatCards() {
     'Neutral';
 
   return (
-<<<<<<< HEAD
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-=======
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
       {/* 1. Market Mood */}
       <StatCard
         label="MARKET MOOD"
@@ -189,7 +164,6 @@ export function FlowStatCards() {
         accent={putStrike ? 'success' : 'default'}
         value={
           <span className="text-[24px] font-bold text-[rgb(var(--color-success))]">
-<<<<<<< HEAD
             {putStrike ? putStrike.toLocaleString('en-IN') : '---'}
           </span>
         }
@@ -200,18 +174,6 @@ export function FlowStatCards() {
             </span>
           ) : (
             <span className="text-muted text-[11px]">Awaiting live chain data</span>
-=======
-            {suppStrike > 0 ? suppStrike.toLocaleString() : '---'}
-          </span>
-        }
-        sub={
-          suppStrike > 0 ? (
-            <span className="text-[rgb(var(--color-success))]">
-              ▼ {suppDistPct.toFixed(2)}% below spot (-{suppDistPts.toFixed(0)} pts)
-            </span>
-          ) : (
-            <span className="text-secondary">---</span>
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
           )
         }
       />
@@ -223,7 +185,6 @@ export function FlowStatCards() {
         accent={callStrike ? 'danger' : 'default'}
         value={
           <span className="text-[24px] font-bold text-[rgb(var(--color-danger))]">
-<<<<<<< HEAD
             {callStrike ? callStrike.toLocaleString('en-IN') : '---'}
           </span>
         }
@@ -234,18 +195,6 @@ export function FlowStatCards() {
             </span>
           ) : (
             <span className="text-muted text-[11px]">Awaiting live chain data</span>
-=======
-            {resStrike > 0 ? resStrike.toLocaleString() : '---'}
-          </span>
-        }
-        sub={
-          resStrike > 0 ? (
-            <span className="text-[rgb(var(--color-danger))]">
-              ▲ {resDistPct.toFixed(2)}% above spot (+{resDistPts.toFixed(0)} pts)
-            </span>
-          ) : (
-            <span className="text-secondary">---</span>
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
           )
         }
       />
@@ -273,11 +222,7 @@ export function FlowStatCards() {
 
       {/* 5. PCR Total */}
       <StatCard
-<<<<<<< HEAD
         label="PCR (TOTAL)"
-=======
-        label="PCR (Total)"
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
         icon={<Target className="w-4 h-4 text-secondary" />}
         value={
           <span className="text-[26px] font-bold tabular-nums">

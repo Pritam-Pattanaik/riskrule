@@ -10,7 +10,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "npm --prefix server run db:generate",
+    "postinstall": "npm --prefix server install",
     "test:e2e": "npx tsx tests/e2e/run_tests.ts"
   },
   "dependencies": {

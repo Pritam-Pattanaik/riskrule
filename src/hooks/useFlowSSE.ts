@@ -17,13 +17,7 @@ export function useFlowSSE() {
 
     // We get the current session token to pass as a query parameter
     // so the backend can authenticate the SSE stream.
-<<<<<<< HEAD
     const token = useAuthStore.getState().token || localStorage.getItem('token');
-    
-=======
-    const token = useAuthStore.getState().token;
-
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     if (!token) return;
 
     const connect = () => {

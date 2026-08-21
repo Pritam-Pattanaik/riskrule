@@ -48,11 +48,7 @@ const previousIntelligence = new Map<string, FlowIntelligence>();
 
 class SignalWorker {
   private intervals = new Map<string, NodeJS.Timeout>();
-<<<<<<< HEAD
   private INTERVAL_MS = 5_000; // 5 seconds for rapid real-time response
-=======
-  private INTERVAL_MS = 5_000; // 5 seconds interval for real-time updates
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
 
   start(symbols: string[]): void {
     logger.info(`[SignalWorker] Starting for: ${symbols.join(', ')}`);
@@ -189,25 +185,18 @@ class SignalWorker {
   private hasSignificantChange(prev: FlowIntelligence | undefined, curr: FlowIntelligence): boolean {
     if (!prev) return true; // Always push on first computation
 
-<<<<<<< HEAD
     // Key levels and metrics changed
+    if (prev.spotPrice !== curr.spotPrice) return true;
     if (prev.supportStrike !== curr.supportStrike) return true;
     if (prev.resistanceStrike !== curr.resistanceStrike) return true;
     if (Math.abs(prev.pcrOI - curr.pcrOI) >= 0.005) return true;
     if (prev.overallBias !== curr.overallBias) return true;
+    if (prev.agreementScore !== curr.agreementScore) return true;
     if (prev.pcrSignal   !== curr.pcrSignal)   return true;
     if (prev.maxPainSignal !== curr.maxPainSignal) return true;
     if (prev.maxPain !== curr.maxPain) return true;
     if (prev.vixSignal   !== curr.vixSignal)   return true;
     if (prev.ivSignal    !== curr.ivSignal)     return true;
-=======
-    if (prev.spotPrice !== curr.spotPrice) return true;
-    if (prev.pcrOI !== curr.pcrOI) return true;
-    if (prev.supportStrike !== curr.supportStrike) return true;
-    if (prev.resistanceStrike !== curr.resistanceStrike) return true;
-    if (prev.overallBias !== curr.overallBias) return true;
-    if (prev.agreementScore !== curr.agreementScore) return true;
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
 
     // Heartbeat update every 5s if last update > 5s
     if (curr.generatedAt - prev.generatedAt >= 5000) return true;

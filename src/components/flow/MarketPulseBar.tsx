@@ -34,9 +34,6 @@ export function MarketPulseBar() {
   const supportStrike = intelligence.supportStrike ?? putWall?.strike;
   const resistanceStrike = intelligence.resistanceStrike ?? callWall?.strike;
 
-  const suppStrike = intelligence.supportStrike || putWall?.strike || 0;
-  const resStrike  = intelligence.resistanceStrike || callWall?.strike || 0;
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* 1. Market Mood */}
@@ -60,11 +57,7 @@ export function MarketPulseBar() {
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Support</p>
           <p className="text-[16px] font-bold text-[rgb(var(--color-success))] mt-0.5">
-<<<<<<< HEAD
             {supportStrike ? supportStrike.toLocaleString() : '---'}
-=======
-            {suppStrike > 0 ? suppStrike.toLocaleString() : '---'}
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
           </p>
         </div>
         <div className="w-px h-8 bg-[rgba(var(--color-border-rgb),0.1)]" />
@@ -80,11 +73,7 @@ export function MarketPulseBar() {
         <div className="text-right">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Resistance</p>
           <p className="text-[16px] font-bold text-[rgb(var(--color-danger))] mt-0.5">
-<<<<<<< HEAD
             {resistanceStrike ? resistanceStrike.toLocaleString() : '---'}
-=======
-            {resStrike > 0 ? resStrike.toLocaleString() : '---'}
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
           </p>
         </div>
       </div>

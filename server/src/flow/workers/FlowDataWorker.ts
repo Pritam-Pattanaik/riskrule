@@ -30,44 +30,17 @@ type ValidatedTick = OptionTick & { changeInOI: number };
 const previousOIMap = new Map<string, number>();
 
 export class FlowDataWorker {
-<<<<<<< HEAD
   private provider: DhanOptionsProvider | null = null;
-=======
-  private provider: IOptionsDataProvider | null = null;
-  private dhanProvider: DhanOptionsProvider | null = null;
-  private activeSymbols: string[] = ['NIFTY', 'BANKNIFTY', 'FINNIFTY'];
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
   private isRunning = false;
   private symbols: string[] = ['NIFTY', 'BANKNIFTY', 'FINNIFTY'];
 
   async start(symbols: string[]): Promise<void> {
     if (this.isRunning) return;
     this.isRunning = true;
-<<<<<<< HEAD
     this.symbols = symbols;
 
     try {
       this.provider = new DhanOptionsProvider();
-=======
-    this.activeSymbols = symbols;
-
-    try {
-      this.dhanProvider = new DhanOptionsProvider();
-      await this.dhanProvider.connect();
-
-      if (this.dhanProvider.hasValidCredentials()) {
-        this.provider = this.dhanProvider;
-        logger.info('[FlowDataWorker] Connected to live Dhan option chain provider');
-      } else {
-        const mockProvider = new MockProvider();
-        await mockProvider.connect();
-        this.provider = mockProvider;
-        logger.info('[FlowDataWorker] Connected to realistic institutional simulation provider');
-      }
-
-      await this.provider.subscribe(symbols);
-
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
       this.provider.onTick(async (tick) => {
         await this.handleTick(tick);
       });
@@ -88,7 +61,6 @@ export class FlowDataWorker {
     }
   }
 
-<<<<<<< HEAD
   public getProviderStatus(): { status: 'connected' | 'expired' | 'missing'; lastError: string | null } {
     if (!this.provider) {
       this.provider = new DhanOptionsProvider();
@@ -120,33 +92,13 @@ export class FlowDataWorker {
     return reloaded;
   }
 
+  public async reloadCredentials(): Promise<void> {
+    await this.reloadProvider();
+  }
+
   public async pollNow(): Promise<void> {
     if (this.provider) {
       await this.provider.pollNow();
-=======
-  async reloadCredentials(): Promise<void> {
-    try {
-      if (!this.dhanProvider) {
-        this.dhanProvider = new DhanOptionsProvider();
-        await this.dhanProvider.connect();
-      } else {
-        await this.dhanProvider.reloadCredentials();
-      }
-
-      if (this.dhanProvider.hasValidCredentials() && this.provider !== this.dhanProvider) {
-        logger.info('[FlowDataWorker] Switching data provider to live Dhan stream');
-        if (this.provider) {
-          await this.provider.disconnect();
-        }
-        this.provider = this.dhanProvider;
-        await this.provider.subscribe(this.activeSymbols);
-        this.provider.onTick(async (tick) => {
-          await this.handleTick(tick);
-        });
-      }
-    } catch (err) {
-      logger.error('[FlowDataWorker] Error during reloadCredentials:', err);
->>>>>>> 3a06e49288679003fd072f501c82c1dcf963db46
     }
   }
 
