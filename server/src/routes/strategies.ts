@@ -51,6 +51,53 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<v
   }
 });
 
+// GET /api/strategies/:id
+router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const id = req.params.id as string;
+    const strategy = await prisma.strategy.findFirst({
+      where: {
+        id,
+        OR: [
+          { userId: req.userId! },
+          { isDefault: true, isActive: true }
+        ]
+      },
+      include: {
+        trades: {
+          where: { userId: req.userId! },
+          select: { id: true, symbol: true, date: true, netPnl: true, status: true, market: true, direction: true }
+        }
+      }
+    });
+
+    if (!strategy) {
+      res.status(404).json({ error: 'Strategy not found' });
+      return;
+    }
+
+    const tradesCount = strategy.trades.length;
+    const totalPnl = strategy.trades.reduce((sum, t) => sum + (Number(t.netPnl) || 0), 0);
+    const winCount = strategy.trades.filter(t => t.status === 'WIN').length;
+    const winRate = tradesCount > 0 ? Math.round((winCount / tradesCount) * 10000) / 100 : 0;
+    const avgPnl = tradesCount > 0 ? totalPnl / tradesCount : 0;
+
+    const { trades, ...rest } = strategy;
+    res.json({
+      ...rest,
+      trades,
+      tradesCount,
+      tradeCount: tradesCount,
+      totalPnl,
+      winRate,
+      avgPnl,
+    });
+  } catch (err: any) {
+    console.error('Get single strategy error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /api/strategies (User creates custom strategy)
 router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -90,13 +137,44 @@ router.patch('/:id', authenticate, async (req: AuthRequest, res: Response): Prom
     const existing = await prisma.strategy.findFirst({
       where: { id, userId: req.userId!, isDefault: false },
     });
-    if (!existing) { res.status(404).json({ error: 'Custom strategy not found or cannot be modified' }); return; }
+    if (!existing) {
+      res.status(404).json({ error: 'Custom strategy not found or default strategy cannot be modified' });
+      return;
+    }
 
     const updated = await prisma.strategy.update({
       where: { id },
-      data: { name, description, rules, market, timeframe, isActive },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description: description || null }),
+        ...(rules !== undefined && { rules: rules || null }),
+        ...(market !== undefined && { market: Array.isArray(market) ? market : [] }),
+        ...(timeframe !== undefined && { timeframe: timeframe || null }),
+        ...(isActive !== undefined && { isActive }),
+      },
+      include: {
+        trades: {
+          where: { userId: req.userId! },
+          select: { netPnl: true, status: true }
+        }
+      }
     });
-    res.json(updated);
+
+    const tradesCount = updated.trades.length;
+    const totalPnl = updated.trades.reduce((sum, t) => sum + (Number(t.netPnl) || 0), 0);
+    const winCount = updated.trades.filter(t => t.status === 'WIN').length;
+    const winRate = tradesCount > 0 ? Math.round((winCount / tradesCount) * 10000) / 100 : 0;
+    const avgPnl = tradesCount > 0 ? totalPnl / tradesCount : 0;
+
+    const { trades, ...rest } = updated;
+    res.json({
+      ...rest,
+      tradesCount,
+      tradeCount: tradesCount,
+      totalPnl,
+      winRate,
+      avgPnl,
+    });
   } catch (err: any) {
     console.error('Update strategy error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -110,7 +188,10 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Pro
     const existing = await prisma.strategy.findFirst({
       where: { id, userId: req.userId!, isDefault: false },
     });
-    if (!existing) { res.status(404).json({ error: 'Custom strategy not found or cannot be deleted' }); return; }
+    if (!existing) {
+      res.status(404).json({ error: 'Custom strategy not found or default strategy cannot be deleted' });
+      return;
+    }
 
     await prisma.trade.updateMany({
       where: { strategyId: id, userId: req.userId! },

@@ -3,18 +3,22 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Shield, AlertTriangle, LogOut, Trash2, RefreshCw, BookOpen,
   Check, Key, Link2, User, Target, ChevronDown, Lock, Download,
-  Zap, Bell, Sparkles, Server, Cpu, Clock
+  Zap, Bell, Sparkles, Server, Cpu, Clock, Plus, Search, Star,
+  ListChecks, FileText, CheckCircle2, Info, X, Compass, Lightbulb, Eye
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../stores/authStore';
 import { useBrokerStore } from '../stores/brokerStore';
 import { useTradingRulesStore } from '../stores/tradingRulesStore';
 import { useTradeStore } from '../stores/tradeStore';
+import { api } from '../lib/api';
 import { notify } from '../lib/notify';
 import { cn } from '../lib/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrokerHealthCard } from '../components/settings/brokers/BrokerHealthCard';
 import { BrokerConnectionWizard } from '../components/settings/brokers/BrokerConnectionWizard';
+import { PREBUILT_RULES, PREBUILT_RULE_CATEGORIES, PrebuiltRule } from '../constants/prebuiltRules';
+import { RuleDetailModal } from '../components/settings/RuleDetailModal';
 
 const NotificationSettings = React.lazy(() => import('../components/settings/NotificationSettings'));
 
@@ -55,6 +59,13 @@ export default function Settings() {
   const [allowedMarkets, setAllowedMarkets] = useState<string[]>(rules?.allowedMarkets || ['F&O', 'NSE']);
   const [killSwitchEnabled, setKillSwitchEnabled] = useState<boolean>(rules?.killSwitchEnabled || false);
   const [syncCadence, setSyncCadence] = useState<string>(rules?.syncCadence || 'PERIODIC_15M');
+  const [rulesDescription, setRulesDescription] = useState<string>(rules?.description || '');
+  const [customRulesList, setCustomRulesList] = useState<string[]>(rules?.customRules || []);
+  const [selectedRuleCategory, setSelectedRuleCategory] = useState<string>('all');
+  const [ruleSearchQuery, setRuleSearchQuery] = useState<string>('');
+  const [newCustomRuleText, setNewCustomRuleText] = useState<string>('');
+  const [selectedRuleForView, setSelectedRuleForView] = useState<PrebuiltRule | null>(null);
+  const [ruleDetailModalOpen, setRuleDetailModalOpen] = useState(false);
   const [isSavingRules, setIsSavingRules] = useState(false);
   const [rulesSaved, setRulesSaved] = useState(false);
 
@@ -69,6 +80,8 @@ export default function Settings() {
       setAllowedMarkets(rules.allowedMarkets || []);
       setKillSwitchEnabled(rules.killSwitchEnabled || false);
       setSyncCadence(rules.syncCadence || 'PERIODIC_15M');
+      setRulesDescription(rules.description || '');
+      setCustomRulesList(Array.isArray(rules.customRules) ? rules.customRules : []);
     }
   }, [rules]);
 
@@ -78,6 +91,86 @@ export default function Settings() {
   const [timezone, setTimezone] = useState(profile?.timezone || 'Asia/Kolkata');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  // Live platform rules from database
+  const [platformRules, setPlatformRules] = useState<PrebuiltRule[]>(PREBUILT_RULES);
+
+  useEffect(() => {
+    api.get<PrebuiltRule[]>('/platform-rules')
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPlatformRules(data);
+        }
+      })
+      .catch((e) => {
+        console.warn('Using offline pre-built rules library', e);
+      });
+  }, []);
+
+  // Pre-built rule toggling and manipulation
+  const togglePrebuiltRule = (rule: PrebuiltRule) => {
+    const formatted = `${rule.title}: ${rule.description}`;
+    setCustomRulesList(prev => {
+      const exists = prev.some(r => r.startsWith(rule.title) || r === formatted);
+      if (exists) {
+        return prev.filter(r => !r.startsWith(rule.title) && r !== formatted);
+      } else {
+        return [...prev, formatted];
+      }
+    });
+  };
+
+  const isRuleActive = (rule: PrebuiltRule) => {
+    return customRulesList.some(r => r.startsWith(rule.title) || r.includes(rule.title));
+  };
+
+  const handleAddCustomRule = (e: React.FormEvent | React.MouseEvent) => {
+    e.preventDefault();
+    const text = newCustomRuleText.trim();
+    if (!text) return;
+    if (!customRulesList.includes(text)) {
+      setCustomRulesList(prev => [...prev, text]);
+      notify.success('Custom rule added to your active commandments.');
+    }
+    setNewCustomRuleText('');
+  };
+
+  const handleRemoveRule = (index: number) => {
+    setCustomRulesList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSelectAllBeginner = () => {
+    const beginnerRules = platformRules.filter(r => r.isBeginnerRecommended).map(r => `${r.title}: ${r.description}`);
+    setCustomRulesList(prev => {
+      const set = new Set([...prev, ...beginnerRules]);
+      return Array.from(set);
+    });
+    notify.success(`Added ${beginnerRules.length} Essential Beginner Rules to your discipline plan!`);
+  };
+
+  const handleClearAllRules = () => {
+    if (window.confirm('Are you sure you want to clear all active discipline rules?')) {
+      setCustomRulesList([]);
+    }
+  };
+
+  const filteredPrebuiltRules = React.useMemo(() => {
+    return platformRules.filter(rule => {
+      if (selectedRuleCategory === 'beginner' && !rule.isBeginnerRecommended) return false;
+      if (selectedRuleCategory !== 'all' && selectedRuleCategory !== 'beginner' && rule.category !== selectedRuleCategory) return false;
+      if (ruleSearchQuery.trim()) {
+        const q = ruleSearchQuery.toLowerCase();
+        return (
+          rule.title.toLowerCase().includes(q) ||
+          rule.description.toLowerCase().includes(q) ||
+          rule.badge.toLowerCase().includes(q) ||
+          rule.categoryLabel.toLowerCase().includes(q) ||
+          (rule.situation && rule.situation.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [platformRules, selectedRuleCategory, ruleSearchQuery]);
 
   const handleSaveRules = async () => {
     setIsSavingRules(true);
@@ -91,6 +184,8 @@ export default function Settings() {
       allowedMarkets: allowedMarkets.length ? allowedMarkets : null,
       killSwitchEnabled: killSwitchEnabled,
       syncCadence: syncCadence as any,
+      description: rulesDescription || null,
+      customRules: customRulesList,
     });
     setIsSavingRules(false);
     if (error) notify.error('Failed to save rules: ' + error);
@@ -312,7 +407,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* TAB 2: RISK & DISCIPLINE RULES (WITH PROP KILL-SWITCH) */}
+      {/* TAB 2: RISK & DISCIPLINE RULES (WITH PROP KILL-SWITCH & 36+ PRE-BUILT RULES) */}
       {activeTab === 'rules' && (
         <div className="space-y-6 animate-fadeIn">
           
@@ -371,11 +466,324 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Core Discipline Parameters */}
+          {/* SECTION 1: TRADING MANIFESTO & DISCIPLINE PHILOSOPHY (DESCRIPTION) */}
+          <div className="card p-7 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-iris/10 text-iris border border-iris/20">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <h4 className="font-display font-bold text-base text-primary">Trading Manifesto & Core Philosophy</h4>
+                  <p className="text-xs text-tertiary">Write your overarching trading mission, psychological commitments, and setup rules.</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-mono text-tertiary bg-surface-1 px-2.5 py-1 rounded-lg border border-border">
+                {rulesDescription.length} characters
+              </span>
+            </div>
+
+            <div className="bg-iris/5 border border-iris/15 rounded-xl p-3.5 text-xs text-secondary flex items-start gap-2.5">
+              <Lightbulb size={16} className="text-iris shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                <strong className="text-primary font-semibold">How to use this description:</strong> Document your non-negotiable trading principles (e.g. your market bias rules, reasons to step away, or risk philosophy). Your AI Coach incorporates this description to analyze your trade executions for psychological drift.
+              </p>
+            </div>
+
+            <div>
+              <textarea
+                rows={4}
+                value={rulesDescription}
+                onChange={(e) => setRulesDescription(e.target.value)}
+                placeholder="Example: I am a patient, disciplined momentum trader. My #1 goal is capital preservation. I only risk 1% per trade and never enter without a candle close confirmation. If I lose 2 trades in a row, I take a 20-minute screen break. I will never hold an intraday option past 3:15 PM..."
+                className="w-full bg-surface-1 border border-border text-primary rounded-xl p-4 text-sm outline-none focus:border-iris/50 focus:bg-surface focus:shadow-[0_0_0_3px_rgba(var(--color-iris),0.12)] transition-all font-mono placeholder:text-muted placeholder:font-sans leading-relaxed min-h-[110px]"
+              />
+            </div>
+          </div>
+
+          {/* SECTION 2: ACTIVE CORE DISCIPLINE COMMANDMENTS */}
+          <div className="card p-7 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-accent/10 text-accent border border-accent/20">
+                  <ListChecks size={18} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-display font-bold text-base text-primary">Active Discipline Commandments</h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-accent/10 text-accent border border-accent/20">
+                      {customRulesList.length} Active Rules
+                    </span>
+                  </div>
+                  <p className="text-xs text-tertiary">Your enforced rule checklist. Choose from the library below or add custom rules.</p>
+                </div>
+              </div>
+
+              {customRulesList.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAllRules}
+                  className="text-xs text-danger hover:underline font-semibold flex items-center gap-1"
+                >
+                  <Trash2 size={12} /> Clear All Rules
+                </button>
+              )}
+            </div>
+
+            {/* Custom Rule Input Bar */}
+            <form onSubmit={handleAddCustomRule} className="flex gap-2">
+              <input
+                type="text"
+                value={newCustomRuleText}
+                onChange={(e) => setNewCustomRuleText(e.target.value)}
+                placeholder="Type a custom discipline rule (e.g. Never enter when RSI is above 80 on 15m)..."
+                className="flex-1 h-11 rounded-xl border border-border bg-surface-1 px-4 text-xs text-primary font-medium placeholder:text-muted outline-none focus:border-accent/50 focus:bg-surface transition-all"
+              />
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={!newCustomRuleText.trim()}
+                className="h-11 px-4 text-xs font-bold gap-1.5 shrink-0"
+              >
+                <Plus size={14} /> Add Rule
+              </Button>
+            </form>
+
+            {/* Active Rules List */}
+            {customRulesList.length === 0 ? (
+              <div className="p-8 rounded-2xl border border-dashed border-border bg-surface-1/40 text-center space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mx-auto">
+                  <Compass size={22} />
+                </div>
+                <div className="max-w-md mx-auto space-y-1">
+                  <h5 className="font-bold text-sm text-primary">No Active Rules Selected Yet</h5>
+                  <p className="text-xs text-tertiary">
+                    Choose from the 36+ battle-tested pre-built rules below or click the quick starter button to begin.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSelectAllBeginner}
+                  className="mt-2 text-xs font-bold gap-1.5"
+                >
+                  <Star size={13} /> Add 10 Recommended Beginner Rules
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                {customRulesList.map((ruleText, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-xl bg-surface-1 border border-border flex items-start justify-between gap-3 group hover:border-border-hover transition-all"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1 rounded-md bg-success/10 text-success shrink-0 mt-0.5">
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                      <p className="text-xs text-primary font-medium leading-relaxed">
+                        {ruleText}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRule(idx)}
+                      className="text-tertiary hover:text-danger p-1 rounded-lg hover:bg-danger/10 transition-colors shrink-0 opacity-80 group-hover:opacity-100"
+                      title="Remove Rule"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 3: PRE-BUILT RULES LIBRARY (60+ SITUATIONAL RULES FOR BEGINNERS & PROS) */}
+          <div className="card p-7 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-iris/10 text-iris">
+                    <Sparkles size={18} />
+                  </div>
+                  <h4 className="font-display font-bold text-lg text-primary">Pre-Built Rules Library (60+ Situational Rules)</h4>
+                </div>
+                <p className="text-xs text-tertiary mt-1">
+                  Battle-tested risk safeguards categorized by market situations (Openings, Breakouts, Trends, Choppy ranges, News, Options, Drawdowns).
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleSelectAllBeginner}
+                className="shrink-0 text-xs font-bold gap-1.5 shadow-iris"
+              >
+                <Star size={13} /> Select 12 Beginner Essentials
+              </Button>
+            </div>
+
+            {/* Search & Category Filter Bar */}
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="w-4 h-4 text-tertiary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search 60+ situation rules (e.g. gap-up, candle close, drawdown, revenge trading, expiry, OTM)..."
+                  value={ruleSearchQuery}
+                  onChange={(e) => setRuleSearchQuery(e.target.value)}
+                  className="w-full bg-surface-1 border border-border text-primary rounded-xl pl-10 pr-4 py-2.5 text-xs outline-none focus:border-iris/50 focus:bg-surface transition-all"
+                />
+              </div>
+
+              {/* Category Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {PREBUILT_RULE_CATEGORIES.map((cat) => {
+                  const isSelected = selectedRuleCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setSelectedRuleCategory(cat.id)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all border shrink-0',
+                        isSelected
+                          ? 'bg-iris/15 text-iris border-iris/30 shadow-xs'
+                          : 'bg-surface-1 text-tertiary border-border hover:text-secondary hover:bg-surface-2'
+                      )}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Grid of Pre-Built Rules */}
+            {filteredPrebuiltRules.length === 0 ? (
+              <div className="p-8 text-center text-xs text-muted">
+                No rules found matching "{ruleSearchQuery}". Try a different search term.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[520px] overflow-y-auto pr-1">
+                {filteredPrebuiltRules.map((rule) => {
+                  const active = isRuleActive(rule);
+                  return (
+                    <div
+                      key={rule.id}
+                      onClick={() => {
+                        setSelectedRuleForView(rule);
+                        setRuleDetailModalOpen(true);
+                      }}
+                      className={cn(
+                        'p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden select-none',
+                        active
+                          ? 'bg-surface-2 border-iris/40 shadow-xs ring-1 ring-iris/20'
+                          : 'bg-surface-1 border-border hover:border-border-hover hover:bg-surface-2/60'
+                      )}
+                    >
+                      {/* Top Bar with Badges & Quick View Icon */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="px-2 py-0.5 rounded-md bg-surface text-tertiary border border-border text-[9px] font-bold uppercase tracking-wider">
+                            {rule.categoryLabel}
+                          </span>
+                          {rule.isBeginnerRecommended && (
+                            <span className="px-2 py-0.5 rounded-md bg-gold/10 text-gold border border-gold/20 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                              <Star size={9} /> Beginner Essential
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-muted uppercase">
+                            {rule.badge}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedRuleForView(rule);
+                              setRuleDetailModalOpen(true);
+                            }}
+                            className="p-1 rounded-lg text-tertiary hover:text-iris hover:bg-iris/10 transition-colors"
+                            title="View Rule Details & Rationale"
+                          >
+                            <Eye size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Rule Title, Situation & Description */}
+                      <div className="space-y-1.5 mb-3">
+                        <h5 className="font-display font-bold text-sm text-primary group-hover:text-iris transition-colors">
+                          {rule.title}
+                        </h5>
+
+                        {rule.situation && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-mono text-tertiary">
+                            <span className="w-1.5 h-1.5 rounded-full bg-iris" />
+                            <span className="truncate">When: <strong className="text-secondary font-semibold">{rule.situation}</strong></span>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-secondary leading-relaxed line-clamp-2">
+                          {rule.description}
+                        </p>
+                      </div>
+
+                      {/* Action Button Indicator */}
+                      <div className="pt-2.5 border-t border-border/60 flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRuleForView(rule);
+                            setRuleDetailModalOpen(true);
+                          }}
+                          className="text-[11px] font-semibold text-tertiary hover:text-iris flex items-center gap-1 transition-colors"
+                        >
+                          <Eye size={12} />
+                          <span>View Details</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePrebuiltRule(rule);
+                          }}
+                          className={cn(
+                            'px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1',
+                            active
+                              ? 'bg-success/15 text-success border border-success/30 hover:bg-danger/10 hover:text-danger hover:border-danger/30'
+                              : 'bg-surface border border-border text-secondary group-hover:border-iris/40 group-hover:text-iris'
+                          )}
+                        >
+                          {active ? (
+                            <>
+                              <Check size={12} strokeWidth={2.5} /> Added
+                            </>
+                          ) : (
+                            <>
+                              <Plus size={12} /> Add Rule
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 4: QUANTITATIVE RISK & SESSION PARAMETERS */}
           <div className="card p-7 space-y-6">
             <div>
-              <h4 className="font-display font-bold text-base text-primary">Execution Window & Background Sync</h4>
-              <p className="text-xs text-tertiary mt-0.5">Configure your active NSE trading session hours and automated background polling cadence.</p>
+              <h4 className="font-display font-bold text-base text-primary">Session Windows & Quantitative Thresholds</h4>
+              <p className="text-xs text-tertiary mt-0.5">Configure your active NSE trading session hours, maximum loss limits, and automated background polling cadence.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -399,7 +807,7 @@ export default function Settings() {
             </div>
 
             <div className="pt-4 border-t border-border space-y-3">
-              <h4 className="font-display font-bold text-base text-primary">Quantitative Risk Thresholds</h4>
+              <h4 className="font-display font-bold text-base text-primary">Quantitative Risk Barriers</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { label: 'Max Trades per Day', value: maxTradesPerDay, set: setMaxTradesPerDay, placeholder: '5' },
@@ -454,10 +862,20 @@ export default function Settings() {
               </div>
             </div>
 
+            {/* Commit Button */}
             <Button onClick={handleSaveRules} isLoading={isSavingRules} className="w-full h-12 font-bold text-sm shadow-iris mt-4">
-              {rulesSaved ? <><Check size={16} /> Quantitative Discipline Rules Saved!</> : !isSavingRules && <><BookOpen size={16} /> Commit Rules to Institutional Vault</>}
+              {rulesSaved ? <><Check size={16} /> Quantitative Discipline Rules Saved!</> : !isSavingRules && <><BookOpen size={16} /> Commit All Rules & Manifesto to Institutional Vault</>}
             </Button>
           </div>
+
+          {/* RULE DETAIL MODAL */}
+          <RuleDetailModal
+            rule={selectedRuleForView}
+            open={ruleDetailModalOpen}
+            onOpenChange={setRuleDetailModalOpen}
+            isActive={selectedRuleForView ? isRuleActive(selectedRuleForView) : false}
+            onToggleActive={(rule) => togglePrebuiltRule(rule)}
+          />
         </div>
       )}
 

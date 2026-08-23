@@ -23,9 +23,10 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
       windowStart, windowEnd,
       maxTradesPerDay, maxDailyLoss, maxLossPerTrade,
       allowedInstruments, allowedMarkets,
+      description, customRules,
     } = req.body;
 
-    const payload = {
+    const payload: any = {
       windowStart: windowStart || null,
       windowEnd: windowEnd || null,
       maxTradesPerDay: maxTradesPerDay || null,
@@ -33,6 +34,8 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
       maxLossPerTrade: maxLossPerTrade ? String(maxLossPerTrade) : null,
       allowedInstruments: allowedInstruments?.length ? allowedInstruments : [],
       allowedMarkets: allowedMarkets?.length ? allowedMarkets : [],
+      description: description || null,
+      customRules: Array.isArray(customRules) ? customRules : [],
       updatedAt: new Date(),
     };
 

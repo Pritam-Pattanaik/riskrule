@@ -1,0 +1,750 @@
+import { Router, Response } from 'express';
+import { prisma } from '../db';
+import { authenticate, requireRoles, AuthRequest } from '../middleware/auth';
+
+const router = Router();
+
+const DEFAULT_PLATFORM_RULES = [
+  // ─── 1. RISK & CAPITAL PRESERVATION (8 RULES) ───
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Every Trade Entry',
+    title: 'Max 1% to 2% Risk Per Trade',
+    description: 'Never risk more than 1% to 2% of your total trading capital on any single setup. Calculate exact lot sizing strictly from stop loss distance.',
+    badge: 'Essential',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Order Placement',
+    title: 'Hard Stop-Loss Placed at Entry',
+    description: 'Always place an automated system stop-loss order the second you enter. Never hold a position with a "mental stop-loss".',
+    badge: 'Essential',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Reaching Daily Loss Limit',
+    title: 'Non-Negotiable Max Daily Loss Barrier',
+    description: 'If your cumulative daily loss limit is hit, close your terminal and stop trading immediately for the rest of the day.',
+    badge: 'Capital Guard',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Trade Evaluation',
+    title: 'Minimum 1:2 Risk-to-Reward Ratio',
+    description: 'Only enter trades where the realistic profit target is at least twice your defined risk. Do not take 1:1 setups.',
+    badge: 'Math Edge',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Losing Position',
+    title: 'Never Average Down on a Losing Position',
+    description: 'Never add capital to a losing trade to lower your entry average. Add to winners on pullbacks, never to losers.',
+    badge: 'Survival Rule',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: '3 Consecutive Losses',
+    title: '3-Strike Daily Circuit Breaker',
+    description: 'If you take 3 consecutive losing trades in a single session, power down the screens. Protect yourself from tilt.',
+    badge: 'Discipline',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Account Drawdown > 5%',
+    title: 'Halve Position Size During Drawdowns',
+    description: 'When experiencing a 5%+ drawdown from peak equity, reduce position sizing by 50% until consistency returns.',
+    badge: 'Risk Control',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'risk',
+    categoryLabel: 'Risk & Capital',
+    situation: 'Overnight Market Exposure',
+    title: 'Cap Overnight Carry Exposure to 25% Margin',
+    description: 'Never hold more than 25% of your available margin overnight in leveraged derivative contracts to guard against unexpected gap-risk.',
+    badge: 'Overnight Guard',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 2. MARKET OPEN & GAP SCENARIOS (6 RULES) ───
+  {
+    category: 'open_gaps',
+    categoryLabel: 'Market Open & Gaps',
+    situation: 'Market Open 9:15 - 9:30 AM',
+    title: 'No Trading in Opening 15 Minutes (9:15 - 9:30 AM)',
+    description: 'Allow initial opening institutional volatility and overnight gap noise to settle before committing real capital.',
+    badge: 'Patience',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'open_gaps',
+    categoryLabel: 'Market Open & Gaps',
+    situation: 'Gap-Up > 1% Above Resistance',
+    title: 'No Buying Extended Gap-Ups Blindly',
+    description: 'Do not chase massive gap-ups at open. Wait for an opening range pullback or 15m consolidation support test before entering long.',
+    badge: 'Trap Shield',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'open_gaps',
+    categoryLabel: 'Market Open & Gaps',
+    situation: 'Gap-Down > 1% Into Major Support',
+    title: 'Wait for Gap-Down Absorption at Support',
+    description: 'Avoid panic shorting into major historical demand zones. Wait for either a clean breakdown retest or a reversal structure.',
+    badge: 'Demand Zone',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'open_gaps',
+    categoryLabel: 'Market Open & Gaps',
+    situation: 'Opening Range Breakout (ORB)',
+    title: 'Confirm 15m ORB Breakout with Volume',
+    description: 'Only take Opening Range Breakouts if the breakout candle closes beyond the 15m high/low with at least 1.5x average volume.',
+    badge: 'Volume Confirmation',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'open_gaps',
+    categoryLabel: 'Market Open & Gaps',
+    situation: 'Pre-Market Preparation 9:00 - 9:08 AM',
+    title: 'Mark Previous Day Levels Before Market Open',
+    description: 'Mark Previous Day High (PDH), Previous Day Low (PDL), CPR, and pre-open settling prices before placing any opening orders.',
+    badge: 'Preparation',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'open_gaps',
+    categoryLabel: 'Market Open & Gaps',
+    situation: 'Gap Contradicts Pre-Market Bias',
+    title: 'Stay Flat When Market Contradicts Premarket Thesis',
+    description: 'If the market opens with an aggressive gap contrary to your pre-market bias, stand aside until price establishes a new pattern.',
+    badge: 'Adaptability',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 3. BREAKOUTS, TRAPS & REVERSALS (6 RULES) ───
+  {
+    category: 'breakout_traps',
+    categoryLabel: 'Breakouts & Traps',
+    situation: 'Breakout of Major Resistance/Support',
+    title: 'Wait for Candle Close Beyond Key Level',
+    description: 'Never front-run a breakout or breakdown mid-candle. Always wait for the candle on your trading timeframe to close beyond key levels.',
+    badge: 'Confirmation',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'breakout_traps',
+    categoryLabel: 'Breakouts & Traps',
+    situation: 'Wick Rejection at Key Level',
+    title: 'Recognize Bull/Bear Trap Rejections',
+    description: 'If a breakout candle leaves a long upper/lower wick and closes back inside the range, exit immediately or prepare for trap reversals.',
+    badge: 'Trap Detection',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'breakout_traps',
+    categoryLabel: 'Breakouts & Traps',
+    situation: 'All-Time High (ATH) Breakout',
+    title: 'Trail Stops Closely in Blue-Sky Territory',
+    description: 'When trading all-time highs with no overhead chart resistance, trail stops aggressively behind the previous 15m candle lows.',
+    badge: 'ATH Trading',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'breakout_traps',
+    categoryLabel: 'Breakouts & Traps',
+    situation: 'Extended 3+ Large Marubozu Candles',
+    title: 'Zero FOMO / Never Chase Extended Moves',
+    description: 'If a strong green or red candle has already moved 2+ ATR without you, let it go. Wait for a healthy pullback to VWAP or 20 EMA.',
+    badge: 'Patience',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'breakout_traps',
+    categoryLabel: 'Breakouts & Traps',
+    situation: 'Double Top / Double Bottom Structure',
+    title: 'Require Neckline Break for Reversal Entries',
+    description: 'Never enter counter-trend reversal setups anticipating a double top without confirmed breakdown of the intervening neckline.',
+    badge: 'Reversal Edge',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'breakout_traps',
+    categoryLabel: 'Breakouts & Traps',
+    situation: 'Breakout on Low Volume',
+    title: 'Skip Breakouts with Below-Average Volume',
+    description: 'False breakouts occur frequently on thin volume. Skip breakout setups unless accompanied by an obvious expansion in relative volume.',
+    badge: 'Volume Filter',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 4. TREND FOLLOWING & MOMENTUM (6 RULES) ───
+  {
+    category: 'trends',
+    categoryLabel: 'Trends & Momentum',
+    situation: 'Strong 1-Hour Trend Direction',
+    title: 'Higher Timeframe Trend Alignment',
+    description: 'Ensure short-term 5m/15m intraday entries strictly align with the dominant trend on the 1-Hour and Daily charts.',
+    badge: 'Trend Edge',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'trends',
+    categoryLabel: 'Trends & Momentum',
+    situation: 'Pullback to 20 EMA / VWAP',
+    title: 'Buy Pullbacks, Never Extended Green Peaks',
+    description: 'In strong uptrends, enter on shallow pullbacks to the rising 20 EMA or VWAP rather than buying extended green candle tops.',
+    badge: 'Pullback Edge',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'trends',
+    categoryLabel: 'Trends & Momentum',
+    situation: 'Moving Average Hierarchy (20 > 50 > 200)',
+    title: 'Trade Only With Moving Average Alignment',
+    description: 'Take long positions only when the 20 EMA is above the 50 EMA, and 50 EMA is above 200 EMA in swing trend-following setups.',
+    badge: 'EMA Trend',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'trends',
+    categoryLabel: 'Trends & Momentum',
+    situation: 'Higher Highs & Higher Lows Intact',
+    title: 'Stay in Trend as Long as Structure Holds',
+    description: 'Do not exit profitable runners prematurely on the first small red candle if the higher-low structural pivot remains intact.',
+    badge: 'Runner Control',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'trends',
+    categoryLabel: 'Trends & Momentum',
+    situation: 'Strong Trending Day',
+    title: 'Zero Counter-Trend Trades on Super-Trend Days',
+    description: 'Do not attempt to pick tops or catch falling knives on strong trend days. Trade exclusively in the direction of the dominant momentum.',
+    badge: 'Trend Rule',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'trends',
+    categoryLabel: 'Trends & Momentum',
+    situation: 'Vertical Parabolic Climax Run',
+    title: 'Book Profits on Parabolic Climax Blow-Offs',
+    description: 'When price goes vertical and extends far beyond the upper Bollinger Band or 20 EMA, tighten trailing stops to capture the climax top.',
+    badge: 'Climax Exit',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 5. RANGEBOUND & CHOPPY MARKETS (5 RULES) ───
+  {
+    category: 'range_chop',
+    categoryLabel: 'Choppy & Sideways',
+    situation: 'Mid-Day Lunch Hours (11:30 AM - 1:15 PM)',
+    title: 'Avoid Mid-Day Lunch Chop (11:30 AM - 1:15 PM)',
+    description: 'Refrain from aggressive breakout trades during European pre-market / Indian lunch hour when volume drops and fakeouts peak.',
+    badge: 'Timing Guard',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'range_chop',
+    categoryLabel: 'Choppy & Sideways',
+    situation: 'Wide Central Pivot Range (CPR)',
+    title: 'Trade Range Mean-Reversion on Wide CPR Days',
+    description: 'Wide CPR days typically result in sideways mean-reverting action. Buy near support and sell near resistance rather than expecting multi-hundred point trends.',
+    badge: 'CPR Strategy',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'range_chop',
+    categoryLabel: 'Choppy & Sideways',
+    situation: 'Price Coiling Around Flat VWAP',
+    title: 'Stand Down When Price Coils on Flat VWAP',
+    description: 'When candlesticks overlap repeatedly across a horizontal flat VWAP, the market is in choppy balance. Preserve capital and stay flat.',
+    badge: 'Capital Guard',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'range_chop',
+    categoryLabel: 'Choppy & Sideways',
+    situation: 'Inside Day Consolidation',
+    title: 'Trade Range Boundaries on Inside Days',
+    description: 'When trading inside yesterday’s high and low range, only take high-probability setups at the extreme outer edges of the range.',
+    badge: 'Range Trading',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'range_chop',
+    categoryLabel: 'Choppy & Sideways',
+    situation: 'Ultra-Low Volatility (India VIX < 11)',
+    title: 'Reduce Option Buying on Low VIX Environments',
+    description: 'In ultra-low volatility regimes, option premium decay accelerates while moves remain muted. Favor equity intraday or defined-risk option selling spreads.',
+    badge: 'VIX Regime',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 6. NEWS, EVENTS & HIGH VOLATILITY (5 RULES) ───
+  {
+    category: 'news_events',
+    categoryLabel: 'News & High Volatility',
+    situation: 'RBI Policy / US Fed Rate Announcement',
+    title: 'Square Off or Freeze New Entries 15 Mins Before Major News',
+    description: 'Never hold naked directional options through binary interest rate or GDP releases. Let the post-news whipsaw settle before entering.',
+    badge: 'News Shield',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'news_events',
+    categoryLabel: 'News & High Volatility',
+    situation: 'Quarterly Earnings Release Day',
+    title: 'Do Not Gamble on Quarterly Earnings Prints',
+    description: 'Avoid holding naked options overnight into quarterly company earnings announcements due to unpredictable post-earnings IV crush.',
+    badge: 'Earnings Rule',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'news_events',
+    categoryLabel: 'News & High Volatility',
+    situation: 'Union Budget / Election Results Session',
+    title: 'Reduce Position Size to 25% on Hyper-Volatile Event Days',
+    description: 'Extreme multi-hundred point swings cause wide execution slippage and erratic spreads. Size down by at least 75% on major macro event days.',
+    badge: 'Event Safety',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'news_events',
+    categoryLabel: 'News & High Volatility',
+    situation: 'Geopolitical Flash Event / Sudden Panic Drop',
+    title: 'Never Step in Front of Sudden Panic Flash Drops',
+    description: 'When sudden geopolitical breaking news drops markets violently, do not try to catch the knife. Wait for volume exhaustion and 15m base building.',
+    badge: 'Panic Shield',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'news_events',
+    categoryLabel: 'News & High Volatility',
+    situation: 'Post-News Volatility Crush (IV Crush)',
+    title: 'Avoid Option Buying Immediately After Announcement',
+    description: 'Implied volatility collapses dramatically immediately after an event occurs. Option buyers lose money to IV crush even if market moves in their direction.',
+    badge: 'IV Crush Guard',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 7. EXPIRY DAY & OPTIONS SCENARIOS (6 RULES) ───
+  {
+    category: 'expiry_options',
+    categoryLabel: 'Expiry & Options',
+    situation: 'Weekly Expiry Afternoon (After 1:30 PM)',
+    title: 'Zero Hero-or-Zero Expiry Gambles',
+    description: 'Never risk more than 0.5% capital on 0DTE cheap expiry contracts after 2:00 PM. Treat them as pure lottery tickets.',
+    badge: 'Gambling Shield',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'expiry_options',
+    categoryLabel: 'Expiry & Options',
+    situation: 'Option Strike Selection',
+    title: 'Never Buy Far Out-Of-The-Money (OTM) Options',
+    description: 'Stick strictly to In-The-Money (ITM) or At-The-Money (ATM) options with delta ≥ 0.45. Cheap OTM options lose to rapid theta decay.',
+    badge: 'Capital Protection',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'expiry_options',
+    categoryLabel: 'Expiry & Options',
+    situation: 'Friday Close 3:15 PM',
+    title: 'Never Hold Weekly Index Options Over Weekends',
+    description: 'Protect against weekend gap risk and 2 full days of theta decay by closing short-term options positions by Friday 3:15 PM.',
+    badge: 'Theta Protection',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'expiry_options',
+    categoryLabel: 'Expiry & Options',
+    situation: 'Heavy Call/Put Open Interest Barrier',
+    title: 'Respect Max Pain & Heavy OI Strike Barriers',
+    description: 'Avoid taking breakout longs directly into massive Call OI resistance strike barriers. Option writers defend these strike walls vigorously.',
+    badge: 'OI Intelligence',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'expiry_options',
+    categoryLabel: 'Expiry & Options',
+    situation: 'High India VIX (> 22)',
+    title: 'Favor Defined-Risk Option Spreads over Naked Options',
+    description: 'In elevated IV markets, option premiums are expensive. Use debit or credit spreads rather than naked buying to offset high premium costs.',
+    badge: 'Volatility Edge',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'expiry_options',
+    categoryLabel: 'Expiry & Options',
+    situation: 'Illiquid Stock Option Strike',
+    title: 'Trade High-Liquidity Contracts Only',
+    description: 'Stick to NIFTY, BANKNIFTY, FINNIFTY, and Top 20 F&O stocks with tight bid-ask spreads. Never trade illiquid stock option strikes.',
+    badge: 'Liquidity Filter',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 8. TRADE MANAGEMENT & EXITS (6 RULES) ───
+  {
+    category: 'management',
+    categoryLabel: 'Trade Management',
+    situation: 'Trade Hits 1:1 R:R Profit',
+    title: 'Move Stop to Break-Even at 1:1 R:R',
+    description: 'Once the market moves 1R in your favorable direction, trail your stop loss to the exact entry price to guarantee a risk-free trade.',
+    badge: 'Trade Mgmt',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'management',
+    categoryLabel: 'Trade Management',
+    situation: 'Trade Up +1.5R or More',
+    title: 'Never Turn a Winning Trade into a Loser',
+    description: 'If a trade was up significantly (+1.5R or more), never let it reverse back into a net loss. Lock in profits or trail stop closely.',
+    badge: 'Profit Guard',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'management',
+    categoryLabel: 'Trade Management',
+    situation: 'Hitting Target 1 at Major Level',
+    title: 'Scale Out: Book 50-70% at Target 1',
+    description: 'Take partial profits at the first major resistance/support level. Leave a runner with a trailing stop for potential home-runs.',
+    badge: 'Execution',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'management',
+    categoryLabel: 'Trade Management',
+    situation: 'Chart Logic Invalidated Before Stop Hit',
+    title: 'Exit Immediately When Thesis Invalidates',
+    description: 'If the setup reason no longer holds true (e.g. support breakdown), exit at market immediately without hesitation or praying.',
+    badge: 'Clarity',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'management',
+    categoryLabel: 'Trade Management',
+    situation: 'Approaching 3:15 PM IST',
+    title: 'Mandatory 3:15 PM Intraday Close',
+    description: 'Square off all intraday MIS/bracket positions before 3:15 PM IST. Never carry intraday trades overnight due to holding hope.',
+    badge: 'Session Rule',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'management',
+    categoryLabel: 'Trade Management',
+    situation: 'Stop Loss Under Pressure',
+    title: 'Never Widen or Cancel a Placed Stop Loss',
+    description: 'Once placed according to technical chart levels, moving your stop loss further away is strictly prohibited.',
+    badge: 'Iron Rule',
+    isBeginnerRecommended: true,
+  },
+
+  // ─── 9. SEVERE DRAWDOWN & LOSING STREAK SCENARIOS (5 RULES) ───
+  {
+    category: 'drawdowns',
+    categoryLabel: 'Drawdowns & Tilts',
+    situation: 'Immediately After a Painful Loss',
+    title: 'Mandatory 15-Minute Screen Cooldown After a Loss',
+    description: 'After an emotional or unexpected loss, step away from the desk for at least 15 minutes before considering another trade.',
+    badge: 'Emotional Reset',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'drawdowns',
+    categoryLabel: 'Drawdowns & Tilts',
+    situation: 'Loss Caused by Deliberate Rule Breach',
+    title: 'Shut Down Terminal on Deliberate Plan Violation',
+    description: 'If you intentionally skipped a stop-loss or doubled size outside your plan, shut down your trading terminal for the rest of the day.',
+    badge: 'Self-Governance',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'drawdowns',
+    categoryLabel: 'Drawdowns & Tilts',
+    situation: 'Cumulative Weekly Drawdown > 6%',
+    title: 'Mandatory 2-Day Trading Vacation on Weekly Drawdown Limit',
+    description: 'If your account suffers a 6%+ loss in a single week, take 2 mandatory days off to reset psychology and review your trading journal.',
+    badge: 'Circuit Breaker',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'drawdowns',
+    categoryLabel: 'Drawdowns & Tilts',
+    situation: 'Impulsive Urge to Recoup Losses',
+    title: 'Zero Revenge Trading (Never Double Size to Recover)',
+    description: 'Doubling lot sizes or taking rapid scalp trades to make back lost money leads to catastrophic account wipeouts.',
+    badge: 'Anti-Tilt',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'drawdowns',
+    categoryLabel: 'Drawdowns & Tilts',
+    situation: 'Drawdown Recovery Phase',
+    title: 'Rebuild Confidence with 1-Lot Micro Sizing',
+    description: 'After recovering from a major losing streak, trade minimum 1-lot position size for 10 consecutive disciplined trades before scaling up.',
+    badge: 'Confidence Loop',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 10. WINNING STREAKS & GREED CONTROL (4 RULES) ───
+  {
+    category: 'winning_greed',
+    categoryLabel: 'Winning & Greed Control',
+    situation: 'Hitting Daily Target (+2R to +3R)',
+    title: 'Walk Away After Hitting Daily Profit Goal',
+    description: 'When you hit your target for the day (e.g., +2R to +3R), shut down or reduce size drastically to prevent giving back gains.',
+    badge: 'Greed Control',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'winning_greed',
+    categoryLabel: 'Winning & Greed Control',
+    situation: '5 Consecutive Winning Days',
+    title: 'Beware of the Overconfidence / Euphoria Trap',
+    description: 'Euphoric winning streaks cause traders to feel invincible and take careless low-probability trades. Maintain standard sizing.',
+    badge: 'Euphoria Shield',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'winning_greed',
+    categoryLabel: 'Winning & Greed Control',
+    situation: 'Substantial Morning Gain by 10:30 AM',
+    title: 'Lock 70% of Morning Profits as Non-Negotiable Equity',
+    description: 'Never risk more than 30% of your realized morning profits on afternoon setups. Protect your green days.',
+    badge: 'Profit Retention',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'winning_greed',
+    categoryLabel: 'Winning & Greed Control',
+    situation: 'Account Equity Scaling Up',
+    title: 'Scale Lot Sizing Gradually (Max 20% Increase)',
+    description: 'Only increase position size after 30 consecutive days of sustained profitability. Never double size overnight.',
+    badge: 'Scaling Rule',
+    isBeginnerRecommended: false,
+  },
+
+  // ─── 11. PSYCHOLOGY, STRESS & MINDSET (6 RULES) ───
+  {
+    category: 'psychology',
+    categoryLabel: 'Mindset & Stress',
+    situation: 'Personal Stress / Sleep Deprivation',
+    title: 'No Trading When Distracted, Tired, or Stressed',
+    description: 'Do not trade if you are ill, sleep-deprived, or experiencing personal stress. Trading requires peak cognitive focus.',
+    badge: 'Cognitive Health',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'psychology',
+    categoryLabel: 'Mindset & Stress',
+    situation: 'During Live Trade Execution',
+    title: 'Hide Live P&L During Trade Execution',
+    description: 'Focus exclusively on chart levels and price action. Watching oscillating green/red rupee numbers causes premature panic exits.',
+    badge: 'Process Focus',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'psychology',
+    categoryLabel: 'Mindset & Stress',
+    situation: 'Taking a Stop-Loss',
+    title: 'Accept Losses as Standard Business Expenses',
+    description: 'Losses are simply the cost of doing business in financial markets. Do not attach self-worth or shame to losing trades.',
+    badge: 'Stoic Trading',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'psychology',
+    categoryLabel: 'Mindset & Stress',
+    situation: 'Small Fee / Commission Leakage',
+    title: 'No Overtrading to Recoup Small Brokerage Fees',
+    description: 'Never take low-probability trades just to "make back the ₹50 brokerage cost" or recover a tiny loss.',
+    badge: 'Discipline',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'psychology',
+    categoryLabel: 'Mindset & Stress',
+    situation: 'Missed a Big 100-Point Move',
+    title: 'Celebrate Process Adherence Over Missed Moves',
+    description: 'Never feel regret for missing a big move if it did not meet your predefined setup criteria. Protecting your process is your only edge.',
+    badge: 'Mindset',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'psychology',
+    categoryLabel: 'Mindset & Stress',
+    situation: 'Account Balance Funding',
+    title: 'Trade Only With Risk Capital (Zero Borrowed Money)',
+    description: 'Never trade with rent money, emergency funds, or borrowed loans. Financial pressure destroys emotional discipline.',
+    badge: 'Capital Sanctity',
+    isBeginnerRecommended: true,
+  },
+
+  // ─── 12. PRE-MARKET, ROUTINE & JOURNALING (5 RULES) ───
+  {
+    category: 'routine',
+    categoryLabel: 'Daily Prep & Journaling',
+    situation: 'Pre-Market 8:30 - 9:00 AM',
+    title: 'Complete Daily Chart Prep by 8:45 AM',
+    description: 'Mark Previous Day High (PDH), Low (PDL), CPR, and key volume nodes on NIFTY and BANKNIFTY charts before 9:00 AM.',
+    badge: 'Preparation',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'routine',
+    categoryLabel: 'Daily Prep & Journaling',
+    situation: 'Pre-Market 8:45 AM',
+    title: 'Check Global Macro Cues & Economic Calendar',
+    description: 'Review GIFT Nifty, US markets close, Dollar Index (DXY), Crude, and scheduled RBI / Fed rate events before open.',
+    badge: 'Macro Context',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'routine',
+    categoryLabel: 'Daily Prep & Journaling',
+    situation: 'Trade Close',
+    title: 'Log Every Trade in TradeVault Immediately',
+    description: 'Record entry reason, screenshot, mindset rating, and discipline score right after closing the trade while fresh in memory.',
+    badge: 'Journaling',
+    isBeginnerRecommended: true,
+  },
+  {
+    category: 'routine',
+    categoryLabel: 'Daily Prep & Journaling',
+    situation: 'Post-Market 4:00 PM',
+    title: 'Daily Post-Market Review (10 Mins)',
+    description: 'Spend 10 minutes after market close analyzing what worked, what mistakes occurred, and how well rules were followed.',
+    badge: 'Growth Loop',
+    isBeginnerRecommended: false,
+  },
+  {
+    category: 'routine',
+    categoryLabel: 'Daily Prep & Journaling',
+    situation: 'Active Market Hours (9:15 AM - 3:30 PM)',
+    title: 'Distraction-Free Environment During Market Hours',
+    description: 'Mute Telegram signal channels, YouTube live streams, and WhatsApp chat groups while actively managing positions.',
+    badge: 'Pure Focus',
+    isBeginnerRecommended: true,
+  },
+];
+
+// GET /api/platform-rules - Public / Authenticated route to get all platform rules from DB
+router.get('/', async (_req, res: Response): Promise<any> => {
+  try {
+    let rules = await prisma.platformRule.findMany({
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Auto-seed if database table is empty
+    if (rules.length === 0) {
+      await prisma.platformRule.createMany({
+        data: DEFAULT_PLATFORM_RULES,
+      });
+      rules = await prisma.platformRule.findMany({
+        orderBy: { createdAt: 'asc' },
+      });
+    }
+
+    res.json(rules);
+  } catch (err: any) {
+    // If DB fails, fallback gracefully to in-memory defaults
+    res.json(DEFAULT_PLATFORM_RULES.map((r, i) => ({ id: `default-${i}`, ...r })));
+  }
+});
+
+// POST /api/platform-rules - Create new rule in DB (Admin/Superadmin)
+router.post('/', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
+  try {
+    const { category, categoryLabel, situation, title, description, badge, isBeginnerRecommended } = req.body;
+    if (!title || !description || !category) {
+      return res.status(400).json({ error: 'Title, category, and description are required' });
+    }
+
+    const created = await prisma.platformRule.create({
+      data: {
+        category,
+        categoryLabel: categoryLabel || 'Risk & Capital',
+        situation: situation || 'General Market Execution',
+        title: title.trim(),
+        description: description.trim(),
+        badge: badge?.trim() || 'Essential',
+        isBeginnerRecommended: Boolean(isBeginnerRecommended),
+      },
+    });
+
+    res.status(201).json(created);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/platform-rules/:id - Update rule in DB (Admin/Superadmin)
+router.patch('/:id', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
+  try {
+    const id = req.params.id as string;
+    const { category, categoryLabel, situation, title, description, badge, isBeginnerRecommended } = req.body;
+
+    const updated = await prisma.platformRule.update({
+      where: { id },
+      data: {
+        ...(category && { category }),
+        ...(categoryLabel && { categoryLabel }),
+        ...(situation !== undefined && { situation }),
+        ...(title && { title: title.trim() }),
+        ...(description && { description: description.trim() }),
+        ...(badge && { badge: badge.trim() }),
+        ...(isBeginnerRecommended !== undefined && { isBeginnerRecommended: Boolean(isBeginnerRecommended) }),
+        updatedAt: new Date(),
+      },
+    });
+
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/platform-rules/:id - Delete rule in DB (Admin/Superadmin)
+router.delete('/:id', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
+  try {
+    const id = req.params.id as string;
+    await prisma.platformRule.delete({
+      where: { id },
+    });
+    res.json({ success: true, message: 'Platform rule deleted successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/platform-rules/reset - Reset to factory defaults in DB (Admin/Superadmin)
+router.post('/reset', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (_req: AuthRequest, res: Response): Promise<any> => {
+  try {
+    await prisma.platformRule.deleteMany();
+    await prisma.platformRule.createMany({
+      data: DEFAULT_PLATFORM_RULES,
+    });
+    const rules = await prisma.platformRule.findMany({
+      orderBy: { createdAt: 'asc' },
+    });
+    res.json({ success: true, count: rules.length, rules });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+export default router;

@@ -165,6 +165,8 @@ export interface TradingRules {
   killSwitchEnabled?: boolean | null;    // Prop Trading emergency lock
   coolOffUntil?: string | null;          // ISO datetime timestamp for 24-hr lock
   syncCadence?: 'STREAMING_REALTIME' | 'PERIODIC_15M' | 'EOD_CLOSE' | 'MANUAL' | null;
+  description?: string | null;           // Trading Manifesto & rules description
+  customRules?: string[] | null;         // Selected / written discipline rules list
 }
 
 export interface DashboardStats {

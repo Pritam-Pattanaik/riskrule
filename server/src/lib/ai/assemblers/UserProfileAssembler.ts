@@ -51,6 +51,12 @@ export class UserProfileAssembler {
       if (rules.allowedInstruments && rules.allowedInstruments.length > 0) {
         ruleItems.push(`• Allowed Instruments: ${rules.allowedInstruments.join(', ')}`);
       }
+      if ((rules as any).description) {
+        ruleItems.push(`• Trading Manifesto / Philosophy: ${(rules as any).description}`);
+      }
+      if ((rules as any).customRules && (rules as any).customRules.length > 0) {
+        ruleItems.push(`• Core Discipline Commandments:\n  - ${(rules as any).customRules.join('\n  - ')}`);
+      }
       if (ruleItems.length > 0) {
         rulesSerialized = ruleItems.join('\n');
       }

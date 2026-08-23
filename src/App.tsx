@@ -44,6 +44,7 @@ const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'));
 const AdminUserDetail = React.lazy(() => import('./pages/admin/AdminUserDetail'));
 const AdminTrades = React.lazy(() => import('./pages/admin/AdminTrades'));
 const AdminStrategies = React.lazy(() => import('./pages/admin/AdminStrategies'));
+const AdminTradingRules = React.lazy(() => import('./pages/admin/AdminTradingRules'));
 const AdminBrokers = React.lazy(() => import('./pages/admin/AdminBrokers'));
 const AdminAIMonitor = React.lazy(() => import('./pages/admin/AdminAIMonitor'));
 const AdminAuditLogs = React.lazy(() => import('./pages/admin/AdminAuditLogs'));
@@ -162,6 +163,7 @@ export default function App() {
           <Route path="users/:id" element={<AdminUserDetail />} />
           <Route path="trades" element={<AdminTrades />} />
           <Route path="strategies" element={<AdminStrategies />} />
+          <Route path="rules" element={<AdminTradingRules />} />
           <Route path="brokers" element={<AdminBrokers />} />
           <Route path="ai" element={<AdminAIMonitor />} />
           <Route path="audit" element={<AdminAuditLogs />} />

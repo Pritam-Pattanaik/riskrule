@@ -250,12 +250,29 @@ model TradingRule {
   maxLossPerTrade    Decimal?  @map("max_loss_per_trade")
   allowedInstruments String[]  @map("allowed_instruments")
   allowedMarkets     String[]  @map("allowed_markets")
+  description        String?   @map("description")
+  customRules        String[]  @default([]) @map("custom_rules")
   createdAt          DateTime? @default(now()) @map("created_at")
   updatedAt          DateTime? @default(now()) @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("trading_rules")
+}
+
+model PlatformRule {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category              String
+  categoryLabel         String    @map("category_label")
+  situation             String?
+  title                 String
+  description           String
+  badge                 String    @default("Essential")
+  isBeginnerRecommended Boolean   @default(false) @map("is_beginner_recommended")
+  createdAt             DateTime? @default(now()) @map("created_at")
+  updatedAt             DateTime? @default(now()) @map("updated_at")
+
+  @@map("platform_rules")
 }
 
 model AuditLog {

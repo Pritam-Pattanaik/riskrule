@@ -23,6 +23,7 @@ const adminGroups: NavGroup[] = [
       { name: 'Users', path: '/app/admin/users', icon: Users },
       { name: 'Trades', path: '/app/admin/trades', icon: BarChart3 },
       { name: 'Strategies', path: '/app/admin/strategies', icon: Target },
+      { name: 'Rules Library', path: '/app/admin/rules', icon: Shield },
       { name: 'Brokers', path: '/app/admin/brokers', icon: Link2 },
     ]
   },

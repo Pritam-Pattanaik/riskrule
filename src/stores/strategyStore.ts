@@ -7,12 +7,12 @@ interface StrategyState {
   loading: boolean;
   error: string | null;
   fetchStrategies: () => Promise<void>;
-  addStrategy: (strategy: Omit<Strategy, 'id' | 'totalPnl' | 'winRate' | 'tradeCount' | 'avgPnl'>) => Promise<void>;
-  updateStrategy: (id: string, updates: Partial<Strategy>) => Promise<void>;
+  addStrategy: (strategy: Omit<Strategy, 'id' | 'totalPnl' | 'winRate' | 'tradeCount' | 'avgPnl'>) => Promise<Strategy>;
+  updateStrategy: (id: string, updates: Partial<Strategy>) => Promise<Strategy>;
   deleteStrategy: (id: string) => Promise<void>;
 }
 
-export const useStrategyStore = create<StrategyState>((set) => ({
+export const useStrategyStore = create<StrategyState>((set, get) => ({
   strategies: [],
   loading: false,
   error: null,
@@ -35,6 +35,7 @@ export const useStrategyStore = create<StrategyState>((set) => ({
         strategies: [response, ...state.strategies],
         loading: false,
       }));
+      return response;
     } catch (error: any) {
       set({ error: error.message || 'Failed to add strategy', loading: false });
       throw error;
@@ -42,15 +43,23 @@ export const useStrategyStore = create<StrategyState>((set) => ({
   },
 
   updateStrategy: async (id, updates) => {
+    const existing = get().strategies.find(s => s.id === id);
+    if (existing?.isDefault) {
+      const err = new Error('Default strategies cannot be modified.');
+      set({ error: err.message });
+      throw err;
+    }
+
     set({ loading: true, error: null });
     try {
       const response = await api.patch<Strategy>(`/strategies/${id}`, updates);
       set((state) => ({
         strategies: state.strategies.map((strat) => 
-          strat.id === id ? response : strat
+          strat.id === id ? { ...strat, ...response } : strat
         ),
         loading: false,
       }));
+      return response;
     } catch (error: any) {
       set({ error: error.message || 'Failed to update strategy', loading: false });
       throw error;
@@ -58,6 +67,13 @@ export const useStrategyStore = create<StrategyState>((set) => ({
   },
 
   deleteStrategy: async (id) => {
+    const existing = get().strategies.find(s => s.id === id);
+    if (existing?.isDefault) {
+      const err = new Error('Default strategies cannot be deleted.');
+      set({ error: err.message });
+      throw err;
+    }
+
     set({ loading: true, error: null });
     try {
       await api.delete(`/strategies/${id}`);
