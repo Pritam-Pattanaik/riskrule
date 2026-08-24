@@ -111,12 +111,12 @@ export default function Dashboard() {
           <div>
             <h1 className="font-display text-2xl font-bold text-primary tracking-tight">Dashboard</h1>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-xs text-secondary font-medium">
+              <p className="text-xs font-semibold text-primary/80">
                 {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
               {/* Streak badge moved next to date */}
               <div className={cn(
-                'hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold border',
+                'hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold border',
                 streakConfig.bg, streakConfig.color
               )}>
                 <StreakIcon size={10} />
@@ -165,7 +165,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Clock size={14} className="text-tertiary" />
-            <p className="text-[11px] font-bold uppercase tracking-widest text-tertiary">Today</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-secondary">Today</p>
           </div>
           <div className="w-px h-3 bg-border" />
           {loading ? (
@@ -181,7 +181,7 @@ export default function Dashboard() {
               <span className="text-secondary text-xs font-semibold"><NumberCounter value={todayStats.winRate} format={(v) => formatPercent(v)} duration={1} /> WR</span>
             </div>
           ) : (
-            <p className="text-xs font-medium text-tertiary flex items-center gap-1.5">
+            <p className="text-xs font-medium text-secondary flex items-center gap-1.5">
               No trades today
             </p>
           )}

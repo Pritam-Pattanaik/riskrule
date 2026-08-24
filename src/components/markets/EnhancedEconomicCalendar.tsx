@@ -56,7 +56,7 @@ function Countdown({ date, time }: { date: string; time: string }) {
   return (
     <span
       className="text-[9px] font-mono px-1.5 py-0.5 rounded"
-      style={{ color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.04)' }}
+      style={{ color: 'rgba(var(--color-border-rgb),0.3)', background: 'rgba(var(--color-border-rgb),0.04)' }}
     >
       {label}
     </span>
@@ -72,7 +72,7 @@ function CalSkeleton() {
         <div
           key={n}
           className="h-16 rounded-xl animate-pulse"
-          style={{ background: 'rgba(255,255,255,0.04)', animationDelay: `${n * 100}ms` }}
+          style={{ background: 'rgba(var(--color-border-rgb),0.04)', animationDelay: `${n * 100}ms` }}
         />
       ))}
     </div>
@@ -90,12 +90,12 @@ function EventRow({ event }: { event: CalendarEvent }) {
       onClick={() => setExpanded(v => !v)}
       className="w-full text-left rounded-xl p-3 transition-all duration-150 group"
       style={{
-        background: expanded ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${expanded ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)'}`,
+        background: expanded ? 'rgba(var(--color-border-rgb),0.04)' : 'rgba(var(--color-border-rgb),0.02)',
+        border: `1px solid ${expanded ? 'rgba(var(--color-border-rgb),0.1)' : 'rgba(var(--color-border-rgb),0.05)'}`,
         outline: 'none',
       }}
-      onMouseEnter={e => !expanded && ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)')}
-      onMouseLeave={e => !expanded && ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)')}
+      onMouseEnter={e => !expanded && ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(var(--color-border-rgb),0.08)')}
+      onMouseLeave={e => !expanded && ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(var(--color-border-rgb),0.05)')}
     >
       <div className="flex items-start justify-between gap-2">
         {/* Left */}
@@ -124,14 +124,14 @@ function EventRow({ event }: { event: CalendarEvent }) {
               </span>
               <span
                 className="flex items-center gap-1 text-[9px] font-mono"
-                style={{ color: 'rgba(255,255,255,0.3)' }}
+                style={{ color: 'rgba(var(--color-border-rgb),0.3)' }}
               >
                 <Clock size={8} />
                 {event.time} {event.timezone}
               </span>
               <Countdown date={event.date} time={event.time} />
             </div>
-            <p className="text-[12.5px] font-semibold leading-snug truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            <p className="text-[12.5px] font-semibold leading-snug truncate" style={{ color: 'rgba(var(--color-border-rgb),0.8)' }}>
               {event.title}
             </p>
           </div>
@@ -141,26 +141,26 @@ function EventRow({ event }: { event: CalendarEvent }) {
         <div className="flex items-center gap-3 flex-shrink-0">
           {event.forecast != null && (
             <div className="text-right">
-              <p className="text-[8px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>Fcst</p>
-              <p className="text-[11px] font-mono font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>{event.forecast}</p>
+              <p className="text-[8px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>Fcst</p>
+              <p className="text-[11px] font-mono font-semibold" style={{ color: 'rgba(var(--color-border-rgb),0.55)' }}>{event.forecast}</p>
             </div>
           )}
           {event.previous != null && (
             <div className="text-right">
-              <p className="text-[8px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>Prev</p>
-              <p className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.35)' }}>{event.previous}</p>
+              <p className="text-[8px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>Prev</p>
+              <p className="text-[11px] font-mono" style={{ color: 'rgba(var(--color-border-rgb),0.35)' }}>{event.previous}</p>
             </div>
           )}
           {event.actual != null && (
             <div className="text-right">
-              <p className="text-[8px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>Act</p>
-              <p className="text-[11px] font-mono font-black" style={{ color: '#fff' }}>{event.actual}</p>
+              <p className="text-[8px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>Act</p>
+              <p className="text-[11px] font-mono font-black" style={{ color: 'rgb(var(--color-text-primary))' }}>{event.actual}</p>
             </div>
           )}
           <ChevronDown
             size={12}
             className="transition-transform duration-200 flex-shrink-0"
-            style={{ color: 'rgba(255,255,255,0.2)', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            style={{ color: 'rgba(var(--color-border-rgb),0.2)', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
           />
         </div>
       </div>
@@ -169,7 +169,7 @@ function EventRow({ event }: { event: CalendarEvent }) {
       {expanded && event.description && (
         <div
           className="mt-2.5 pt-2.5 text-[11.5px] leading-relaxed"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}
+          style={{ borderTop: '1px solid rgba(var(--color-border-rgb),0.06)', color: 'rgba(var(--color-border-rgb),0.4)' }}
         >
           {event.description}
         </div>
@@ -198,7 +198,7 @@ export default function EnhancedEconomicCalendar() {
   return (
     <div
       className="rounded-2xl p-5 flex flex-col"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -210,8 +210,8 @@ export default function EnhancedEconomicCalendar() {
             <Calendar size={14} className="text-violet-400" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-white/90 leading-none">Economic Calendar</h3>
-            <p className="text-[10px] text-white/25 mt-0.5">Upcoming macro events</p>
+            <h3 className="text-[14px] font-bold text-primary/90 leading-none">Economic Calendar</h3>
+            <p className="text-[10px] text-primary/25 mt-0.5">Upcoming macro events</p>
           </div>
           {highCount > 0 && (
             <span
@@ -236,9 +236,9 @@ export default function EnhancedEconomicCalendar() {
               onClick={() => setFilter(f)}
               className="text-[10px] font-bold px-2.5 py-1 rounded-full transition-all capitalize"
               style={{
-                background: isActive ? `${color}18` : 'rgba(255,255,255,0.04)',
-                color: isActive ? color : 'rgba(255,255,255,0.3)',
-                border: isActive ? `1px solid ${color}40` : '1px solid rgba(255,255,255,0.06)',
+                background: isActive ? `${color}18` : 'rgba(var(--color-border-rgb),0.04)',
+                color: isActive ? color : 'rgba(var(--color-border-rgb),0.3)',
+                border: isActive ? `1px solid ${color}40` : '1px solid rgba(var(--color-border-rgb),0.06)',
               }}
             >
               {f === 'all' ? 'All' : f}
@@ -259,15 +259,15 @@ export default function EnhancedEconomicCalendar() {
 
         {!loading && error && (
           <div className="text-center py-8">
-            <Calendar size={28} className="mx-auto mb-2 opacity-20" style={{ color: '#fff' }} />
-            <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Calendar unavailable</p>
+            <Calendar size={28} className="mx-auto mb-2 opacity-20" style={{ color: 'rgb(var(--color-text-primary))' }} />
+            <p className="text-[12px]" style={{ color: 'rgba(var(--color-border-rgb),0.25)' }}>Calendar unavailable</p>
           </div>
         )}
 
         {!loading && !error && sortedDates.length === 0 && (
           <div className="text-center py-8">
-            <Calendar size={28} className="mx-auto mb-2 opacity-20" style={{ color: '#fff' }} />
-            <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>No events for this filter</p>
+            <Calendar size={28} className="mx-auto mb-2 opacity-20" style={{ color: 'rgb(var(--color-text-primary))' }} />
+            <p className="text-[12px]" style={{ color: 'rgba(var(--color-border-rgb),0.25)' }}>No events for this filter</p>
           </div>
         )}
 
@@ -282,7 +282,7 @@ export default function EnhancedEconomicCalendar() {
                 {formatDate(date)}
               </span>
               <div className="flex-1 h-px" style={{ background: 'rgba(139,92,246,0.15)' }} />
-              <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              <span className="text-[9px] font-semibold" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
                 {grouped[date].length} events
               </span>
             </div>

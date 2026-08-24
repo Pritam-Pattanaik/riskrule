@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import * as dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: require('path').resolve(__dirname, '../../../.env') });
 
 // Use the Node.js `pg` driver via Prisma's driver adapter.
 // This makes Prisma connect through Node's TCP stack (which obeys

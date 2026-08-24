@@ -34,22 +34,22 @@ const SENTIMENT: Record<MarketSentiment, {
 
 function Skeleton() {
   return (
-    <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
+    <div className="rounded-2xl p-5" style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}>
       <div className="flex items-center gap-3 mb-5">
         <div className="w-8 h-8 rounded-xl animate-pulse" style={{ background: 'rgba(139,92,246,0.15)' }} />
         <div className="space-y-1.5 flex-1">
-          <div className="h-4 rounded-lg animate-pulse w-40" style={{ background: 'rgba(255,255,255,0.08)' }} />
-          <div className="h-3 rounded-lg animate-pulse w-28" style={{ background: 'rgba(255,255,255,0.05)' }} />
+          <div className="h-4 rounded-lg animate-pulse w-40" style={{ background: 'rgba(var(--color-border-rgb),0.08)' }} />
+          <div className="h-3 rounded-lg animate-pulse w-28" style={{ background: 'rgba(var(--color-border-rgb),0.05)' }} />
         </div>
       </div>
       <div className="space-y-2.5 mb-4">
         {[100, 85, 90, 70].map((w, i) => (
-          <div key={i} className="h-3 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)', width: `${w}%`, animationDelay: `${i * 80}ms` }} />
+          <div key={i} className="h-3 rounded-full animate-pulse" style={{ background: 'rgba(var(--color-border-rgb),0.05)', width: `${w}%`, animationDelay: `${i * 80}ms` }} />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3">
         {[0, 1].map(i => (
-          <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)', animationDelay: `${i * 100}ms` }} />
+          <div key={i} className="h-24 rounded-xl animate-pulse" style={{ background: 'rgba(var(--color-border-rgb),0.04)', animationDelay: `${i * 100}ms` }} />
         ))}
       </div>
     </div>
@@ -88,7 +88,7 @@ function InfoSection({
       </div>
       <ul className="space-y-1.5">
         {items.map((item, i) => (
-          <li key={i} className="flex items-start gap-2 text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <li key={i} className="flex items-start gap-2 text-[12px] leading-relaxed" style={{ color: 'rgba(var(--color-border-rgb),0.6)' }}>
             <span className="mt-0.5 shrink-0 font-bold text-[10px]" style={{ color }}>{bullet}</span>
             {item}
           </li>
@@ -127,7 +127,7 @@ export default function LiveAISummary() {
       <div>
         <Skeleton />
         {retrying && (
-          <p className="text-[10px] text-center mt-2" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-[10px] text-center mt-2" style={{ color: 'rgba(var(--color-border-rgb),0.25)' }}>
             Retrying AI connection…
           </p>
         )}
@@ -140,18 +140,18 @@ export default function LiveAISummary() {
     return (
       <div
         className="rounded-2xl p-5"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(239,68,68,0.15)' }}
+        style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(239,68,68,0.15)' }}
       >
         <div className="flex items-center gap-2.5 mb-5">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)' }}>
             <Brain size={15} className="text-violet-400" />
           </div>
-          <h3 className="text-[14px] font-bold text-white/90">AI Market Summary</h3>
+          <h3 className="text-[14px] font-bold text-primary/90">AI Market Summary</h3>
         </div>
         <div className="text-center py-6">
           <AlertTriangle size={28} className="mx-auto mb-2.5" style={{ color: '#f59e0b', opacity: 0.7 }} />
-          <p className="text-[13px] font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Summary unavailable</p>
-          <p className="text-[11px] max-w-[220px] mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <p className="text-[13px] font-semibold mb-1" style={{ color: 'rgba(var(--color-border-rgb),0.6)' }}>Summary unavailable</p>
+          <p className="text-[11px] max-w-[220px] mx-auto mb-4" style={{ color: 'rgba(var(--color-border-rgb),0.3)' }}>
             The AI service is temporarily unavailable. Check back shortly.
           </p>
           <button
@@ -174,7 +174,7 @@ export default function LiveAISummary() {
   return (
     <div
       className="rounded-2xl p-5 relative overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
     >
       {/* Ambient glow from sentiment */}
       {cfg.glow !== 'none' && (
@@ -194,11 +194,11 @@ export default function LiveAISummary() {
             <Brain size={15} className="text-violet-400" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-white/90 leading-none flex items-center gap-1.5">
+            <h3 className="text-[14px] font-bold text-primary/90 leading-none flex items-center gap-1.5">
               AI Market Summary
               <Sparkles size={11} className="text-violet-400 animate-pulse" />
             </h3>
-            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(var(--color-border-rgb),0.3)' }}>
               {lastUpdated ? `Updated ${lastUpdated} IST` : 'Groq · Live analysis'}
             </p>
           </div>
@@ -207,14 +207,14 @@ export default function LiveAISummary() {
         <button
           onClick={handleRefresh}
           className="p-1.5 rounded-lg transition-colors"
-          style={{ background: 'rgba(255,255,255,0.04)' }}
+          style={{ background: 'rgba(var(--color-border-rgb),0.04)' }}
           title="Refresh AI summary"
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)')}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)')}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(var(--color-border-rgb),0.08)')}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(var(--color-border-rgb),0.04)')}
         >
           <RefreshCw
             size={12}
-            className={`transition-all ${isRefreshing ? 'animate-spin text-violet-400' : 'text-white/25'}`}
+            className={`transition-all ${isRefreshing ? 'animate-spin text-violet-400' : 'text-primary/25'}`}
           />
         </button>
       </div>
@@ -290,16 +290,16 @@ export default function LiveAISummary() {
             <BookOpen size={11} className="text-blue-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Educational Insight</span>
           </div>
-          <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(var(--color-border-rgb),0.55)' }}>
             {summary.educationalInsight}
           </p>
         </div>
       )}
 
       {/* Disclaimer */}
-      <div className="flex items-start gap-2 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <Shield size={11} className="flex-shrink-0 mt-0.5" style={{ color: 'rgba(255,255,255,0.2)' }} />
-        <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.2)' }}>
+      <div className="flex items-start gap-2 pt-3" style={{ borderTop: '1px solid rgba(var(--color-border-rgb),0.06)' }}>
+        <Shield size={11} className="flex-shrink-0 mt-0.5" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }} />
+        <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
           {summary.disclaimer}
         </p>
       </div>

@@ -31,33 +31,33 @@ function DigestEmptyState({ message }: { message?: string }) {
       </div>
 
       {/* Title */}
-      <h3 className="text-base font-bold text-white/70 mb-2">
+      <h3 className="text-base font-bold text-primary/70 mb-2">
         {isPreMarket ? 'Digest Preparing…' : 'Pre-Market Digest'}
       </h3>
 
       {/* Message */}
-      <p className="text-sm text-white/35 leading-relaxed max-w-xs mb-6">
+      <p className="text-sm text-primary/35 leading-relaxed max-w-xs mb-6">
         {message ?? 'Pre-market digest not yet generated for today. Check back at 7:30 AM IST.'}
       </p>
 
       {/* Schedule info */}
       <div
         className="flex items-center gap-3 px-4 py-3 rounded-xl mb-6"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
       >
         <Clock size={14} className="text-blue-400/60 flex-shrink-0" />
         <div className="text-left">
-          <p className="text-[11px] font-semibold text-white/50">Published daily at</p>
-          <p className="text-[13px] font-bold text-white/70">7:30 AM IST — Trading Days</p>
+          <p className="text-[11px] font-semibold text-primary/50">Published daily at</p>
+          <p className="text-[13px] font-bold text-primary/70">7:30 AM IST — Trading Days</p>
         </div>
       </div>
 
       {/* What to expect */}
       <div
         className="w-full max-w-sm rounded-xl p-4 text-left"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
       >
-        <p className="text-[10px] font-bold uppercase tracking-wider text-white/25 mb-3">Digest Includes</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-primary/25 mb-3">Digest Includes</p>
         <div className="flex flex-col gap-2">
           {[
             'Breaking overnight news with sector impact',
@@ -71,7 +71,7 @@ function DigestEmptyState({ message }: { message?: string }) {
                 style={{ background: 'rgba(139,92,246,0.15)' }}>
                 <span className="text-[8px] text-violet-400 font-bold">{i + 1}</span>
               </span>
-              <p className="text-[12px] text-white/40">{item}</p>
+              <p className="text-[12px] text-primary/40">{item}</p>
             </div>
           ))}
         </div>
@@ -94,13 +94,13 @@ function DigestItem({ item, index }: { item: any; index: number }) {
   return (
     <div
       className="flex items-start gap-3 p-3 rounded-xl transition-colors"
-      style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.045)')}
-      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.025)')}
+      style={{ background: 'rgba(var(--color-border-rgb),0.025)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(var(--color-border-rgb),0.045)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(var(--color-border-rgb),0.025)')}
     >
       {/* Index + Direction icon */}
       <div className="flex flex-col items-center gap-1 flex-shrink-0">
-        <span className="text-[10px] text-white/20 font-mono">{String(index + 1).padStart(2, '0')}</span>
+        <span className="text-[10px] text-primary/20 font-mono">{String(index + 1).padStart(2, '0')}</span>
         <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: cfg.bg }}>
           <Icon size={11} style={{ color: cfg.color }} />
         </div>
@@ -108,7 +108,7 @@ function DigestItem({ item, index }: { item: any; index: number }) {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-[12.5px] font-medium text-white/80 leading-snug mb-1.5">{item.headline}</p>
+        <p className="text-[12.5px] font-medium text-primary/80 leading-snug mb-1.5">{item.headline}</p>
         {item.sectors?.length > 0 && (
           <div className="flex gap-1.5 flex-wrap">
             {item.sectors.slice(0, 3).map((s: string) => (
@@ -151,15 +151,15 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <BookOpen size={14} className="text-violet-400" />
-              <span className="text-sm font-bold text-white/85">Pre-Market Digest</span>
+              <span className="text-sm font-bold text-primary/85">Pre-Market Digest</span>
             </div>
-            <p className="text-[12px] text-white/40">
+            <p className="text-[12px] text-primary/40">
               {allItems.length} events · {sectors.length} sectors analysed
             </p>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-[10px] text-white/30 mb-0.5">Generated</p>
-            <p className="text-[12px] font-bold text-white/60">
+            <p className="text-[10px] text-primary/30 mb-0.5">Generated</p>
+            <p className="text-[12px] font-bold text-primary/60">
               {digest?.generatedAt
                 ? new Date(digest.generatedAt).toLocaleTimeString('en-IN', {
                     hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata',
@@ -170,13 +170,13 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
         </div>
 
         {/* Dominant sentiment bar */}
-        <div className="mt-3 pt-3 flex items-center gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <span className="text-[11px] text-white/30">Overall Tone:</span>
+        <div className="mt-3 pt-3 flex items-center gap-2" style={{ borderTop: '1px solid rgba(var(--color-border-rgb),0.06)' }}>
+          <span className="text-[11px] text-primary/30">Overall Tone:</span>
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: domColor }}>
             <DomIcon size={11} />
             {dominant.charAt(0).toUpperCase() + dominant.slice(1)}
           </span>
-          <div className="flex-1 h-1.5 rounded-full ml-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex-1 h-1.5 rounded-full ml-2" style={{ background: 'rgba(var(--color-border-rgb),0.06)' }}>
             <div
               className="h-full rounded-full transition-all"
               style={{
@@ -191,7 +191,7 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
       {/* Active sectors */}
       {sectors.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-white/25 mb-2.5">Active Sectors</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-primary/25 mb-2.5">Active Sectors</p>
           <div className="flex flex-wrap gap-2">
             {sectors.map(s => (
               <span
@@ -215,11 +215,11 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
             <div
               key={dir}
               className="rounded-xl p-3 text-center"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
             >
               <Icon size={14} className="mx-auto mb-1" style={{ color: cfg.color }} />
               <p className="text-lg font-bold tabular-nums" style={{ color: cfg.color }}>{count as number}</p>
-              <p className="text-[10px] text-white/30 capitalize">{dir}</p>
+              <p className="text-[10px] text-primary/30 capitalize">{dir}</p>
             </div>
           );
         })}
@@ -227,7 +227,7 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
 
       {/* News items */}
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-white/25 mb-2.5">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-primary/25 mb-2.5">
           All Items ({allItems.length})
         </p>
         <div className="flex flex-col gap-2">
@@ -258,14 +258,14 @@ export function DigestPanel() {
   if (loadingDigest) {
     return (
       <div className="flex flex-col gap-4 animate-pulse">
-        <div className="rounded-xl p-4 h-24" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }} />
+        <div className="rounded-xl p-4 h-24" style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }} />
         <div className="grid grid-cols-4 gap-2">
           {[1,2,3,4].map(n => (
-            <div key={n} className="rounded-xl p-3 h-16" style={{ background: 'rgba(255,255,255,0.03)' }} />
+            <div key={n} className="rounded-xl p-3 h-16" style={{ background: 'rgba(var(--color-border-rgb),0.03)' }} />
           ))}
         </div>
         {[1,2,3].map(n => (
-          <div key={n} className="rounded-xl p-3 h-14" style={{ background: 'rgba(255,255,255,0.02)' }} />
+          <div key={n} className="rounded-xl p-3 h-14" style={{ background: 'rgba(var(--color-border-rgb),0.02)' }} />
         ))}
       </div>
     );

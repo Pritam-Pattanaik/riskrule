@@ -44,7 +44,7 @@ export default React.memo(function CalendarHeatmap({ trades }: CalendarHeatmapPr
     <div
       style={{
         background: 'rgb(var(--color-surface))',
-        border: '1px solid rgb(var(--color-border))',
+        border: '1px solid rgba(var(--color-border-rgb), var(--border-alpha))',
         borderRadius: 'var(--radius-lg)',
         padding: 16,
       }}
@@ -63,8 +63,8 @@ export default React.memo(function CalendarHeatmap({ trades }: CalendarHeatmapPr
         <h3
           style={{
             fontSize: 'var(--text-sm)',
-            fontWeight: 500,
-            color: 'rgb(var(--color-text-primary))',
+            fontWeight: 600,
+            color: 'rgba(var(--color-text-primary), 0.9)',
           }}
         >
           Trading Heatmap (Last 90 Days)
@@ -119,7 +119,7 @@ export default React.memo(function CalendarHeatmap({ trades }: CalendarHeatmapPr
               padding: '6px 12px',
               borderRadius: 'var(--radius-lg)',
               boxShadow: 'var(--shadow-sm)',
-              border: '1px solid rgb(var(--color-border))'
+              border: '1px solid rgba(var(--color-border-rgb), var(--border-alpha))'
             }}>
               Not enough data to generate heatmap
             </p>

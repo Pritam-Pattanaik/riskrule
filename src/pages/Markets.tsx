@@ -48,12 +48,7 @@ const TAB_CONFIG: {
 
 function TabNav({ active, onChange }: { active: MarketTab; onChange: (t: MarketTab) => void }) {
   return (
-    <div className="flex items-center gap-1 p-1 rounded-2xl" style={{
-      background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(255,255,255,0.07)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-    }}>
+    <div className="flex items-center gap-1 p-1 rounded-2xl bg-surface-1 border border-border backdrop-blur-md">
       {TAB_CONFIG.map(tab => {
         const isActive = active === tab.id;
         return (
@@ -77,7 +72,7 @@ function TabNav({ active, onChange }: { active: MarketTab; onChange: (t: MarketT
               background: isActive
                 ? 'linear-gradient(135deg, rgba(139,92,246,0.25) 0%, rgba(59,130,246,0.18) 100%)'
                 : 'transparent',
-              color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.4)',
+              color: isActive ? 'rgb(var(--color-iris))' : 'rgb(var(--color-text-secondary))',
               boxShadow: isActive
                 ? '0 2px 12px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.08)'
                 : 'none',
@@ -144,13 +139,13 @@ function PageHeader() {
             boxShadow: '0 4px 16px rgba(139,92,246,0.2)',
           }}
         >
-          <Globe size={18} className="text-violet-300" />
+          <Globe size={18} className="text-iris" />
         </div>
         <div>
-          <h1 className="text-[22px] font-black text-white/95 tracking-tight leading-none">
+          <h1 className="text-[22px] font-black text-primary tracking-tight leading-none">
             Market Intelligence
           </h1>
-          <p className="text-[12px] text-white/35 mt-0.5 font-medium">
+          <p className="text-[12px] text-tertiary mt-0.5 font-medium">
             NSE · BSE · Commodities · Forex
           </p>
         </div>
@@ -159,11 +154,7 @@ function PageHeader() {
       {/* Live clock + market status */}
       <div className="flex items-center gap-3">
         <div
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-1 border border-border"
         >
           <span
             className="w-2 h-2 rounded-full flex-shrink-0"
@@ -176,8 +167,8 @@ function PageHeader() {
           <span className="text-[11px] font-bold" style={{ color: isMarketOpen ? '#10b981' : '#6b7280' }}>
             NSE {isMarketOpen ? 'OPEN' : 'CLOSED'}
           </span>
-          <span className="text-white/20 text-[11px]">·</span>
-          <span className="font-mono text-[12px] text-white/60 tabular-nums">
+          <span className="text-border text-[11px]">·</span>
+          <span className="font-mono text-[12px] text-secondary tabular-nums">
             {h12}:{minutes}:{seconds} {ampm} IST
           </span>
         </div>
@@ -199,10 +190,9 @@ function SectionCard({
 }) {
   return (
     <div
-      className={`rounded-2xl ${className}`}
+      className={`rounded-2xl bg-surface-0 border border-border ${className}`}
       style={{
-        background: gradient || 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.07)',
+        background: gradient || 'var(--color-surface-0)',
         backdropFilter: 'blur(12px)',
       }}
     >
@@ -245,8 +235,7 @@ export default function Markets() {
   if (selectedArticle) {
     return (
       <div
-        className="w-full min-h-screen pb-24"
-        style={{ background: 'var(--color-canvas, #0d0d12)' }}
+        className="w-full min-h-screen pb-24 bg-canvas"
       >
         <div
           className="w-full border-b"
@@ -255,9 +244,9 @@ export default function Markets() {
           <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-4">
             <button
               onClick={() => setSelectedArticle(null)}
-              className="flex items-center gap-2.5 text-sm font-semibold text-white/40 hover:text-white/80 transition-colors group"
+              className="flex items-center gap-2.5 text-sm font-semibold text-tertiary hover:text-primary transition-colors group"
             >
-              <div className="p-1.5 rounded-lg transition-colors group-hover:bg-white/8" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="p-1.5 rounded-lg transition-colors group-hover:bg-surface-1 bg-surface-0 border border-border">
                 <ArrowLeft className="w-4 h-4" />
               </div>
               Back to Market Intelligence
@@ -282,8 +271,7 @@ export default function Markets() {
 
   return (
     <div
-      className="w-full min-h-screen pb-24"
-      style={{ background: 'var(--color-canvas, #0d0d12)' }}
+      className="w-full min-h-screen pb-24 bg-canvas"
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -367,13 +355,13 @@ export default function Markets() {
                       className="w-8 h-8 rounded-xl flex items-center justify-center"
                       style={{ background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.3)' }}
                     >
-                      <Zap size={15} className="text-violet-400" />
+                      <Zap size={15} className="text-iris" />
                     </div>
-                    <h2 className="text-[19px] font-black text-white/95 tracking-tight">
+                    <h2 className="text-[19px] font-black text-primary tracking-tight">
                       AI Market Intelligence Engine
                     </h2>
                   </div>
-                  <p className="text-[13px] text-white/40 leading-relaxed max-w-xl">
+                  <p className="text-[13px] text-tertiary leading-relaxed max-w-xl">
                     Continuous NSE/BSE/RBI news monitoring with real-time AI sector-level impact
                     analysis. All analysis is educational only — not investment advice.
                   </p>
@@ -385,13 +373,13 @@ export default function Markets() {
                     style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-[11px] font-bold tracking-widest text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                      <span className="text-[11px] font-bold tracking-widest text-success">
                         EDUCATIONAL MODE
                       </span>
                     </div>
                   </div>
-                  <span className="text-[10px] text-white/20">SEBI Compliant</span>
+                  <span className="text-[10px] text-tertiary">SEBI Compliant</span>
                 </div>
               </div>
             </div>
@@ -429,15 +417,15 @@ export default function Markets() {
                       className="w-8 h-8 rounded-xl flex items-center justify-center"
                       style={{ background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.3)' }}
                     >
-                      <BarChart2 size={15} className="text-blue-400" />
+                      <BarChart2 size={15} className="text-accent" />
                     </div>
-                    <h2 className="text-[19px] font-black text-white/95 tracking-tight">
+                    <h2 className="text-[19px] font-black text-primary tracking-tight">
                       Pre-Market Digest
                     </h2>
                   </div>
-                  <p className="text-[13px] text-white/40 leading-relaxed">
+                  <p className="text-[13px] text-tertiary leading-relaxed">
                     AI-generated daily briefing published at{' '}
-                    <span className="text-white/60 font-semibold">7:30 AM IST</span> on trading days.
+                    <span className="text-secondary font-semibold">7:30 AM IST</span> on trading days.
                     Includes sector-level overnight impact and global developments.
                   </p>
                 </div>
@@ -447,8 +435,8 @@ export default function Markets() {
                   style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}
                 >
                   <div className="flex items-center gap-1.5">
-                    <Activity size={11} className="text-blue-400" />
-                    <span className="text-[11px] font-bold tracking-widest text-blue-400">
+                    <Activity size={11} className="text-accent" />
+                    <span className="text-[11px] font-bold tracking-widest text-accent">
                       DAILY BRIEF
                     </span>
                   </div>

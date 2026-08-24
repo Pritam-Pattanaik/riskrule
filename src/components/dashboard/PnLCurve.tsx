@@ -38,9 +38,9 @@ export default function PnLCurve({ data }: PnLCurveProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-secondary">
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-primary/80">
         <div className="w-12 h-12 rounded-2xl bg-surface-1 border border-border flex items-center justify-center">
-          <svg className="w-5 h-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
           </svg>
         </div>
@@ -63,12 +63,12 @@ export default function PnLCurve({ data }: PnLCurveProps) {
         <XAxis
           dataKey="date"
           tickFormatter={d => formatDate(d)}
-          tick={{ fill: 'rgb(var(--color-text-secondary))', fontSize: 9, fontFamily: 'DM Mono, Geist Mono, monospace' }}
+          tick={{ fill: 'rgba(var(--color-text-primary), 0.7)', fontSize: 9, fontFamily: 'DM Mono, Geist Mono, monospace' }}
           axisLine={false} tickLine={false} dy={12}
         />
         <YAxis
           tickFormatter={v => formatCompactCurrency(v)}
-          tick={{ fill: 'rgb(var(--color-text-secondary))', fontSize: 9, fontFamily: 'DM Mono, Geist Mono, monospace' }}
+          tick={{ fill: 'rgba(var(--color-text-primary), 0.7)', fontSize: 9, fontFamily: 'DM Mono, Geist Mono, monospace' }}
           axisLine={false} tickLine={false} dx={-4}
         />
         <ReferenceLine y={0} stroke="rgb(var(--color-border) / 0.2)" strokeDasharray="4 4" />

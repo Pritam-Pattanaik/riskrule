@@ -67,10 +67,10 @@ function NewsSkeleton() {
     <div className="pl-5 space-y-5">
       {[1, 2, 3].map(n => (
         <div key={n} className="relative animate-pulse" style={{ animationDelay: `${n * 100}ms` }}>
-          <div className="absolute -left-5 top-1.5 w-2.5 h-2.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
-          <div className="h-3 rounded-full w-24 mb-2" style={{ background: 'rgba(255,255,255,0.07)' }} />
-          <div className="h-3.5 rounded-lg w-full mb-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <div className="h-3.5 rounded-lg w-4/5" style={{ background: 'rgba(255,255,255,0.04)' }} />
+          <div className="absolute -left-5 top-1.5 w-2.5 h-2.5 rounded-full" style={{ background: 'rgba(var(--color-border-rgb),0.1)' }} />
+          <div className="h-3 rounded-full w-24 mb-2" style={{ background: 'rgba(var(--color-border-rgb),0.07)' }} />
+          <div className="h-3.5 rounded-lg w-full mb-1" style={{ background: 'rgba(var(--color-border-rgb),0.06)' }} />
+          <div className="h-3.5 rounded-lg w-4/5" style={{ background: 'rgba(var(--color-border-rgb),0.04)' }} />
         </div>
       ))}
     </div>
@@ -114,18 +114,18 @@ function NewsRow({ item, onAnalyze }: {
             ⚡ BREAKING
           </span>
         )}
-        <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>{item.time}</span>
-        <span style={{ color: 'rgba(255,255,255,0.12)', fontSize: '10px' }}>·</span>
-        <span className="text-[10px] font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.source}</span>
+        <span className="text-[10px] font-semibold" style={{ color: 'rgba(var(--color-border-rgb),0.35)' }}>{item.time}</span>
+        <span style={{ color: 'rgba(var(--color-border-rgb),0.12)', fontSize: '10px' }}>·</span>
+        <span className="text-[10px] font-bold" style={{ color: 'rgba(var(--color-border-rgb),0.3)' }}>{item.source}</span>
       </div>
 
       {/* Headline */}
       <button
         onClick={() => onAnalyze({ id: item.id, title: item.title, source: item.source, time: item.time, impact: item.impact, sector: item.sector, category: item.category, readTime: item.readTime })}
         className="text-left w-full mb-2.5 text-[13px] font-semibold leading-snug transition-colors duration-150 cursor-pointer"
-        style={{ color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', padding: 0 }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.95)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+        style={{ color: 'rgba(var(--color-border-rgb),0.75)', background: 'none', border: 'none', padding: 0 }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'rgba(var(--color-border-rgb),0.95)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(var(--color-border-rgb),0.75)')}
       >
         {item.title}
       </button>
@@ -135,7 +135,7 @@ function NewsRow({ item, onAnalyze }: {
         {/* Sector tag */}
         <span
           className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: 'rgba(var(--color-border-rgb),0.05)', color: 'rgba(var(--color-border-rgb),0.35)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
         >
           {item.sector}
         </span>
@@ -166,9 +166,9 @@ function NewsRow({ item, onAnalyze }: {
               target="_blank"
               rel="noopener noreferrer"
               className="p-1 rounded-md transition-colors"
-              style={{ color: 'rgba(255,255,255,0.25)' }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.25)')}
+              style={{ color: 'rgba(var(--color-border-rgb),0.25)' }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(var(--color-border-rgb),0.6)')}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'rgba(var(--color-border-rgb),0.25)')}
             >
               <ExternalLink size={10} />
             </a>
@@ -235,7 +235,7 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -247,8 +247,8 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
             <Flame size={14} className="text-red-400" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-white/90 leading-none">News Feed</h3>
-            <p className="text-[10px] text-white/25 mt-0.5">AI-triaged · Real-time</p>
+            <h3 className="text-[14px] font-bold text-primary/90 leading-none">News Feed</h3>
+            <p className="text-[10px] text-primary/25 mt-0.5">AI-triaged · Real-time</p>
           </div>
           {breakingCount > 0 && (
             <span
@@ -261,17 +261,17 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1" style={{ color: loadingFeed ? 'rgba(255,255,255,0.25)' : '#10b981' }}>
+          <div className="flex items-center gap-1" style={{ color: loadingFeed ? 'rgba(var(--color-border-rgb),0.25)' : '#10b981' }}>
             {loadingFeed ? <WifiOff size={10} /> : <Wifi size={10} />}
             <span className="text-[10px] font-semibold">{loadingFeed ? 'Updating' : 'Live'}</span>
           </div>
           <button
             onClick={handleRefresh}
             className="p-1.5 rounded-lg transition-colors"
-            style={{ background: 'rgba(255,255,255,0.04)' }}
+            style={{ background: 'rgba(var(--color-border-rgb),0.04)' }}
             title="Refresh news"
           >
-            <RefreshCw size={12} className={`transition-all ${isRefreshing ? 'animate-spin text-violet-400' : 'text-white/25 hover:text-white/60'}`} />
+            <RefreshCw size={12} className={`transition-all ${isRefreshing ? 'animate-spin text-violet-400' : 'text-primary/25 hover:text-primary/60'}`} />
           </button>
         </div>
       </div>
@@ -286,9 +286,9 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
               onClick={() => setActiveFilter(f)}
               className="text-[10px] font-bold px-2.5 py-1 rounded-full transition-all duration-150"
               style={{
-                background: isActive ? 'rgba(139,92,246,0.18)' : 'rgba(255,255,255,0.04)',
-                color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.3)',
-                border: isActive ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                background: isActive ? 'rgba(139,92,246,0.18)' : 'rgba(var(--color-border-rgb),0.04)',
+                color: isActive ? '#c4b5fd' : 'rgba(var(--color-border-rgb),0.3)',
+                border: isActive ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(var(--color-border-rgb),0.06)',
               }}
             >
               {f}
@@ -306,7 +306,7 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
           {/* Vertical line */}
           <div
             className="absolute left-[3px] top-2 bottom-2 w-px"
-            style={{ background: 'linear-gradient(180deg, rgba(139,92,246,0.4) 0%, rgba(255,255,255,0.04) 100%)' }}
+            style={{ background: 'linear-gradient(180deg, rgba(139,92,246,0.4) 0%, rgba(var(--color-border-rgb),0.04) 100%)' }}
           />
           <div className="pl-5">
             {filtered.map(item => (
@@ -321,13 +321,13 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
         <div className="flex flex-col items-center justify-center py-10 gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
           >
-            <Newspaper size={18} className="text-white/20" />
+            <Newspaper size={18} className="text-primary/20" />
           </div>
           <div className="text-center">
-            <p className="text-[13px] font-semibold text-white/30">No news in this category</p>
-            <p className="text-[11px] text-white/15 mt-1">Live items appear during market hours</p>
+            <p className="text-[13px] font-semibold text-primary/30">No news in this category</p>
+            <p className="text-[11px] text-primary/15 mt-1">Live items appear during market hours</p>
           </div>
         </div>
       )}

@@ -48,9 +48,9 @@ export default function DisciplinePie({ data }: DisciplinePieProps) {
 
   if (total === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-secondary">
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-primary/80">
         <div className="w-12 h-12 rounded-2xl bg-surface-1 border border-border flex items-center justify-center">
-          <svg className="w-5 h-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
           </svg>
         </div>
