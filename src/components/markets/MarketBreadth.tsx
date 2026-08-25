@@ -74,7 +74,7 @@ function MoodGauge({ bullishPct }: { bullishPct: number }) {
 
       <div className="flex items-center gap-2">
         <span className="text-[13px] font-black" style={{ color: moodColor }}>{moodLabel}</span>
-        <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <span className="text-[11px] font-mono" style={{ color: 'rgba(var(--color-border-rgb),0.3)' }}>
           {bullishPct.toFixed(0)}% bulls
         </span>
       </div>
@@ -91,7 +91,7 @@ function BreadthSkeleton() {
         <div
           key={i}
           className="h-8 rounded-xl animate-pulse"
-          style={{ background: 'rgba(255,255,255,0.05)', width: `${w}%`, animationDelay: `${i * 80}ms` }}
+          style={{ background: 'rgba(var(--color-border-rgb),0.05)', width: `${w}%`, animationDelay: `${i * 80}ms` }}
         />
       ))}
     </div>
@@ -123,13 +123,13 @@ export default function MarketBreadth() {
     return (
       <div
         className="rounded-2xl p-5"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
       >
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.25)' }}>
             <Activity size={14} className="text-blue-400" />
           </div>
-          <h3 className="text-[14px] font-bold text-white/90">Market Breadth</h3>
+          <h3 className="text-[14px] font-bold text-primary/90">Market Breadth</h3>
         </div>
         <BreadthSkeleton />
       </div>
@@ -139,7 +139,7 @@ export default function MarketBreadth() {
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
@@ -151,18 +151,18 @@ export default function MarketBreadth() {
             <Activity size={14} className="text-blue-400" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-white/90 leading-none">Market Breadth</h3>
-            <p className="text-[10px] text-white/30 mt-0.5">A/D ratio from live quotes</p>
+            <h3 className="text-[14px] font-bold text-primary/90 leading-none">Market Breadth</h3>
+            <p className="text-[10px] text-primary/30 mt-0.5">A/D ratio from live quotes</p>
           </div>
         </div>
 
         <div
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
           title="Advance/Decline Ratio"
         >
-          <Info size={10} className="text-white/30" />
-          <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <Info size={10} className="text-primary/30" />
+          <span className="text-[11px] font-bold" style={{ color: 'rgba(var(--color-border-rgb),0.5)' }}>
             A/D {ratio}
           </span>
         </div>
@@ -180,15 +180,15 @@ export default function MarketBreadth() {
         ].map(row => (
           <div key={row.label}>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>{row.label}</span>
+              <span className="text-[10px] font-semibold" style={{ color: 'rgba(var(--color-border-rgb),0.35)' }}>{row.label}</span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-black tabular-nums" style={{ color: row.textColor }}>{row.count}</span>
-                <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                <span className="text-[10px] font-mono" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
                   {row.pct.toFixed(0)}%
                 </span>
               </div>
             </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(var(--color-border-rgb),0.06)' }}>
               <AnimatedBar pct={row.pct} color={row.color} />
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function MarketBreadth() {
       {/* Volume leaders */}
       {volumeLeaders.length > 0 && (
         <>
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <div className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
             Volume Leaders
           </div>
           <div className="space-y-2">
@@ -208,11 +208,11 @@ export default function MarketBreadth() {
                 <div key={q.id} className="flex items-center gap-2">
                   <span
                     className="text-[9px] font-black uppercase w-16 truncate"
-                    style={{ color: 'rgba(255,255,255,0.45)' }}
+                    style={{ color: 'rgba(var(--color-border-rgb),0.45)' }}
                   >
                     {q.id.toUpperCase()}
                   </span>
-                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(var(--color-border-rgb),0.05)' }}>
                     <div
                       className="h-full rounded-full transition-all duration-700"
                       style={{

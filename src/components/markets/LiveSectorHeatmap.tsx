@@ -35,7 +35,7 @@ function SectorSkeleton() {
         <div
           key={i}
           className="h-[72px] rounded-xl animate-pulse"
-          style={{ background: 'rgba(255,255,255,0.04)', animationDelay: `${i * 60}ms` }}
+          style={{ background: 'rgba(var(--color-border-rgb),0.04)', animationDelay: `${i * 60}ms` }}
         />
       ))}
     </div>
@@ -89,7 +89,7 @@ function SectorTile({ sector, rank }: { sector: SectorQuote; rank: number }) {
       <div className="flex items-start justify-between mb-1">
         <span
           className="text-[11px] font-bold leading-tight pr-2"
-          style={{ color: 'rgba(255,255,255,0.75)' }}
+          style={{ color: 'rgba(var(--color-border-rgb),0.75)' }}
         >
           {sector.name.replace('NIFTY ', '')}
         </span>
@@ -106,7 +106,7 @@ function SectorTile({ sector, rank }: { sector: SectorQuote; rank: number }) {
       </div>
 
       {sector.volume !== undefined && sector.volume > 0 && (
-        <p className="text-[9px] font-mono mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+        <p className="text-[9px] font-mono mt-1" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
           {(sector.volume / 1_000_000).toFixed(1)}M vol
         </p>
       )}
@@ -123,7 +123,7 @@ function SummaryBar({ sectors }: { sectors: SectorQuote[] }) {
   const worst   = sectors.reduce((a, b) => a.changePercent < b.changePercent ? a : b, sectors[0]);
 
   return (
-    <div className="grid grid-cols-4 gap-2 mb-4 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className="grid grid-cols-4 gap-2 mb-4 p-3 rounded-xl" style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}>
       {[
         { label: 'Gainers', value: gainers.length, color: '#10b981' },
         { label: 'Losers',  value: losers.length,  color: '#ef4444' },
@@ -131,9 +131,9 @@ function SummaryBar({ sectors }: { sectors: SectorQuote[] }) {
         { label: 'Worst',   value: worst ? `${worst.changePercent.toFixed(2)}%`  : '—', color: '#ef4444', sub: worst?.name.replace('NIFTY ', '') },
       ].map(item => (
         <div key={item.label} className="text-center">
-          <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>{item.label}</p>
+          <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: 'rgba(var(--color-border-rgb),0.25)' }}>{item.label}</p>
           <p className="text-[13px] font-black tabular-nums" style={{ color: item.color }}>{item.value}</p>
-          {item.sub && <p className="text-[9px] truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.sub}</p>}
+          {item.sub && <p className="text-[9px] truncate" style={{ color: 'rgba(var(--color-border-rgb),0.3)' }}>{item.sub}</p>}
         </div>
       ))}
     </div>
@@ -149,7 +149,7 @@ export default function LiveSectorHeatmap() {
   return (
     <div
       className="rounded-2xl p-5"
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -161,8 +161,8 @@ export default function LiveSectorHeatmap() {
             <Layers size={14} className="text-violet-400" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-white/90 leading-none">Sector Performance</h3>
-            <p className="text-[10px] text-white/30 mt-0.5">NSE sectoral indices · Live</p>
+            <h3 className="text-[14px] font-bold text-primary/90 leading-none">Sector Performance</h3>
+            <p className="text-[10px] text-primary/30 mt-0.5">NSE sectoral indices · Live</p>
           </div>
           {sectors.length > 0 && (
             <span
@@ -181,7 +181,7 @@ export default function LiveSectorHeatmap() {
         >
           <RefreshCw
             size={13}
-            className={`text-white/25 transition-all ${loading ? 'animate-spin text-violet-400' : 'hover:text-white/50'}`}
+            className={`text-primary/25 transition-all ${loading ? 'animate-spin text-violet-400' : 'hover:text-primary/50'}`}
           />
         </button>
       </div>
@@ -191,7 +191,7 @@ export default function LiveSectorHeatmap() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="text-center py-8" style={{ color: 'rgba(255,255,255,0.2)' }}>
+        <div className="text-center py-8" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
           <Layers size={24} className="mx-auto mb-2 opacity-30" />
           <p className="text-[12px]">Sector data unavailable</p>
         </div>
@@ -208,8 +208,8 @@ export default function LiveSectorHeatmap() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <p className="text-[9.5px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid rgba(var(--color-border-rgb),0.05)' }}>
+            <p className="text-[9.5px]" style={{ color: 'rgba(var(--color-border-rgb),0.2)' }}>
               {sorted.length} sectors · Yahoo Finance
             </p>
             <div className="flex items-center gap-3">

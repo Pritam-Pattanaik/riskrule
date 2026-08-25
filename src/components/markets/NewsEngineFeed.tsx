@@ -46,24 +46,24 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
       style={{
         background: isBreaking
           ? 'linear-gradient(135deg, rgba(239,68,68,0.04) 0%, rgba(15,15,25,0.9) 100%)'
-          : 'rgba(255,255,255,0.025)',
-        borderColor: isBreaking ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.07)',
+          : 'rgba(var(--color-border-rgb),0.025)',
+        borderColor: isBreaking ? 'rgba(239,68,68,0.25)' : 'rgba(var(--color-border-rgb),0.07)',
         marginBottom: '8px',
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.background = isBreaking
           ? 'linear-gradient(135deg, rgba(239,68,68,0.07) 0%, rgba(20,20,35,0.95) 100%)'
-          : 'rgba(255,255,255,0.05)';
+          : 'rgba(var(--color-border-rgb),0.05)';
         (e.currentTarget as HTMLElement).style.borderColor = isBreaking
-          ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.12)';
+          ? 'rgba(239,68,68,0.4)' : 'rgba(var(--color-border-rgb),0.12)';
         (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)';
         (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.background = isBreaking
           ? 'linear-gradient(135deg, rgba(239,68,68,0.04) 0%, rgba(15,15,25,0.9) 100%)'
-          : 'rgba(255,255,255,0.025)';
-        (e.currentTarget as HTMLElement).style.borderColor = isBreaking ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.07)';
+          : 'rgba(var(--color-border-rgb),0.025)';
+        (e.currentTarget as HTMLElement).style.borderColor = isBreaking ? 'rgba(239,68,68,0.25)' : 'rgba(var(--color-border-rgb),0.07)';
         (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
         (e.currentTarget as HTMLElement).style.boxShadow = 'none';
       }}
@@ -82,10 +82,10 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
               Breaking
             </span>
           )}
-          <span className="text-[11px] font-semibold text-white/40 bg-white/[0.05] px-2 py-0.5 rounded-md">
+          <span className="text-[11px] font-semibold text-primary/40 bg-white/[0.05] px-2 py-0.5 rounded-md">
             {item.source}
           </span>
-          <span className="text-[11px] text-white/25">{timeAgo(item.publishedAt)}</span>
+          <span className="text-[11px] text-primary/25">{timeAgo(item.publishedAt)}</span>
 
           {/* Direction badge */}
           <span
@@ -97,14 +97,14 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
           </span>
 
           {/* Confidence dot */}
-          <span className="inline-flex items-center gap-1 text-[11px] text-white/30">
+          <span className="inline-flex items-center gap-1 text-[11px] text-primary/30">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: conf.dot }} />
             {conf.label}
           </span>
         </div>
 
         {/* Headline */}
-        <p className="text-[13.5px] font-semibold text-white/85 leading-snug mb-2.5">
+        <p className="text-[13.5px] font-semibold text-primary/85 leading-snug mb-2.5">
           {item.headline}
         </p>
 
@@ -124,7 +124,7 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
         )}
 
         {/* Expand toggle */}
-        <div className="flex items-center gap-1 text-[11px] text-white/25 mt-1">
+        <div className="flex items-center gap-1 text-[11px] text-primary/25 mt-1">
           <ChevronDown
             size={12}
             className="transition-transform duration-200"
@@ -140,23 +140,23 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
           className="px-4 pb-4 border-t"
           style={{
             paddingLeft: isBreaking ? '18px' : '16px',
-            borderColor: 'rgba(255,255,255,0.06)',
+            borderColor: 'rgba(var(--color-border-rgb),0.06)',
           }}
         >
           <div className="pt-3">
             {/* Rationale */}
-            <p className="text-[13px] text-white/65 leading-relaxed mb-3">{item.rationale}</p>
+            <p className="text-[13px] text-primary/65 leading-relaxed mb-3">{item.rationale}</p>
 
             {/* Historical analogues */}
             {item.historicalAnalogues?.length > 0 && (
               <div className="mb-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-white/30 mb-2">Historical Context</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary/30 mb-2">Historical Context</p>
                 <div className="flex flex-col gap-1.5">
                   {item.historicalAnalogues.slice(0, 2).map((a) => (
                     // L1 fix: stable key from content prefix (not array index)
                     <p
                       key={a.slice(0, 40)}
-                      className="text-[12px] text-white/50 pl-3 leading-relaxed"
+                      className="text-[12px] text-primary/50 pl-3 leading-relaxed"
                       style={{ borderLeft: '2px solid rgba(139,92,246,0.3)' }}
                     >
                       {a}
@@ -240,7 +240,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
       {/* ─── Stats bar ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-4 gap-3 mb-5">
         {[
-          { label: 'Total',    val: counts.all,      color: 'text-white/70' },
+          { label: 'Total',    val: counts.all,      color: 'text-primary/70' },
           { label: 'Bullish',  val: counts.positive, color: 'text-emerald-400' },
           { label: 'Bearish',  val: counts.negative, color: 'text-red-400' },
           { label: 'Mixed',    val: counts.mixed,    color: 'text-amber-400' },
@@ -248,10 +248,10 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
           <div
             key={label}
             className="rounded-xl p-3 text-center"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
           >
             <p className={`text-xl font-bold font-mono tabular-nums ${color}`}>{val}</p>
-            <p className="text-[10px] text-white/30 font-medium mt-0.5">{label}</p>
+            <p className="text-[10px] text-primary/30 font-medium mt-0.5">{label}</p>
           </div>
         ))}
       </div>
@@ -259,7 +259,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
       {/* ─── Filter row ────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {/* Direction filter */}
-        <div className="flex items-center rounded-xl p-1 gap-0.5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex items-center rounded-xl p-1 gap-0.5" style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}>
           {(['all', 'positive', 'negative', 'mixed'] as const).map(d => (
             <button
               key={d}
@@ -267,7 +267,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-150"
               style={{
                 background: dirFilter === d ? 'rgba(139,92,246,0.25)' : 'transparent',
-                color: dirFilter === d ? '#a78bfa' : 'rgba(255,255,255,0.35)',
+                color: dirFilter === d ? '#a78bfa' : 'rgba(var(--color-border-rgb),0.35)',
               }}
             >
               {d === 'all' ? `All (${counts.all})` : d.charAt(0).toUpperCase() + d.slice(1)}
@@ -278,8 +278,8 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
         {/* Refresh */}
         <button
           onClick={handleRefresh}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white/40 hover:text-white/70 transition-colors"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-primary/40 hover:text-primary/70 transition-colors"
+          style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
         >
           <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
           Refresh
@@ -298,9 +298,9 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               onClick={() => setSelectedSector(s)}
               className="flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-150 whitespace-nowrap"
               style={{
-                background: selectedSector === s ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.04)',
-                color: selectedSector === s ? '#a78bfa' : 'rgba(255,255,255,0.35)',
-                border: selectedSector === s ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(255,255,255,0.07)',
+                background: selectedSector === s ? 'rgba(139,92,246,0.2)' : 'rgba(var(--color-border-rgb),0.04)',
+                color: selectedSector === s ? '#a78bfa' : 'rgba(var(--color-border-rgb),0.35)',
+                border: selectedSector === s ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(var(--color-border-rgb),0.07)',
               }}
             >
               {s ?? 'All Sectors'}
@@ -316,13 +316,13 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
         {loadingFeed && (
           <div className="flex flex-col gap-2">
             {[1,2,3,4].map(n => (
-              <div key={n} className="rounded-xl p-4 animate-pulse" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div key={n} className="rounded-xl p-4 animate-pulse" style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}>
                 <div className="flex gap-2 mb-3">
-                  <div className="h-4 w-16 rounded-md" style={{ background: 'rgba(255,255,255,0.08)' }} />
-                  <div className="h-4 w-12 rounded-md" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                  <div className="h-4 w-16 rounded-md" style={{ background: 'rgba(var(--color-border-rgb),0.08)' }} />
+                  <div className="h-4 w-12 rounded-md" style={{ background: 'rgba(var(--color-border-rgb),0.05)' }} />
                 </div>
-                <div className="h-4 w-full rounded-md mb-2" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                <div className="h-4 w-3/4 rounded-md" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                <div className="h-4 w-full rounded-md mb-2" style={{ background: 'rgba(var(--color-border-rgb),0.06)' }} />
+                <div className="h-4 w-3/4 rounded-md" style={{ background: 'rgba(var(--color-border-rgb),0.04)' }} />
               </div>
             ))}
           </div>
@@ -336,7 +336,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-red-400 mb-1">Pipeline Unavailable</p>
-              <p className="text-xs text-white/30">The AI engine is starting up. Try again shortly.</p>
+              <p className="text-xs text-primary/30">The AI engine is starting up. Try again shortly.</p>
             </div>
             <button
               onClick={handleRefresh}
@@ -355,8 +355,8 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               <Zap size={24} className="text-violet-400/60" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold text-white/50 mb-1">No items yet</p>
-              <p className="text-xs text-white/25 max-w-xs">
+              <p className="text-sm font-semibold text-primary/50 mb-1">No items yet</p>
+              <p className="text-xs text-primary/25 max-w-xs">
                 {selectedSector ? `No ${dirFilter === 'all' ? '' : dirFilter + ' '}items for ${selectedSector} yet.` : 'The pipeline is warming up. Items appear during market hours.'}
               </p>
             </div>

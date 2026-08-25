@@ -60,7 +60,7 @@ const SYMBOLS = [
 const CHART_COLORS = {
   up: '#22C55E',
   down: '#EF4444',
-  grid: 'rgba(255,255,255,0.06)',
+  grid: 'rgba(var(--color-border-rgb),0.06)',
   text: '#6B7280',
   accent: '#3B82F6',
   bg: 'rgba(0,0,0,0)',
@@ -424,18 +424,18 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                   appearance-none pl-3 pr-7 py-1.5
                   bg-white/[0.06] hover:bg-white/[0.09] active:bg-white/[0.12]
                   border border-white/[0.1] rounded-lg
-                  text-xs font-bold text-white/90
+                  text-xs font-bold text-primary/90
                   outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                   transition-colors cursor-pointer
                 "
               >
                 {SYMBOLS.map(s => (
-                  <option key={s.key} value={s.key} className="bg-[#0d1117] text-white/90">
+                  <option key={s.key} value={s.key} className="bg-[#0d1117] text-primary/90">
                     {s.label}
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-white/40 text-[10px]">▾</span>
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-primary/40 text-[10px]">▾</span>
             </div>
 
             {!loading && (
@@ -445,7 +445,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                   LIVE
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/30 text-[10px] font-bold tracking-widest uppercase">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-primary/30 text-[10px] font-bold tracking-widest uppercase">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
                   CLOSED
                 </span>
@@ -463,7 +463,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
             ) : latest ? (
               <>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[2.125rem] leading-none font-bold tabular-nums tracking-tight text-white transition-[color] duration-200">
+                  <span className="text-[2.125rem] leading-none font-bold tabular-nums tracking-tight text-primary transition-[color] duration-200">
                     {displayPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -480,7 +480,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                 </div>
 
                 {tooltip && (
-                  <span className="text-[11px] text-white/30 font-mono mb-1.5 whitespace-nowrap">
+                  <span className="text-[11px] text-primary/30 font-mono mb-1.5 whitespace-nowrap">
                     {tooltip.time}
                   </span>
                 )}
@@ -504,7 +504,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                   'px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-150',
                   timeframe === tf
                     ? 'bg-blue-500/20 text-blue-400 shadow-sm shadow-blue-500/10'
-                    : 'text-white/35 hover:text-white/70 hover:bg-white/[0.05]'
+                    : 'text-primary/35 hover:text-primary/70 hover:bg-white/[0.05]'
                 )}
               >
                 {tf}
@@ -517,7 +517,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
             {/* Staleness indicator — always visible (MKT-06 fix) */}
             <div className="flex items-center gap-2">
               {dataFetchedAt && (
-                <span className="text-[9px] text-white/25 font-mono whitespace-nowrap">
+                <span className="text-[9px] text-primary/25 font-mono whitespace-nowrap">
                   Data as of {dataFetchedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST
                 </span>
               )}
@@ -527,7 +527,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                   onClick={() => { setDataFetchedAt(null); refresh(); }}
                   disabled={loading}
                   title="Refresh chart data"
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.07] text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-colors disabled:opacity-40"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.07] text-primary/30 hover:text-primary/70 hover:bg-white/[0.08] transition-colors disabled:opacity-40"
                 >
                   <RefreshCw size={10} className={loading ? 'animate-spin' : ''} />
                   <span className="text-[9px] font-bold">Refresh</span>
@@ -641,7 +641,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
           {loading && data.length === 0 && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0e14]/90 backdrop-blur-sm">
               <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
-              <p className="text-xs font-semibold text-white/40 tracking-wide">Loading {currentSymbolLabel}…</p>
+              <p className="text-xs font-semibold text-primary/40 tracking-wide">Loading {currentSymbolLabel}…</p>
             </div>
           )}
 
@@ -652,10 +652,10 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                 <span className="text-red-400 text-lg">!</span>
               </div>
               <p className="text-sm font-semibold text-red-400">Chart data unavailable</p>
-              <p className="text-xs text-white/30 max-w-[200px] text-center">{error}</p>
+              <p className="text-xs text-primary/30 max-w-[200px] text-center">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 rounded-lg text-xs font-bold text-white/70 transition-colors"
+                className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 rounded-lg text-xs font-bold text-primary/70 transition-colors"
               >
                 Retry
               </button>
@@ -671,7 +671,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
       </div>
 
       {/* ─── Bottom status bar ────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-5 pb-3.5 text-[10px] text-white/25 font-mono">
+      <div className="flex items-center justify-between px-5 pb-3.5 text-[10px] text-primary/25 font-mono">
         <span>
           {currentSymbolLabel} · {timeframe}
           {data.length > 0 && ` · ${data.length} candles`}
@@ -701,7 +701,7 @@ function ToolBtn({ active, standalone, children, className, ...props }: ToolBtnP
         standalone && 'bg-white/[0.04] border border-white/[0.07]',
         active
           ? 'bg-blue-500/20 text-blue-400'
-          : 'text-white/35 hover:text-white/75 hover:bg-white/[0.07]',
+          : 'text-primary/35 hover:text-primary/75 hover:bg-white/[0.07]',
         className,
       )}
       {...props}
@@ -749,7 +749,7 @@ function OHLCTooltip({ tooltip, isPositive }: { tooltip: TooltipData; isPositive
     >
       <div className="bg-[#1A2235]/95 backdrop-blur-xl border border-white/[0.15] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
         {/* Top: Time */}
-        <div className="px-3.5 py-1.5 text-[9px] font-bold tracking-widest text-white/50 uppercase border-b border-white/[0.05] bg-white/[0.02]">
+        <div className="px-3.5 py-1.5 text-[9px] font-bold tracking-widest text-primary/50 uppercase border-b border-white/[0.05] bg-white/[0.02]">
           {tooltip.time}
         </div>
 
@@ -778,8 +778,8 @@ function OHLCTooltip({ tooltip, isPositive }: { tooltip: TooltipData; isPositive
             ['C', tooltip.close],
           ].map(([lbl, val]) => (
             <div key={lbl as string} className="flex items-center justify-between">
-              <span className="text-[9px] font-bold text-white/40">{lbl}</span>
-              <span className="text-[10px] font-mono font-medium text-white/90 tabular-nums">{fmt(val as number)}</span>
+              <span className="text-[9px] font-bold text-primary/40">{lbl}</span>
+              <span className="text-[10px] font-mono font-medium text-primary/90 tabular-nums">{fmt(val as number)}</span>
             </div>
           ))}
         </div>

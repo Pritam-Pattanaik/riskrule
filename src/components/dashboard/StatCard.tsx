@@ -91,8 +91,8 @@ export default React.memo(function StatCard({ label, value, subLabel, icon: Icon
           {value}
         </div>
 
-        <p className="text-[11px] font-bold uppercase tracking-widest text-secondary">{label}</p>
-        <p className="text-xs text-tertiary mt-1 max-w-[80%] mx-auto">{subLabel}</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-primary/90">{label}</p>
+        <p className="text-xs font-semibold text-secondary mt-1 max-w-[80%] mx-auto">{subLabel}</p>
       </div>
     </motion.div>
   );

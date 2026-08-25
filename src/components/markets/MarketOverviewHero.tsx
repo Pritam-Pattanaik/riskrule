@@ -27,16 +27,15 @@ interface Props {
 function QuoteSkeleton() {
   return (
     <div
-      className="w-[210px] shrink-0 rounded-2xl p-4 animate-pulse"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+      className="w-[210px] shrink-0 rounded-2xl p-4 animate-pulse bg-surface-0 border border-border"
     >
       <div className="flex justify-between mb-3">
-        <div className="h-3 w-20 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
-        <div className="h-3 w-10 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
+        <div className="h-3 w-20 rounded-full bg-surface-2" />
+        <div className="h-3 w-10 rounded-full bg-surface-1" />
       </div>
-      <div className="h-6 w-28 rounded-lg mb-2" style={{ background: 'rgba(255,255,255,0.07)' }} />
-      <div className="h-3 w-20 rounded-full mb-4" style={{ background: 'rgba(255,255,255,0.05)' }} />
-      <div className="h-10 w-full rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
+      <div className="h-6 w-28 rounded-lg mb-2 bg-surface-2" />
+      <div className="h-3 w-20 rounded-full mb-4 bg-surface-1" />
+      <div className="h-10 w-full rounded-lg bg-surface-1" />
     </div>
   );
 }
@@ -74,16 +73,16 @@ function QuoteCard({
           ? 'rgba(16,185,129,0.07)'
           : flashDown
           ? 'rgba(239,68,68,0.07)'
-          : 'rgba(255,255,255,0.03)',
+          : 'var(--color-surface-0)',
         border: isActive
           ? '1px solid rgba(139,92,246,0.35)'
           : flashUp
           ? '1px solid rgba(16,185,129,0.25)'
           : flashDown
           ? '1px solid rgba(239,68,68,0.25)'
-          : '1px solid rgba(255,255,255,0.07)',
+          : '1px solid rgba(var(--color-border-rgb), 0.1)',
         boxShadow: isActive
-          ? '0 4px 24px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.08)'
+          ? '0 4px 24px rgba(139,92,246,0.18), inset 0 1px 0 rgba(var(--color-border-rgb),0.08)'
           : 'none',
         cursor: 'pointer',
         outline: 'none',
@@ -122,7 +121,7 @@ function QuoteCard({
         <span
           className="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]"
           style={{
-            color: isActive ? '#c4b5fd' : 'rgba(255,255,255,0.55)',
+            color: isActive ? 'rgb(var(--color-iris))' : 'rgb(var(--color-text-secondary))',
             transition: 'color 0.2s',
           }}
         >
@@ -137,10 +136,10 @@ function QuoteCard({
               ? 'rgba(16,185,129,0.1)'
               : market.status === '24/7'
               ? 'rgba(59,130,246,0.1)'
-              : 'rgba(255,255,255,0.05)',
+              : 'rgba(var(--color-border-rgb), 0.05)',
             border: market.status === 'OPEN'
               ? '1px solid rgba(16,185,129,0.2)'
-              : '1px solid rgba(255,255,255,0.06)',
+              : '1px solid rgba(var(--color-border-rgb), 0.1)',
           }}
         >
           <span
@@ -170,8 +169,8 @@ function QuoteCard({
             color: market.flash
               ? color
               : isActive
-              ? '#fff'
-              : 'rgba(255,255,255,0.92)',
+              ? 'rgb(var(--color-text-primary))'
+              : 'rgb(var(--color-text-primary))',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
@@ -233,21 +232,21 @@ export default function MarketOverviewHero({ activeSymbol, onSelectSymbol }: Pro
           <span
             className="w-2 h-2 rounded-full"
             style={{
-              background: '#10b981',
-              boxShadow: '0 0 8px rgba(16,185,129,0.7)',
+              background: 'rgb(var(--color-success))',
+              boxShadow: '0 0 8px rgba(var(--color-success), 0.7)',
               animation: 'pulse 2s infinite',
             }}
           />
-          <span className="text-[11px] font-bold text-emerald-400 tracking-widest uppercase">Live Market Data</span>
+          <span className="text-[11px] font-bold text-success tracking-widest uppercase">Live Market Data</span>
         </div>
-        <span className="text-white/10 text-[11px]">·</span>
-        <span className="text-[11px] text-white/25">
+        <span className="text-border text-[11px]">·</span>
+        <span className="text-[11px] text-tertiary">
           {markets.length > 0 ? `${markets.length} instruments` : 'Connecting…'}
         </span>
         {onSelectSymbol && (
           <>
-            <span className="text-white/10 text-[11px]">·</span>
-            <span className="text-[11px] text-white/25">Click card to load chart</span>
+            <span className="text-border text-[11px]">·</span>
+            <span className="text-[11px] text-tertiary">Click card to load chart</span>
           </>
         )}
       </div>

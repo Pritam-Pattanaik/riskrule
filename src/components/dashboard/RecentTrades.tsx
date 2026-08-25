@@ -20,7 +20,7 @@ export default React.memo(function RecentTrades({ trades }: RecentTradesProps) {
 
       <div className="flex-1 overflow-hidden">
         {recentTrades.length === 0 ? (
-          <div className="flex items-center justify-center min-h-[160px] text-sm text-tertiary">
+          <div className="flex items-center justify-center min-h-[160px] text-sm font-medium text-secondary">
             No recent trades recorded
           </div>
         ) : (
@@ -34,8 +34,8 @@ export default React.memo(function RecentTrades({ trades }: RecentTradesProps) {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex flex-col text-center shrink-0 w-8">
-                      <span className="text-[10px] font-bold text-tertiary uppercase tracking-widest">{formatDate(trade.date).split(' ')[0]}</span>
-                      <span className="text-xs font-semibold text-secondary">{formatDate(trade.date).split(' ')[1]}</span>
+                      <span className="text-[11px] font-bold text-secondary uppercase tracking-widest">{formatDate(trade.date).split(' ')[0]}</span>
+                      <span className="text-xs font-bold text-primary/90">{formatDate(trade.date).split(' ')[1]}</span>
                     </div>
                     <div className="min-w-0 pr-4">
                       <p className="text-sm font-semibold text-primary truncate group-hover:text-accent transition-colors">

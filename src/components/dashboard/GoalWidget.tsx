@@ -27,9 +27,9 @@ export default function GoalWidget() {
   return (
     <div className="card p-6 flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-secondary">
+        <div className="flex items-center gap-2 text-primary/90">
           <Target className="w-4 h-4 text-accent" />
-          <h3 className="text-[10px] font-bold uppercase tracking-widest">Daily & Weekly Goals</h3>
+          <h3 className="text-xs font-bold uppercase tracking-widest">Daily & Weekly Goals</h3>
         </div>
         <Button variant="ghost" size="sm" onClick={() => navigate('/app/goals')}>
           <Plus className="w-4 h-4" />
@@ -38,7 +38,7 @@ export default function GoalWidget() {
 
       <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-border">
         {goals.length === 0 ? (
-          <div className="text-center py-6 text-tertiary text-sm">No goals set yet.</div>
+          <div className="text-center py-6 text-secondary font-medium text-sm">No goals set yet.</div>
         ) : (
           goals.slice(0, 5).map(goal => {
             const isCompletedToday = goal.completions?.some((c: any) => c.date.startsWith(today));

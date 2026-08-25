@@ -38,7 +38,7 @@ export default function HeroSection() {
         <Reveal direction="up" delay={0.1}>
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-primary leading-[1.05] mb-6 max-w-4xl mx-auto">
             Master your execution with <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-white via-primary to-iris bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary dark:from-white via-primary to-iris bg-clip-text text-transparent">
               algorithmic precision.
             </span>
           </h1>

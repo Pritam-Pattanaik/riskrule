@@ -10,7 +10,7 @@ import { PrismaClient as PipelinePrismaClient } from '../../prisma/generated/pip
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import * as dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: require('path').resolve(__dirname, '../../../.env') });
 
 const pipelineUrl = process.env.PIPELINE_DATABASE_URL || process.env.DATABASE_URL;
 
