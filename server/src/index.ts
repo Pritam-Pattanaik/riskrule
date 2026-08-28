@@ -39,6 +39,7 @@ import marketRoutes from './routes/marketV2';
 import notificationRoutes from './routes/notifications';
 import newsEngineRoutes from './routes/news-engine';
 import flowRoutes from './routes/flow.routes';
+import voiceRoutes from './routes/voice';
 import { startNewsEngine, stopNewsEngine } from './news-engine';
 import { marketWorker } from './services/MarketWorker';
 import { flowDataWorker } from './flow/workers/FlowDataWorker';
@@ -74,7 +75,7 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
 app.use(cookieParser());
 app.use(helmet());
 
@@ -144,6 +145,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/news-engine', newsEngineRoutes);
 app.use('/api/v1/flow', flowRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // Start News Engine Pipeline (non-throwing — server boots regardless)
 startNewsEngine();

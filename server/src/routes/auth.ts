@@ -9,6 +9,8 @@ import { lockService } from '../services/lockService';
 import { sendPasswordResetEmail } from '../services/emailService';
 import { logger } from '../lib/logger';
 import { cache } from '../lib/redis';
+import { isValidEmailFormat, isDisposableEmail } from '../lib/disposableEmail';
+import { isValidPhoneNumber, normalizePhoneNumber } from '../lib/phoneValidation';
 
 const router = Router();
 
@@ -20,7 +22,19 @@ const COOKIE_OPTIONS = {
 };
 
 const signupSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string()
+    .min(1, 'Email is required')
+    .refine((val) => isValidEmailFormat(val), {
+      message: 'Please enter a valid email address',
+    })
+    .refine((val) => !isDisposableEmail(val), {
+      message: 'Temporary or disposable email addresses are not permitted. Please use a permanent email address.',
+    }),
+  phoneNumber: z.string()
+    .min(1, 'Phone number is required')
+    .refine((val) => isValidPhoneNumber(val), {
+      message: 'Please enter a valid 10-15 digit phone number (optionally with country code, e.g. +91 9876543210).',
+    }),
   password: z.string().min(8, 'Password must be at least 8 characters').regex(/[A-Z]/, 'Password must contain at least one uppercase letter').regex(/[0-9]/, 'Password must contain at least one number'),
   fullName: z.string().optional(),
 });
@@ -33,9 +47,11 @@ router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Re
       res.status(400).json({ error: parsed.error.issues[0].message });
       return;
     }
-    const { email, password, fullName } = parsed.data;
+    const { email, password, fullName, phoneNumber } = parsed.data;
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       res.status(400).json({ error: 'An account with this email already exists' });
       return;
@@ -44,9 +60,10 @@ router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Re
     const hashedPassword = await bcrypt.hash(password, 12);
     const newUser = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         fullName: fullName || null,
+        phoneNumber: normalizedPhone,
       },
     });
 
@@ -55,7 +72,15 @@ router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Re
 
     res.status(201).json({
       token,
-      user: { id: newUser.id, email: newUser.email, fullName: newUser.fullName, avatarUrl: newUser.avatarUrl, timezone: newUser.timezone, role: newUser.role },
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        phoneNumber: newUser.phoneNumber,
+        avatarUrl: newUser.avatarUrl,
+        timezone: newUser.timezone,
+        role: newUser.role,
+      },
     });
   } catch (err: any) {
     console.error('Signup error:', err);
@@ -95,7 +120,15 @@ router.post('/login', lockService.authRateLimit(), async (req: Request, res: Res
 
     res.json({
       token,
-      user: { id: user.id, email: user.email, fullName: user.fullName, avatarUrl: user.avatarUrl, timezone: user.timezone, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        avatarUrl: user.avatarUrl,
+        timezone: user.timezone,
+        role: user.role,
+      },
     });
   } catch (err: any) {
     console.error('Login error:', err);
@@ -132,7 +165,15 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise
     res.cookie('token', token, COOKIE_OPTIONS);
     res.json({
       token,
-      user: { id: user.id, email: user.email, fullName: user.fullName, avatarUrl: user.avatarUrl, timezone: user.timezone, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        avatarUrl: user.avatarUrl,
+        timezone: user.timezone,
+        role: user.role,
+      },
     });
   } catch (err: any) {
     console.error('Me error:', err);
@@ -143,12 +184,42 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise
 // PATCH /api/auth/profile
 router.patch('/profile', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { fullName, avatarUrl, timezone } = req.body;
+    const { fullName, avatarUrl, timezone, phoneNumber } = req.body;
+    let normalizedPhone: string | null | undefined = undefined;
+
+    if (phoneNumber !== undefined) {
+      if (phoneNumber !== null && phoneNumber !== '') {
+        if (!isValidPhoneNumber(phoneNumber)) {
+          res.status(400).json({ error: 'Please enter a valid 10-15 digit phone number.' });
+          return;
+        }
+        normalizedPhone = normalizePhoneNumber(phoneNumber);
+      } else {
+        normalizedPhone = null;
+      }
+    }
+
     const updated = await prisma.user.update({
       where: { id: req.userId! },
-      data: { fullName, avatarUrl, timezone, updatedAt: new Date() },
+      data: {
+        fullName,
+        avatarUrl,
+        timezone,
+        ...(normalizedPhone !== undefined ? { phoneNumber: normalizedPhone } : {}),
+        updatedAt: new Date(),
+      },
     });
-    res.json({ user: { id: updated.id, email: updated.email, fullName: updated.fullName, avatarUrl: updated.avatarUrl, timezone: updated.timezone, role: updated.role } });
+    res.json({
+      user: {
+        id: updated.id,
+        email: updated.email,
+        fullName: updated.fullName,
+        phoneNumber: updated.phoneNumber,
+        avatarUrl: updated.avatarUrl,
+        timezone: updated.timezone,
+        role: updated.role,
+      },
+    });
   } catch (err: any) {
     console.error('Update profile error:', err);
     res.status(500).json({ error: 'Internal server error' });

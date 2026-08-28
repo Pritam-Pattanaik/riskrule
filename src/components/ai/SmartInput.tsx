@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, StopCircle, Command } from 'lucide-react';
+import { Send, StopCircle, Command, Mic, MicOff } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { useVoiceStore } from '../../stores/voiceStore';
+import { VoiceOrb } from './VoiceOrb';
 
 interface SlashCommand {
   command: string;
@@ -36,9 +38,11 @@ interface Props {
   isTyping: boolean;
   hasMessages: boolean;
   disabled?: boolean;
+  onMicToggle?: () => void;
+  isListening?: boolean;
 }
 
-export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, disabled }: Props) {
+export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, disabled, onMicToggle, isListening }: Props) {
   const [input, setInput] = useState('');
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashFilter, setSlashFilter] = useState('');
@@ -46,6 +50,7 @@ export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, di
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const slashRef = useRef<HTMLDivElement>(null);
   const placeholder = getSmartPlaceholder();
+  const { interimTranscript, isProcessing, error: voiceError } = useVoiceStore();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -163,6 +168,30 @@ export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, di
           rows={1}
         />
 
+        {/* Voice status bar */}
+        {(isListening || isProcessing || interimTranscript || voiceError) && (
+          <div className="flex items-center gap-2 px-4 pb-1.5">
+            {isListening && (
+              <div className="flex items-center gap-2 text-red-400">
+                <VoiceOrb />
+                <span className="text-[11px] font-semibold animate-pulse">Listening…</span>
+              </div>
+            )}
+            {isProcessing && !isListening && (
+              <div className="flex items-center gap-2 text-amber-400">
+                <VoiceOrb />
+                <span className="text-[11px] font-semibold">Transcribing…</span>
+              </div>
+            )}
+            {interimTranscript && !isListening && !isProcessing && (
+              <span className="text-[11px] text-secondary italic truncate">{interimTranscript}</span>
+            )}
+            {voiceError && (
+              <span className="text-[11px] text-loss">{voiceError}</span>
+            )}
+          </div>
+        )}
+
         {/* Hint row */}
         <div className="flex items-center justify-between px-4 pb-2.5">
           <div className="flex items-center gap-3 text-[10px] text-tertiary/50">
@@ -180,31 +209,51 @@ export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, di
             </span>
           </div>
 
-          {isTyping ? (
-            <button
-              onClick={onStop}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-2 border border-border text-xs font-semibold text-tertiary hover:text-loss hover:bg-loss/5 hover:border-loss/30 transition-all"
-              title="Stop generating (Esc)"
-            >
-              <StopCircle className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Stop</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim() || disabled}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                input.trim() && !disabled
-                  ? "bg-accent text-white shadow-sm shadow-accent/20 hover:bg-accent/90"
-                  : "bg-surface-2 text-tertiary cursor-not-allowed opacity-40"
-              )}
-              title="Send message (Enter)"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Send</span>
-            </button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {/* Microphone button */}
+            {onMicToggle && (
+              <button
+                onClick={onMicToggle}
+                disabled={isTyping || disabled}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                  isListening
+                    ? "bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.15)]"
+                    : "bg-surface-2 border border-border text-tertiary hover:text-primary hover:bg-surface-1"
+                )}
+                title={isListening ? "Stop recording" : "Voice input"}
+              >
+                {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">{isListening ? 'Stop' : 'Mic'}</span>
+              </button>
+            )}
+
+            {isTyping ? (
+              <button
+                onClick={onStop}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-2 border border-border text-xs font-semibold text-tertiary hover:text-loss hover:bg-loss/5 hover:border-loss/30 transition-all"
+                title="Stop generating (Esc)"
+              >
+                <StopCircle className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Stop</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!input.trim() || disabled}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                  input.trim() && !disabled
+                    ? "bg-accent text-white shadow-sm shadow-accent/20 hover:bg-accent/90"
+                    : "bg-surface-2 text-tertiary cursor-not-allowed opacity-40"
+                )}
+                title="Send message (Enter)"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Send</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

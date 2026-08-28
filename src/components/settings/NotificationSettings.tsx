@@ -9,6 +9,7 @@ import {
 import { useNotificationStore, NotificationCategory, NotificationPriority } from '../../stores/notificationStore';
 import { useSystemNotifications } from '../../hooks/useSystemNotifications';
 import { useNotificationSound } from '../../hooks/useNotificationSound';
+import { useVoiceStore } from '../../stores/voiceStore';
 import { api } from '../../lib/api';
 import { notify } from '../../lib/notify';
 import { cn } from '../../lib/cn';
@@ -312,7 +313,14 @@ export default function NotificationSettings() {
         // 1. Play audio chime
         playSound(preset.priority);
 
-        // 2. Direct desktop OS notification
+        // 2. Speak alert if voice AI engine is enabled
+        try {
+          useVoiceStore.getState().speakNotification(preset.title, preset.description);
+        } catch (vErr) {
+          console.warn('[NotificationTest] Voice speak error:', vErr);
+        }
+
+        // 3. Direct desktop OS notification
         sendSystemNotification({
           id: 'test-' + Date.now(),
           title: preset.title,

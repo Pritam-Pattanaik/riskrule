@@ -3,12 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
   Brain, Copy, Check, RefreshCw, ThumbsUp, ThumbsDown,
-  ChevronDown, ChevronUp, Zap, Maximize2, Minimize2
+  ChevronDown, ChevronUp, Maximize2, Minimize2,
 } from 'lucide-react';
 import { DisciplineCard } from './DisciplineCard';
 import { MessageTimestamp } from './MessageTimestamp';
+import { AudioPlayButton } from '../LunarMessage/AudioPlayButton';
 import { cn } from '../../lib/cn';
 import { api } from '../../lib/api';
+
 
 // Approximate word count for truncation threshold
 const EXPAND_THRESHOLD = 120;
@@ -28,6 +30,8 @@ interface Props {
   onRegenerate?: () => void;
   onMakeShorter?: () => void;
   onExplainMore?: () => void;
+  onSpeak?: (text: string) => void;
+  isSpeaking?: boolean;
 }
 
 const MODE_BADGE: Record<string, { label: string; color: string }> = {
@@ -52,6 +56,8 @@ export function AIMessage({
   onRegenerate,
   onMakeShorter,
   onExplainMore,
+  onSpeak,
+  isSpeaking: isSpeakingProp,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
@@ -162,6 +168,19 @@ export function AIMessage({
                 {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
                 <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
               </button>
+
+
+              {onSpeak && (
+                <AudioPlayButton
+                  text={content}
+                  messageId={messageId || 'lunar-msg'}
+                  isStreaming={isStreaming}
+                  isSpeaking={isSpeakingProp}
+                  onPlay={(_mid, text) => onSpeak(text)}
+                  onStop={() => onSpeak(content)}
+                />
+              )}
+
 
               {onMakeShorter && (
                 <button

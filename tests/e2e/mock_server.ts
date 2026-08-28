@@ -15,6 +15,7 @@ interface User {
   id: string;
   email: string;
   fullName: string | null;
+  phoneNumber?: string | null;
   passwordHash: string;
   role: 'USER' | 'SUB_ADMIN' | 'ADMIN' | 'SUPER_ADMIN';
   createdAt: string;
@@ -366,7 +367,7 @@ app.get('/api/health', (_req, res) => {
 // POST /api/auth/signup
 app.post('/api/auth/signup', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, fullName } = req.body;
+    const { email, password, fullName, phoneNumber } = req.body;
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' });
       return;
@@ -381,6 +382,7 @@ app.post('/api/auth/signup', async (req: Request, res: Response): Promise<void> 
       id: `u-${Math.random().toString(36).substr(2, 9)}`,
       email,
       fullName: fullName || null,
+      phoneNumber: phoneNumber || null,
       passwordHash,
       role: 'USER',
       createdAt: new Date().toISOString(),
@@ -390,7 +392,7 @@ app.post('/api/auth/signup', async (req: Request, res: Response): Promise<void> 
     const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '30d' });
     res.status(201).json({
       token,
-      user: { id: newUser.id, email: newUser.email, fullName: newUser.fullName, role: newUser.role }
+      user: { id: newUser.id, email: newUser.email, fullName: newUser.fullName, phoneNumber: newUser.phoneNumber, role: newUser.role }
     });
   } catch (_err) {
     res.status(500).json({ error: 'Internal server error' });

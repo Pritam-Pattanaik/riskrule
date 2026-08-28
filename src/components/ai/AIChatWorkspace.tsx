@@ -1,12 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { Activity, Brain, RefreshCw } from 'lucide-react';
+import { Activity, Brain, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import { useInsightStore } from '../../stores/insightStore';
 import { useTradeStore } from '../../stores/tradeStore';
 import { useJournalStore } from '../../stores/journalStore';
+import { useVoiceStore } from '../../stores/voiceStore';
+import { useVoiceInput } from '../../hooks/useVoiceInput';
+import { useVoiceOutput } from '../../hooks/useVoiceOutput';
 import { cn } from '../../lib/cn';
 import { AIMessage } from './AIMessage';
 import UserMessageBubble from './UserMessageBubble';
 import SmartInput from './SmartInput';
+import { VoiceOrb } from './VoiceOrb';
+import { VoiceSettings } from './VoiceSettings';
 
 interface Props {
   conversationId: string;
@@ -72,6 +77,57 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
   const endRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ─── Voice Integration ─────────────────────────────────────────────
+  const { voiceModeEnabled, toggleVoiceMode, isSpeaking } = useVoiceStore();
+  const { speak, speakIfEnabled, stop: stopSpeaking } = useVoiceOutput();
+  const [speakingMessageId, setSpeakingMessageId] = React.useState<string | null>(null);
+  const wasTypingRef = useRef(isTyping);
+  const lastSpokenMsgIdRef = useRef<string | null>(null);
+
+  // Reset speakingMessageId when not speaking
+  useEffect(() => {
+    if (!isSpeaking) {
+      setSpeakingMessageId(null);
+    }
+  }, [isSpeaking]);
+
+  // Voice input: transcription → send to chat
+  const { toggleRecording, isListening } = useVoiceInput((transcript) => {
+    if (transcript.trim()) {
+      sendMessage(transcript);
+    }
+  });
+
+  // Auto-speak completed AI response when generation finishes and voice mode is ON
+  useEffect(() => {
+    const justFinishedTyping = wasTypingRef.current && !isTyping;
+    wasTypingRef.current = isTyping;
+
+    if (justFinishedTyping && voiceModeEnabled && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      const msgId = (lastMsg as any)?.id || `msg-${messages.length}`;
+      if (lastMsg?.role === 'assistant' && lastSpokenMsgIdRef.current !== msgId) {
+        lastSpokenMsgIdRef.current = msgId;
+        const { content } = parseMessageContent(lastMsg.content);
+        if (content && content.trim().length > 2) {
+          setSpeakingMessageId(msgId);
+          speakIfEnabled(content);
+        }
+      }
+    }
+  }, [isTyping, voiceModeEnabled, messages, speakIfEnabled]);
+
+  // Handle speak button click on individual messages
+  const handleSpeak = (messageId: string, text: string) => {
+    if (isSpeaking && speakingMessageId === messageId) {
+      stopSpeaking();
+      setSpeakingMessageId(null);
+    } else {
+      setSpeakingMessageId(messageId);
+      speak(text);
+    }
+  };
+
   // Auto-scroll on new content
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,12 +158,35 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
           </h2>
         </div>
 
-        {/* Live context badge */}
+        {/* Voice + Context controls */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Live context badge */}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-1/80 border border-border text-[10px] font-mono text-tertiary">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_ease-in-out_infinite]" />
             {trades?.length || 0}T · {entries?.length || 0}J
           </div>
+
+          {/* Voice mode toggle */}
+          <button
+            onClick={() => {
+              toggleVoiceMode();
+              if (isSpeaking) stopSpeaking();
+            }}
+            title={voiceModeEnabled ? 'Voice mode ON — auto-speak responses' : 'Voice mode OFF'}
+            className={cn(
+              "flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] font-semibold transition-all",
+              voiceModeEnabled
+                ? "bg-accent/10 border-accent/30 text-accent shadow-[0_0_8px_rgba(16,185,129,0.1)]"
+                : "bg-surface-1/80 border-border text-tertiary hover:text-primary hover:bg-surface-1"
+            )}
+          >
+            {voiceModeEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+            <span className="hidden lg:inline">{voiceModeEnabled ? 'Voice ON' : 'Voice'}</span>
+            {voiceModeEnabled && <VoiceOrb className="ml-0.5" />}
+          </button>
+
+          {/* Voice settings (voice picker) — only show when voice mode is on */}
+          {voiceModeEnabled && <VoiceSettings />}
 
           {onToggleInsights && (
             <button
@@ -124,6 +203,25 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
               <span className="hidden lg:inline">Insights</span>
             </button>
           )}
+        </div>
+
+        {/* Mobile voice toggle */}
+        <div className="flex md:hidden items-center gap-1.5">
+          <button
+            onClick={() => {
+              toggleVoiceMode();
+              if (isSpeaking) stopSpeaking();
+            }}
+            className={cn(
+              "p-1.5 rounded-lg border transition-all",
+              voiceModeEnabled
+                ? "bg-accent/10 border-accent/30 text-accent"
+                : "bg-surface-1/80 border-border text-tertiary"
+            )}
+            title={voiceModeEnabled ? 'Voice ON' : 'Voice OFF'}
+          >
+            {voiceModeEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
 
@@ -160,10 +258,11 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
 
               // Assistant message
               const { content, disciplineData } = parseMessageContent(msg.content);
+              const msgId = (msg as any).id ?? String(i);
               return (
                 <AIMessage
-                  key={(msg as any).id ?? i}
-                  messageId={(msg as any).id}
+                  key={msgId}
+                  messageId={msgId}
                   content={content}
                   disciplineData={disciplineData || (msg as any).disciplineEvaluation}
                   detectedMode={(msg as any).detectedMode}
@@ -173,6 +272,8 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
                   onRegenerate={isLastMessage ? regenerateResponse : undefined}
                   onMakeShorter={isLastMessage ? handleMakeShorter : undefined}
                   onExplainMore={isLastMessage ? handleExplainMore : undefined}
+                  onSpeak={() => handleSpeak(msgId, content)}
+                  isSpeaking={isSpeaking && speakingMessageId === msgId}
                 />
               );
             })}
@@ -207,6 +308,8 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
             isTyping={isTyping}
             hasMessages={messages.length > 0}
             disabled={loading && messages.length === 0}
+            onMicToggle={toggleRecording}
+            isListening={isListening}
           />
         </div>
       </div>

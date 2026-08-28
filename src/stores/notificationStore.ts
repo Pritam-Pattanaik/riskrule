@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api, BASE_URL } from '../lib/api';
 import { toast } from 'sonner';
+import { useVoiceStore } from './voiceStore';
 
 export type NotificationCategory = 'Trading' | 'Risk' | 'Market' | 'AI' | 'Reports';
 export type NotificationPriority = 'Critical' | 'Warning' | 'Success' | 'Information';
@@ -169,6 +170,13 @@ export const useNotificationStore = create<NotificationState>()(
             const callback = get()._systemNotifCallback;
             if (callback) {
               callback(newItem);
+            }
+
+            // ── Auto-speak notification if Voice AI engine is enabled ───
+            try {
+              useVoiceStore.getState().speakNotification(newItem.title, newItem.description);
+            } catch (vErr) {
+              console.warn('[Notifications] Voice speak error:', vErr);
             }
 
             // Auto-dismiss (mark as read) for Information and Success after 8 seconds
