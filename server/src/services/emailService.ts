@@ -1,6 +1,52 @@
+import nodemailer from 'nodemailer';
 import { logger } from '../lib/logger';
 
-// Lazy-load Resend to avoid import errors if the package isn't configured
+// ─── Transport Priority ────────────────────────────────────────────────────────
+// 1. Generic SMTP  (SMTP_HOST + SMTP_USER + SMTP_PASS)  ← primary
+//    Works with any provider: Gmail, Brevo, Mailgun, SendGrid, etc.
+// 2. Resend API    (RESEND_API_KEY)                     ← fallback
+// 3. Console log                                        ← dev-only last resort
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Generic / Gmail SMTP transporter (lazy-init, cached) ─────────────────────
+let smtpTransporter: nodemailer.Transporter | null = null;
+
+function getSmtpTransporter(): nodemailer.Transporter | null {
+  if (smtpTransporter) return smtpTransporter;
+
+  // Read env vars at runtime (not at module import time) so dotenv always wins
+  const host   = process.env.SMTP_HOST || (process.env.GMAIL_USER ? 'smtp.gmail.com' : '');
+  const port   = parseInt(process.env.SMTP_PORT || '587', 10);
+  const user   = process.env.SMTP_USER || process.env.GMAIL_USER || '';
+  const pass   = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || '';
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+
+  if (!user || !pass) return null;
+
+  if (host === 'smtp.gmail.com' || (!host && user.endsWith('@gmail.com'))) {
+    smtpTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+  } else {
+    smtpTransporter = nodemailer.createTransport({
+      host: host || 'smtp.gmail.com',
+      port,
+      secure,
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+  }
+
+  return smtpTransporter;
+}
+
+// ── Resend client (lazy-init, cached) ─────────────────────────────────────────
 let resendClient: any = null;
 
 function getResendClient() {
@@ -12,19 +58,19 @@ function getResendClient() {
     const { Resend } = require('resend');
     resendClient = new Resend(apiKey);
     return resendClient;
-  } catch (err) {
+  } catch {
     logger.warn('[EmailService] Failed to initialize Resend client');
     return null;
   }
 }
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'RiskRules <onboarding@resend.dev>';
-
 /**
  * Sends a password reset email.
  *
- * If RESEND_API_KEY is not set, logs the reset link to the console
- * (development fallback — matches previous behavior).
+ * Transport priority:
+ *   1. Generic SMTP  (set SMTP_HOST + SMTP_USER + SMTP_PASS in .env)
+ *   2. Resend API    (set RESEND_API_KEY in .env)
+ *   3. Console log   (dev fallback — no email is actually sent)
  */
 export async function sendPasswordResetEmail(
   to: string,
@@ -33,35 +79,52 @@ export async function sendPasswordResetEmail(
   expiryMinutes: number = 5
 ): Promise<boolean> {
   const displayName = name || 'there';
+  const fromName    = process.env.EMAIL_FROM_NAME  || 'RiskRule';
+  const fromEmail   = process.env.SMTP_FROM_EMAIL  || process.env.SMTP_USER || process.env.GMAIL_USER || 'admin.riskrule@gmail.com';
+  const html = buildResetEmailHtml(displayName, resetUrl, expiryMinutes);
+  const text = buildResetEmailText(displayName, resetUrl, expiryMinutes);
 
-  // ── Development Fallback ──────────────────────────────────────────────
-  const client = getResendClient();
-
-  if (!client) {
-    logger.info(`[EmailService] [Dev] Password reset link for ${to}: ${resetUrl}`);
-    console.log(`\n🔑 [Dev] Password reset link for ${to}:\n   ${resetUrl}\n   Expires in ${expiryMinutes} minutes.\n`);
-    return true;
+  // ── 1. Generic SMTP ───────────────────────────────────────────────────────
+  const smtpTransport = getSmtpTransporter();
+  if (smtpTransport) {
+    try {
+      await smtpTransport.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to,
+        subject: 'Reset your RiskRule password',
+        html,
+        text,
+      });
+      logger.info(`[EmailService] Password reset email sent via SMTP to ${to.substring(0, 3)}***`);
+      return true;
+    } catch (err: any) {
+      logger.error(`[EmailService] SMTP send failed: ${err?.message || err}`);
+    }
   }
 
-  // ── Production Email via Resend ───────────────────────────────────────
-  try {
-    const html = buildResetEmailHtml(displayName, resetUrl, expiryMinutes);
-    const text = buildResetEmailText(displayName, resetUrl, expiryMinutes);
-
-    await client.emails.send({
-      from: FROM_ADDRESS,
-      to: [to],
-      subject: 'Reset your RiskRules password',
-      html,
-      text,
-    });
-
-    logger.info(`[EmailService] Password reset email sent to ${to.substring(0, 3)}***`);
-    return true;
-  } catch (err: any) {
-    logger.error(`[EmailService] Failed to send reset email: ${err?.message}`);
-    return false;
+  // ── 2. Resend API ─────────────────────────────────────────────────────────
+  const resend = getResendClient();
+  if (resend) {
+    try {
+      await resend.emails.send({
+        from: `${fromName} <onboarding@resend.dev>`,
+        to: [to],
+        subject: 'Reset your RiskRule password',
+        html,
+        text,
+      });
+      logger.info(`[EmailService] Password reset email sent via Resend to ${to.substring(0, 3)}***`);
+      return true;
+    } catch (err: any) {
+      logger.error(`[EmailService] Resend failed: ${err?.message || err}`);
+    }
   }
+
+  // ── 3. Console Fallback (Dev only) ────────────────────────────────────────
+  logger.warn('[EmailService] No active email transport succeeded. Falling back to console log.');
+  logger.info(`[EmailService] [Dev] Password reset link for ${to}: ${resetUrl}`);
+  console.log(`\n🔑 [Dev] Password reset link for ${to}:\n   ${resetUrl}\n   Expires in ${expiryMinutes} minutes.\n`);
+  return true;
 }
 
 // ─── Plain Text Fallback ──────────────────────────────────────────────────────
@@ -69,7 +132,7 @@ export async function sendPasswordResetEmail(
 function buildResetEmailText(name: string, resetUrl: string, expiryMinutes: number): string {
   return `Hi ${name},
 
-We received a request to reset your RiskRules password.
+We received a request to reset your RiskRule password.
 
 Reset your password by visiting this link:
 ${resetUrl}
@@ -78,10 +141,10 @@ This link will expire in ${expiryMinutes} minutes.
 
 If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
 
-— RiskRules
+— RiskRule
 
 This is an automated message. Please do not reply.
-If you need help, contact support@riskrules.app`;
+If you need help, contact admin.riskrule@gmail.com`;
 }
 
 // ─── Minimal, Professional HTML Email Template ────────────────────────────────
@@ -96,7 +159,7 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
-  <title>Reset your RiskRules password</title>
+  <title>Reset your RiskRule password</title>
   <!--[if mso]>
   <noscript>
     <xml>
@@ -140,7 +203,7 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
       <tr>
         <td style="padding-bottom:28px;text-align:center;">
           <span class="heading" style="font-size:22px;font-weight:700;color:#1a1a1a;letter-spacing:-0.3px;">
-            RiskRules
+            RiskRule
           </span>
         </td>
       </tr>
@@ -158,7 +221,7 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
 
               <!-- Body -->
               <p class="body-text" style="font-size:15px;line-height:1.7;color:#4a4a4a;margin:0 0 24px 0;">
-                Hi ${name}, we received a request to reset the password for your RiskRules account. Click the button below to choose a new password.
+                Hi ${name}, we received a request to reset the password for your RiskRule account. Click the button below to choose a new password.
               </p>
 
               <!-- CTA Button -->
@@ -197,10 +260,10 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
       <tr>
         <td style="padding-top:24px;text-align:center;">
           <p class="footer-text" style="font-size:12px;color:#999999;line-height:1.6;margin:0 0 4px 0;">
-            &copy; ${new Date().getFullYear()} RiskRules &middot; Institutional Trading Journal
+            &copy; ${new Date().getFullYear()} RiskRule &middot; Trading Risk Management
           </p>
           <p class="footer-text" style="font-size:12px;color:#999999;line-height:1.6;margin:0;">
-            Need help? Contact <a href="mailto:support@riskrules.app" style="color:#6366f1;text-decoration:none;">support@riskrules.app</a>
+            Need help? Contact <a href="mailto:admin.riskrule@gmail.com" style="color:#6366f1;text-decoration:none;">admin.riskrule@gmail.com</a>
           </p>
         </td>
       </tr>

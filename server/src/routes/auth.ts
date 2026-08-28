@@ -251,11 +251,12 @@ router.post('/forgot-password', lockService.authRateLimit(), async (req: Request
       return;
     }
     const { email } = parsed.data;
+    const normalizedEmail = email.trim().toLowerCase();
     const ip = ((req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
     const userAgent = (req.headers['user-agent'] || 'unknown').substring(0, 500);
 
     // ── Email Cooldown (60s per email address) ──────────────────────────
-    const cooldownKey = `pwd-reset-cooldown:${email.toLowerCase()}`;
+    const cooldownKey = `pwd-reset-cooldown:${normalizedEmail}`;
     const cooldownActive = await cache.get(cooldownKey);
     if (cooldownActive) {
       // Don't reveal the cooldown to prevent email enumeration
@@ -263,12 +264,17 @@ router.post('/forgot-password', lockService.authRateLimit(), async (req: Request
       return;
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive',
+        },
+      },
+    });
     if (!user) {
-      // Prevent email enumeration: always return generic success
-      // Set cooldown even for non-existent emails to prevent timing attacks
-      await cache.setex(cooldownKey, EMAIL_COOLDOWN_SECONDS, '1');
-      res.json(GENERIC_SUCCESS);
+      // Email not registered — inform the user explicitly
+      res.status(404).json({ error: 'No account found with this email address. Please check and try again.' });
       return;
     }
 
