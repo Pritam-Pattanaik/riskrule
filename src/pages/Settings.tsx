@@ -19,12 +19,13 @@ import { BrokerHealthCard } from '../components/settings/brokers/BrokerHealthCar
 import { BrokerConnectionWizard } from '../components/settings/brokers/BrokerConnectionWizard';
 import { PREBUILT_RULES, PREBUILT_RULE_CATEGORIES, PrebuiltRule } from '../constants/prebuiltRules';
 import { RuleDetailModal } from '../components/settings/RuleDetailModal';
+import { VoiceSettingsTab } from '../components/settings/VoiceSettingsTab';
 
 const NotificationSettings = React.lazy(() => import('../components/settings/NotificationSettings'));
 
 const INSTRUMENTS = ['CE', 'PE', 'FUT', 'EQ'];
 const MARKETS = ['F&O', 'NSE', 'BSE', 'MCX'];
-const VALID_TABS = ['brokers', 'rules', 'profile', 'security', 'notifications'] as const;
+const VALID_TABS = ['brokers', 'rules', 'voice', 'notifications', 'profile', 'security'] as const;
 
 export default function Settings() {
   const { profile, signOut, updateProfile, deleteAccount } = useAuthStore();
@@ -32,12 +33,12 @@ export default function Settings() {
   const { rules, fetchRules, saveRules } = useTradingRulesStore();
 
   const [searchParams] = useSearchParams();
-  const tabFromUrl = searchParams.get('tab') as 'brokers' | 'rules' | 'profile' | 'security' | 'notifications' | null;
+  const tabFromUrl = searchParams.get('tab') as 'brokers' | 'rules' | 'voice' | 'profile' | 'security' | 'notifications' | null;
 
   useEffect(() => { fetchConnections(); fetchRules(); }, [fetchConnections, fetchRules]);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'brokers' | 'rules' | 'profile' | 'security' | 'notifications'>(
+  const [activeTab, setActiveTab] = useState<'brokers' | 'rules' | 'voice' | 'profile' | 'security' | 'notifications'>(
     tabFromUrl && VALID_TABS.includes(tabFromUrl as any) ? tabFromUrl : 'brokers'
   );
 
@@ -87,10 +88,20 @@ export default function Settings() {
 
   // Profile state
   const [profileName, setProfileName] = useState(profile?.fullName || 'Principal Trader');
+  const [phoneNumber, setPhoneNumber] = useState(profile?.phoneNumber || '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || '');
   const [timezone, setTimezone] = useState(profile?.timezone || 'Asia/Kolkata');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setProfileName(profile.fullName || '');
+      setPhoneNumber(profile.phoneNumber || '');
+      setAvatarUrl(profile.avatarUrl || '');
+      setTimezone(profile.timezone || 'Asia/Kolkata');
+    }
+  }, [profile]);
 
   // Live platform rules from database
   const [platformRules, setPlatformRules] = useState<PrebuiltRule[]>(PREBUILT_RULES);
@@ -277,6 +288,7 @@ export default function Settings() {
   const tabs = [
     { id: 'brokers', label: '🔌 Broker Integrations', count: connections.length },
     { id: 'rules', label: '🛡️ Risk & Discipline Rules' },
+    { id: 'voice', label: '🎙️ Voice & Audio AI' },
     { id: 'notifications', label: '🔔 Notifications' },
     { id: 'profile', label: '👤 Profile & Workspace' },
     { id: 'security', label: '🔐 Security & Data Vault' },
@@ -879,6 +891,11 @@ export default function Settings() {
         </div>
       )}
 
+      {/* TAB: VOICE & AUDIO AI SETTINGS */}
+      {activeTab === 'voice' && (
+        <VoiceSettingsTab />
+      )}
+
       {/* TAB: NOTIFICATION PREFERENCES */}
       {activeTab === 'notifications' && (
         <React.Suspense fallback={
@@ -914,17 +931,23 @@ export default function Settings() {
                 <input type="text" value={profileName} onChange={e => setProfileName(e.target.value)} className={inputCls} />
               </div>
               <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Primary Mobile Phone</label>
+                <input type="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+91 98765 43210" className={inputCls} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
                 <label className="text-[11px] font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Avatar Image URL</label>
                 <input type="text" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." className={inputCls} />
               </div>
-            </div>
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Primary Timezone & Exchange Region</label>
-              <select value={timezone} onChange={e => setTimezone(e.target.value)} className={cn(inputCls, 'appearance-none cursor-pointer text-xs font-sans w-full sm:w-1/2')}>
-                <option value="Asia/Kolkata">Asia/Kolkata (IST — NSE/BSE Hours)</option>
-                <option value="UTC">UTC (Global Crypto & Forex Vault)</option>
-                <option value="America/New_York">America/New_York (EST — US Equity F&O)</option>
-              </select>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Primary Timezone & Exchange Region</label>
+                <select value={timezone} onChange={e => setTimezone(e.target.value)} className={cn(inputCls, 'appearance-none cursor-pointer text-xs font-sans w-full')}>
+                  <option value="Asia/Kolkata">Asia/Kolkata (IST — NSE/BSE Hours)</option>
+                  <option value="UTC">UTC (Global Crypto & Forex Vault)</option>
+                  <option value="America/New_York">America/New_York (EST — US Equity F&O)</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -937,7 +960,7 @@ export default function Settings() {
               onClick={async () => {
                 setIsSavingProfile(true);
                 try {
-                  const { error } = await updateProfile({ fullName: profileName, avatarUrl, timezone });
+                  const { error } = await updateProfile({ fullName: profileName, avatarUrl, timezone, phoneNumber });
                   if (error) throw new Error(error);
                   notify.success('Profile preferences committed to cloud vault.');
                 } catch (err: any) {

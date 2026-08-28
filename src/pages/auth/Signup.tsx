@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Eye, EyeOff, Mail, Lock, User, Check, X, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowRight, Eye, EyeOff, Mail, Lock, User, Phone, Check, X, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import AuthLayout from '../../components/layout/AuthLayout';
+import { isValidEmailFormat, isDisposableEmail } from '../../lib/disposableEmail';
+import { isValidPhoneNumber } from '../../lib/phoneValidation';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -19,22 +21,46 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 const getFriendlyErrorMessage = (err: string) => {
-  if (err.toLowerCase().includes('already registered')) return 'An account with this email address already exists.';
+  if (err.toLowerCase().includes('already exists') || err.toLowerCase().includes('already registered')) return 'An account with this email address already exists.';
+  if (err.toLowerCase().includes('disposable') || err.toLowerCase().includes('temporary')) return err;
+  if (err.toLowerCase().includes('phone')) return err;
   if (err.toLowerCase().includes('weak password')) return 'Your password is too weak. Please satisfy all verified encryption rules below.';
   if (err.toLowerCase().includes('network') || err.toLowerCase().includes('failed to fetch')) return 'Network error. Please verify your connection and try again.';
-  return 'We couldn\'t initialize your workstation account right now. Please try again.';
+  return err || 'We couldn\'t initialize your workstation account right now. Please try again.';
 };
 
 export default function Signup() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(0);
-  const [emailValid, setEmailValid] = useState(true);
+
+  // Email validation & disposable check
+  const emailTrimmed = email.trim();
+  const isEmailFormatValid = emailTrimmed.length > 0 && isValidEmailFormat(emailTrimmed);
+  const isEmailDisposable = emailTrimmed.length > 0 && isDisposableEmail(emailTrimmed);
+  const emailValid = isEmailFormatValid && !isEmailDisposable;
+
+  let emailErrorMessage: string | undefined = undefined;
+  if (emailTrimmed.length > 0) {
+    if (!isEmailFormatValid) {
+      emailErrorMessage = 'Please enter a valid email address.';
+    } else if (isEmailDisposable) {
+      emailErrorMessage = 'Temporary or disposable emails are not permitted. Please use a permanent email address.';
+    }
+  }
+
+  // Phone validation
+  const phoneTrimmed = phoneNumber.trim();
+  const phoneValid = phoneTrimmed.length > 0 && isValidPhoneNumber(phoneTrimmed);
+  const phoneErrorMessage = phoneTrimmed.length > 0 && !isValidPhoneNumber(phoneTrimmed)
+    ? 'Please enter a valid 10-15 digit phone number (e.g. +91 9876543210).'
+    : undefined;
 
   // Quantitative security rules
   const lengthValid = password.length >= 8;
@@ -49,24 +75,16 @@ export default function Signup() {
   const { signUp } = useAuthStore();
   const shouldReduceMotion = useReducedMotion();
 
-  useEffect(() => {
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailValid(false);
-    } else {
-      setEmailValid(true);
-    }
-  }, [email]);
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailValid || !passwordValid || !passwordsMatch || !fullName) {
+    if (!emailValid || !phoneValid || !passwordValid || !passwordsMatch || !fullName.trim()) {
       setShake(s => s + 1);
       return;
     }
     
     setLoading(true);
     setError(null);
-    const { error: err } = await signUp(email, password, fullName);
+    const { error: err } = await signUp(emailTrimmed, password, fullName.trim(), phoneTrimmed);
     if (err) {
       setError(getFriendlyErrorMessage(err));
       setShake(s => s + 1);
@@ -128,7 +146,21 @@ export default function Signup() {
             onChange={e => setEmail(e.target.value)}
             leftIcon={Mail}
             aria-label="Email address"
-            error={!emailValid && email.length > 0 ? 'Please enter a valid email address.' : undefined}
+            error={emailErrorMessage}
+          />
+
+          <Input
+            id="signup-phone"
+            type="tel"
+            label="Primary Mobile Phone Number"
+            required
+            autoComplete="tel"
+            placeholder="+91 98765 43210"
+            value={phoneNumber}
+            onChange={e => setPhoneNumber(e.target.value)}
+            leftIcon={Phone}
+            aria-label="Mobile phone number"
+            error={phoneErrorMessage}
           />
 
           <div>
@@ -189,7 +221,7 @@ export default function Signup() {
             <Button
               type="submit"
               isLoading={loading}
-              disabled={loading || !emailValid || !passwordValid || !passwordsMatch || !fullName}
+              disabled={loading || !emailValid || !phoneValid || !passwordValid || !passwordsMatch || !fullName.trim()}
               className="w-full min-h-[48px] text-[15px] font-bold shadow-md rounded-xl justify-center"
             >
               {!loading && (

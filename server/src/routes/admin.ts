@@ -12,6 +12,7 @@ router.get('/users', authenticate, requireRoles(['SUB_ADMIN', 'ADMIN', 'SUPER_AD
         u.id,
         u.email,
         u.full_name as "fullName",
+        u.phone_number as "phoneNumber",
         u.role,
         u.created_at as "createdAt",
         COUNT(t.id)::int as "totalTrades",
@@ -283,7 +284,7 @@ router.get('/users/list', authenticate, requireRoles(['SUPER_ADMIN']), async (re
 
     const users = await prisma.$queryRawUnsafe<any[]>(
       `SELECT
-        u.id, u.email, u.full_name as "fullName", u.role, u.created_at as "createdAt",
+        u.id, u.email, u.full_name as "fullName", u.phone_number as "phoneNumber", u.role, u.created_at as "createdAt",
         COUNT(t.id)::int as "totalTrades",
         COALESCE(SUM(t.net_pnl), 0)::float as "netPnl"
       FROM users u

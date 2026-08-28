@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Calendar, Shield, ShieldCheck, TrendingUp, BookOpen, Link, Brain, BarChart3 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Calendar, Shield, ShieldCheck, TrendingUp, BookOpen, Link, Brain, BarChart3 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { SkeletonCard, SkeletonTable } from '../../components/admin/SkeletonLoader';
 
@@ -8,6 +8,7 @@ interface UserDetail {
   id: string;
   email: string;
   fullName: string | null;
+  phoneNumber?: string | null;
   role: 'USER' | 'SUB_ADMIN' | 'ADMIN' | 'SUPER_ADMIN';
   createdAt: string;
   trades: any[];
@@ -255,8 +256,11 @@ export default function AdminUserDetail() {
                 {userData.role}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-text-secondary text-sm">
+            <div className="flex items-center gap-4 text-text-secondary text-sm flex-wrap">
               <span className="flex items-center gap-1.5"><Mail className="w-4 h-4" />{userData.email}</span>
+              {userData.phoneNumber && (
+                <span className="flex items-center gap-1.5 font-mono"><Phone className="w-4 h-4" />{userData.phoneNumber}</span>
+              )}
               <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />Joined {new Date(userData.createdAt).toLocaleDateString()}</span>
             </div>
           </div>

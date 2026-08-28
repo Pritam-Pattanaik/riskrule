@@ -12,6 +12,7 @@ model User {
   email     String    @unique
   password  String
   fullName  String?   @map("full_name")
+  phoneNumber String? @map("phone_number")
   avatarUrl String?   @map("avatar_url")
   timezone  String?   @default("Asia/Kolkata")
   role      String    @default("USER")

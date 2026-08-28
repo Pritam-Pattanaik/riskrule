@@ -12,6 +12,7 @@ interface SystemUser {
   id: string;
   email: string;
   fullName: string | null;
+  phoneNumber?: string | null;
   role: 'USER' | 'SUB_ADMIN' | 'ADMIN' | 'SUPER_ADMIN';
   createdAt: string;
   totalTrades: number;
@@ -215,7 +216,10 @@ export default function AdminUsers() {
                         <span className="font-medium text-primary whitespace-nowrap">{u.fullName || 'Anonymous'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-secondary">{u.email}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-secondary">{u.email}</div>
+                      {u.phoneNumber && <div className="text-[11px] text-tertiary font-mono mt-0.5">{u.phoneNumber}</div>}
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${roleBadge(u.role)}`}>
                         {u.role}
