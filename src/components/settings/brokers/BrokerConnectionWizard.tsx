@@ -315,7 +315,7 @@ export const BrokerConnectionWizard: React.FC<BrokerConnectionWizardProps> = ({
                   {successAccountAlias || activeProvider.name} Connected!
                 </h4>
                 <p className="text-xs text-tertiary leading-relaxed">
-                  Your brokerage account has been successfully verified, encrypted, and synced with your TradeVault journal. Automated background observers are actively monitoring token health.
+                  Your brokerage account has been successfully verified, encrypted, and synced with your RiskRules journal. Automated background observers are actively monitoring token health.
                 </p>
               </div>
 

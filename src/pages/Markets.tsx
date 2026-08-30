@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Zap, TrendingUp, BarChart2, Activity, Globe } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { cn } from '../lib/cn';
 import MarketOverviewHero from '../components/markets/MarketOverviewHero';
 import LiveAISummary from '../components/markets/LiveAISummary';
 import MarketBreadth from '../components/markets/MarketBreadth';
@@ -48,7 +49,7 @@ const TAB_CONFIG: {
 
 function TabNav({ active, onChange }: { active: MarketTab; onChange: (t: MarketTab) => void }) {
   return (
-    <div className="flex items-center gap-1 p-1 rounded-2xl bg-surface-1 border border-border backdrop-blur-md">
+    <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-surface-1 border border-border shadow-xs">
       {TAB_CONFIG.map(tab => {
         const isActive = active === tab.id;
         return (
@@ -56,45 +57,20 @@ function TabNav({ active, onChange }: { active: MarketTab; onChange: (t: MarketT
             key={tab.id}
             id={`markets-tab-${tab.id}`}
             onClick={() => onChange(tab.id)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              padding: '9px 18px',
-              borderRadius: '12px',
-              fontSize: '13px',
-              fontWeight: isActive ? 700 : 500,
-              cursor: 'pointer',
-              border: 'none',
-              outline: 'none',
-              letterSpacing: isActive ? '-0.01em' : '0',
-              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-              background: isActive
-                ? 'linear-gradient(135deg, rgba(139,92,246,0.25) 0%, rgba(59,130,246,0.18) 100%)'
-                : 'transparent',
-              color: isActive ? 'rgb(var(--color-iris))' : 'rgb(var(--color-text-secondary))',
-              boxShadow: isActive
-                ? '0 2px 12px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.08)'
-                : 'none',
-              borderTop: isActive ? '1px solid rgba(139,92,246,0.3)' : '1px solid transparent',
-            }}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 outline-none select-none",
+              isActive
+                ? "bg-surface text-primary font-bold border border-accent shadow-gold"
+                : "text-secondary hover:text-primary hover:bg-surface-2"
+            )}
             title={tab.description}
           >
-            <span style={{ opacity: isActive ? 1 : 0.55, transition: 'opacity 0.2s' }}>
+            <span className={cn("transition-colors", isActive ? "text-accent" : "text-tertiary")}>
               {tab.icon}
             </span>
             <span>{tab.label}</span>
             {tab.badge && (
-              <span style={{
-                fontSize: '9px',
-                padding: '2px 6px',
-                borderRadius: '20px',
-                background: `rgba(16,185,129,0.15)`,
-                color: '#10b981',
-                fontWeight: 800,
-                letterSpacing: '0.5px',
-                border: '1px solid rgba(16,185,129,0.2)',
-              }}>
+              <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-success/15 text-success border border-success/30 uppercase tracking-wider">
                 {tab.badge}
               </span>
             )}
@@ -301,7 +277,7 @@ export default function Markets() {
               {/* ── Left / Main Column (8/12) ───────────────────────────── */}
               <div className="xl:col-span-8 flex flex-col gap-6">
                 {/* AI Summary + Market Breadth side-by-side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <LiveAISummary />
                   <MarketBreadth />
                 </div>

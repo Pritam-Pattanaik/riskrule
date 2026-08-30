@@ -1,5 +1,5 @@
 /**
- * TradeVault AI News Engine — Central Configuration
+ * RiskRules AI News Engine — Central Configuration
  *
  * All runtime behaviour is controlled from this file.
  * Feature flags can be overridden via environment variables for kill-switch control.
@@ -190,7 +190,7 @@ export const EDUCATIONAL_DISCLAIMER =
   '⚠️ Educational Use Only: This analysis is for educational purposes and market awareness only. ' +
   'It does not constitute investment advice, research, or a recommendation to buy, sell, or hold ' +
   'any security. Past sector observations do not guarantee future performance. Please consult a ' +
-  'SEBI-registered financial advisor before making investment decisions. TradeVault is not a ' +
+  'SEBI-registered financial advisor before making investment decisions. RiskRules is not a ' +
   'SEBI-registered Research Analyst.';
 
 /** Regex patterns that indicate ADVISORY_MODE language — must be blocked in EDUCATIONAL_MODE */

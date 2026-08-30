@@ -1,6 +1,6 @@
 # Security
 
-**TradeVault Platform — Security Architecture, Threat Model & Hardening Guide**
+**RiskRules Platform — Security Architecture, Threat Model & Hardening Guide**
 **Document ID:** SEC-001
 **Version:** 2.0
 **Status:** Active
@@ -25,7 +25,7 @@
 
 **Zero-Trust and Immutable Logging.**
 
-TradeVault handles highly sensitive financial data including broker API keys, trade records, and personal performance data. The security model enforces:
+RiskRules handles highly sensitive financial data including broker API keys, trade records, and personal performance data. The security model enforces:
 
 - **JWT-based authentication** with no session state on the server.
 - **Multi-tenant data isolation** enforced at the ORM layer, not application layer.
@@ -146,7 +146,7 @@ Sentry.init({
 
 ## 4. Data Isolation
 
-TradeVault is a multi-tenant system. Data isolation is enforced at the Prisma ORM layer:
+RiskRules is a multi-tenant system. Data isolation is enforced at the Prisma ORM layer:
 
 ```typescript
 // Every data query is scoped to the authenticated user
@@ -205,7 +205,7 @@ This enables full regulatory audit trails without exposing implementation detail
 
 ## 8. SEBI Regulatory Compliance
 
-TradeVault operates strictly in **EDUCATIONAL_MODE** as required by SEBI regulations:
+RiskRules operates strictly in **EDUCATIONAL_MODE** as required by SEBI regulations:
 
 1. **No Direct Advisory:** AI outputs never recommend specific securities to buy or sell.
 2. **Mandatory Disclaimers:** All market analyses append SEBI educational disclaimers.

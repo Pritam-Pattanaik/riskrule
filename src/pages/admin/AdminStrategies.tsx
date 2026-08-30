@@ -271,7 +271,7 @@ export default function AdminStrategies() {
             Strategy Management
           </h1>
           <p className="text-secondary text-sm mt-1">
-            Manage system-wide Default Strategies and supervise user Custom Strategies across TradeVault
+            Manage system-wide Default Strategies and supervise user Custom Strategies across RiskRules
           </p>
         </div>
 

@@ -16,7 +16,7 @@ export default function BentoGridSection() {
             Engineered to defend your capital against psychological error.
           </h2>
           <p className="text-base sm:text-lg text-secondary leading-relaxed">
-            Standard retail tools record what you traded after the fact. TradeVault enforces positive expectancy in real-time before you pull the trigger.
+            Standard retail tools record what you traded after the fact. RiskRules enforces positive expectancy in real-time before you pull the trigger.
           </p>
         </Reveal>
       </div>
@@ -39,7 +39,7 @@ export default function BentoGridSection() {
               Automated Daily Drawdown Guardrails
             </h3>
             <p className="text-sm sm:text-base text-secondary leading-relaxed max-w-xl mb-8">
-              Set maximum daily loss thresholds modeled directly on FTMO and Apex rules. When your daily stop-out barrier is triggered, TradeVault instantly blocks further API order transmissions to prevent tilt and revenge trading spirals.
+              Set maximum daily loss thresholds modeled directly on FTMO and Apex rules. When your daily stop-out barrier is triggered, RiskRules instantly blocks further API order transmissions to prevent tilt and revenge trading spirals.
             </p>
           </div>
 
@@ -70,7 +70,7 @@ export default function BentoGridSection() {
               Sub-second Broker &amp; Prop Account Sync
             </h3>
             <p className="text-sm sm:text-base text-secondary leading-relaxed max-w-xl mb-8">
-              Connect your MetaTrader, Interactive Brokers, Apex, or Tradovate credentials in seconds. TradeVault parses every trade fill, slippage delta, and execution fee automatically with zero manual entry required.
+              Connect your MetaTrader, Interactive Brokers, Apex, or Tradovate credentials in seconds. RiskRules parses every trade fill, slippage delta, and execution fee automatically with zero manual entry required.
             </p>
           </div>
 
@@ -117,7 +117,7 @@ export default function BentoGridSection() {
               </span>
             </div>
             <p className="text-sm text-secondary leading-relaxed max-w-xl">
-              Win rate is a vanity metric; expectancy is what keeps you funded. TradeVault isolates which setups yield positive mathematical edge and which specific time-of-day execution windows are steadily draining your accounts.
+              Win rate is a vanity metric; expectancy is what keeps you funded. RiskRules isolates which setups yield positive mathematical edge and which specific time-of-day execution windows are steadily draining your accounts.
             </p>
           </div>
 

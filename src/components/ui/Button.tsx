@@ -15,39 +15,42 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary: [
-    'bg-gradient-to-r from-accent to-accent/90 text-white',
+    'bg-gradient-to-r from-accent via-accent to-accent-hover text-white font-bold',
     'hover:from-accent-hover hover:to-accent-hover/90',
-    'shadow-xs hover:shadow-card transition-all duration-200',
+    'shadow-gold hover:shadow-raised transition-all duration-200',
     'active:scale-[0.97]',
   ].join(' '),
 
   secondary: [
-    'bg-surface-1 border border-border text-primary',
+    'bg-surface-1 border border-border text-primary font-semibold',
     'hover:bg-surface-2 hover:border-border-hover hover:text-primary',
     'shadow-xs hover:shadow-card transition-all duration-200',
+    'active:scale-[0.98]',
   ].join(' '),
 
   ghost: [
-    'text-secondary hover:text-primary hover:bg-surface-1',
+    'text-secondary hover:text-primary hover:bg-surface-2 font-medium',
     'transition-colors duration-150',
+    'active:scale-[0.98]',
   ].join(' '),
 
   danger: [
-    'bg-danger/10 border border-danger/20 text-danger',
+    'bg-danger/10 border border-danger/20 text-danger font-semibold',
     'hover:bg-danger/20 hover:border-danger/30',
     'transition-all duration-150',
+    'active:scale-[0.98]',
   ].join(' '),
 
   iris: [
-    'bg-gradient-to-r from-iris to-iris/80 text-white',
-    'hover:from-iris/90 hover:to-iris/70',
+    'bg-gradient-to-r from-iris to-iris/90 text-white font-bold',
+    'hover:from-iris/95 hover:to-iris/80',
     'shadow-iris hover:shadow-raised transition-all duration-200',
     'active:scale-[0.97]',
   ].join(' '),
 
   gold: [
-    'bg-gradient-to-r from-gold to-gold/80 text-white',
-    'hover:from-gold/90 hover:to-gold/70',
+    'bg-gradient-to-r from-gold via-gold to-accent-hover text-white font-bold',
+    'hover:from-accent-hover hover:to-accent-hover/90',
     'shadow-gold hover:shadow-raised transition-all duration-200',
     'active:scale-[0.97]',
   ].join(' '),

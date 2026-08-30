@@ -48,7 +48,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             className="pointer-events-none absolute -inset-px transition duration-300"
             style={{
               opacity,
-              background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(99,102,241,0.04), transparent 40%)`,
+              background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(180,130,20,0.04), transparent 40%)`,
             }}
           />
         )}

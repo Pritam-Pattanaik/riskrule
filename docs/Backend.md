@@ -1,6 +1,6 @@
 # Backend
 
-**TradeVault Platform — Backend Architecture, API Design & Server Reference**
+**RiskRules Platform — Backend Architecture, API Design & Server Reference**
 **Document ID:** BE-001
 **Version:** 2.0
 **Status:** Active
@@ -22,7 +22,7 @@
 
 ## 1. Backend Overview
 
-The TradeVault backend is a **Node.js + Express 5** API server providing:
+The RiskRules backend is a **Node.js + Express 5** API server providing:
 - **REST API** for all CRUD operations (trades, journal, strategies, goals)
 - **SSE Streams** for real-time market data push
 - **AI Streaming** for AI Coach response tokens

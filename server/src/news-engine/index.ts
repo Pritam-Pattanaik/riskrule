@@ -1,5 +1,5 @@
 /**
- * TradeVault AI News Engine — Pipeline Boot
+ * RiskRules AI News Engine — Pipeline Boot
  *
  * This is the main entry point for the news engine.
  * Called once from server/src/index.ts on startup.
@@ -39,7 +39,7 @@ export function startNewsEngine(): void {
   }
 
   logger.info('[NewsEngine] ═══════════════════════════════════════════════════');
-  logger.info('[NewsEngine] Starting TradeVault AI News Engine v1.0');
+  logger.info('[NewsEngine] Starting RiskRules AI News Engine v1.0');
   logger.info('[NewsEngine] Mode: EDUCATIONAL_MODE');
   logger.info('[NewsEngine] ═══════════════════════════════════════════════════');
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import logoUrl from '../../assets/images/logo-primary.webp';
+import logoUrl from '../../assets/images/RiskRules.png';
 
 interface LogoProps {
   variant?: 'icon' | 'full' | 'wordmark';
@@ -25,7 +25,7 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', size = 'md', class
   if (variant === 'wordmark') {
     return (
       <span className={`font-display font-bold tracking-tight text-primary ${textClasses[size]} ${className}`}>
-        TradeVault
+        RiskRules
       </span>
     );
   }
@@ -34,7 +34,7 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', size = 'md', class
     return (
       <img
         src={logoUrl}
-        alt="TradeVault Logo"
+        alt="RiskRules Logo"
         className={`${sizeClasses[size]} object-contain drop-shadow-md ${className}`}
       />
     );
@@ -44,11 +44,11 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', size = 'md', class
     <div className={`flex items-center gap-2.5 ${className}`}>
       <img
         src={logoUrl}
-        alt="TradeVault"
+        alt="RiskRules"
         className={`${sizeClasses[size]} object-contain drop-shadow-md shrink-0`}
       />
       <span className={`font-display font-bold tracking-tight text-primary ${textClasses[size]} leading-none`}>
-        TradeVault
+        RiskRules
       </span>
     </div>
   );

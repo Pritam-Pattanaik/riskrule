@@ -29,16 +29,15 @@ function SparklineMini({ data, isUp }: { data: number[]; isUp: boolean }) {
     })
     .join(' ');
 
-  const color = isUp ? '#10b981' : '#ef4444';
-  const fillColor = isUp ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+  const color = isUp ? 'rgb(var(--color-success))' : 'rgb(var(--color-danger))';
 
   return (
-    <svg width={w} height={h} className="opacity-70">
+    <svg width={w} height={h}>
       <polyline
         points={points}
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -57,17 +56,17 @@ function WatchlistRow({ item, index }: { item: MarketQuote; index: number }) {
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.04, duration: 0.3 }}
       className={cn(
-        'flex items-center justify-between p-3 rounded-lg transition-all duration-150 group cursor-pointer relative overflow-hidden',
+        'flex items-center justify-between p-3 rounded-xl transition-all duration-150 group cursor-pointer relative overflow-hidden mb-1.5 border border-border-subtle bg-surface-1/50',
         hasFlash && (flashUp ? 'flash-up' : 'flash-down'),
-        'hover:bg-surface-1',
+        'hover:bg-surface-2 hover:border-accent/40 hover:shadow-xs',
       )}
     >
       {/* Flash overlay */}
       {hasFlash && (
         <div
-          className="absolute inset-0 rounded-lg pointer-events-none"
+          className="absolute inset-0 rounded-xl pointer-events-none"
           style={{
-            background: flashUp ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+            background: flashUp ? 'rgba(5,150,105,0.12)' : 'rgba(220,38,38,0.12)',
             transition: 'opacity 0.3s',
           }}
         />
@@ -75,17 +74,16 @@ function WatchlistRow({ item, index }: { item: MarketQuote; index: number }) {
 
       {/* Left: Symbol + name */}
       <div className="flex flex-col min-w-0 flex-1">
-        <span className="font-bold text-sm text-primary tracking-tight truncate">
+        <span className="font-black text-sm text-primary tracking-tight truncate">
           {item.name}
         </span>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[10px] font-mono text-tertiary">{item.id.toUpperCase()}</span>
+        <div className="flex items-center gap-1.5 mt-0.5 font-mono">
+          <span className="text-[10px] font-bold text-tertiary">{item.id.toUpperCase()}</span>
           <span
-            className="text-[9px] font-bold px-1 py-0.5 rounded"
-            style={{
-              background: item.status === 'OPEN' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)',
-              color: item.status === 'OPEN' ? '#10b981' : item.status === '24/7' ? '#6b7280' : '#ef4444',
-            }}
+            className={cn(
+              "text-[9px] font-extrabold px-1.5 py-0.5 rounded border",
+              item.status === 'OPEN' ? "bg-success/10 text-success border-success/30" : "bg-surface-2 text-secondary border-border"
+            )}
           >
             {item.status}
           </span>
@@ -98,17 +96,17 @@ function WatchlistRow({ item, index }: { item: MarketQuote; index: number }) {
       </div>
 
       {/* Right: Price + change */}
-      <div className="flex flex-col items-end shrink-0">
-        <span className="font-mono text-sm font-bold text-primary tabular-nums">
+      <div className="flex flex-col items-end shrink-0 font-mono">
+        <span className="text-sm font-bold text-primary tabular-nums">
           {item.price >= 1000
             ? item.price.toLocaleString('en-IN', { maximumFractionDigits: 2 })
             : item.price.toFixed(2)}
         </span>
         <div className={cn(
-          'flex items-center gap-0.5 text-[11px] font-bold',
+          'flex items-center gap-0.5 text-xs font-bold tabular-nums',
           isUp ? 'text-success' : 'text-danger',
         )}>
-          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+          {isUp ? <TrendingUp className="w-3.5 h-3.5" strokeWidth={2.5} /> : <TrendingDown className="w-3.5 h-3.5" strokeWidth={2.5} />}
           <span>{isUp ? '+' : ''}{item.changePercent.toFixed(2)}%</span>
         </div>
       </div>

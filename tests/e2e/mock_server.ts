@@ -123,7 +123,7 @@ const systemSettings: SystemSetting[] = [
   { key: 'enable_ai_coach', value: 'true' },
   { key: 'enable_broker_sync', value: 'true' },
   { key: 'maintenance_mode', value: 'false' },
-  { key: 'system_announcement', value: 'Welcome to TradeVault!' }
+  { key: 'system_announcement', value: 'Welcome to RiskRules!' }
 ];
 
 // Helper to push audit logs
@@ -147,7 +147,7 @@ async function seedData() {
 
   const adminUser: User = {
     id: 'u-admin-1111-1111-111111111111',
-    email: 'superadmin@tradevault.in',
+    email: 'superadmin@riskrules.in',
     fullName: 'Super Admin',
     passwordHash: pwdAdmin,
     role: 'SUPER_ADMIN',
@@ -157,7 +157,7 @@ async function seedData() {
 
   const normalUser: User = {
     id: 'u-user-2222-2222-222222222222',
-    email: 'user@tradevault.in',
+    email: 'user@riskrules.in',
     fullName: 'Jane Doe',
     passwordHash: pwdUser,
     role: 'USER',
@@ -167,7 +167,7 @@ async function seedData() {
 
   const suspendedUser: User = {
     id: 'u-user-3333-3333-333333333333',
-    email: 'suspended@tradevault.in',
+    email: 'suspended@riskrules.in',
     fullName: 'Suspended User',
     passwordHash: pwdUser,
     role: 'USER',

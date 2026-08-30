@@ -1,6 +1,6 @@
 # Deployment
 
-**TradeVault Platform — Deployment Architecture, Environment Configuration & Operations Guide**
+**RiskRules Platform — Deployment Architecture, Environment Configuration & Operations Guide**
 **Document ID:** DEP-001
 **Version:** 2.0
 **Status:** Active
@@ -21,7 +21,7 @@
 
 ## 1. Deployment Architecture
 
-TradeVault uses a **monorepo-style** layout with a Vite frontend and an Express backend, both deployed on Vercel.
+RiskRules uses a **monorepo-style** layout with a Vite frontend and an Express backend, both deployed on Vercel.
 
 ```
 journal/
@@ -46,7 +46,7 @@ All variables must be defined in `server/.env` for local development, and in the
 | `DATABASE_URL` | **Yes** | — | PostgreSQL connection string (Neon serverless) | `postgresql://user:pass@ep-host.neon.tech/neondb?sslmode=require` |
 | `JWT_SECRET` | **Yes** | `fallback_secret` | Secret key for signing JWTs | `super_secret_jwt_key_12345` |
 | `PORT` | No | `3000` | Express server port (local development) | `3000` |
-| `ALLOWED_ORIGINS` | No | `http://localhost:5173` | Comma-separated CORS origins | `http://localhost:5173,https://tradevault.vercel.app` |
+| `ALLOWED_ORIGINS` | No | `http://localhost:5173` | Comma-separated CORS origins | `http://localhost:5173,https://riskrules.vercel.app` |
 | `ANTHROPIC_API_KEY` | No* | — | Anthropic Claude API key | `sk-ant-api03-...` |
 | `GEMINI_API_KEY` | No* | — | Google Gemini API key | `AIzaSy...` |
 | `GROQ_API_KEY` | No* | — | Groq API key (fast inference) | `gsk_...` |

@@ -15,6 +15,7 @@ import { api } from '../lib/api';
 import { notify } from '../lib/notify';
 import { cn } from '../lib/cn';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedTabs } from '../components/ui/Motion';
 import { BrokerHealthCard } from '../components/settings/brokers/BrokerHealthCard';
 import { BrokerConnectionWizard } from '../components/settings/brokers/BrokerConnectionWizard';
 import { PREBUILT_RULES, PREBUILT_RULE_CATEGORIES, PrebuiltRule } from '../constants/prebuiltRules';
@@ -239,7 +240,7 @@ export default function Settings() {
     const trades = useTradeStore.getState().trades || [];
     const realExport = {
       timestamp: new Date().toISOString(),
-      account: profile?.email || 'trader@tradevault.com',
+      account: profile?.email || 'trader@RiskRules.in',
       connectionsCount: connections.length,
       riskRules: { maxDailyLoss, maxLossPerTrade, killSwitchEnabled },
       executionsCount: trades.length,
@@ -269,7 +270,7 @@ export default function Settings() {
     
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `TradeVault_Audit_Backup_${new Date().toISOString().slice(0, 10)}.${format}`);
+    downloadAnchor.setAttribute("download", `RiskRules_Audit_Backup_${new Date().toISOString().slice(0, 10)}.${format}`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -356,9 +357,11 @@ export default function Settings() {
         })}
       </div>
 
-      {/* TAB 1: BROKER INTEGRATION MANAGEMENT SYSTEM */}
-      {activeTab === 'brokers' && (
-        <div className="space-y-6 animate-fadeIn">
+      {/* Animated Tab Panels */}
+      <AnimatedTabs activeKey={activeTab}>
+        {/* TAB 1: BROKER INTEGRATION MANAGEMENT SYSTEM */}
+        {activeTab === 'brokers' && (
+          <div className="space-y-6">
           
           {/* AI Coach Proactive Health Notice (Institutional Feature) */}
           <div className="p-4 rounded-2xl bg-gradient-to-r from-iris/10 via-surface-1 to-surface-1 border border-iris/20 flex items-center justify-between gap-4">
@@ -920,7 +923,7 @@ export default function Settings() {
             </div>
             <div>
               <h4 className="font-display font-bold text-lg text-primary">{profileName || 'Principal Trader'}</h4>
-              <p className="text-xs font-mono text-tertiary">{profile?.email || 'trader@tradevault.com'} • Tier 1 Institutional Subscription</p>
+              <p className="text-xs font-mono text-tertiary">{profile?.email || 'trader@RiskRules.in'} • Tier 1 Institutional Subscription</p>
             </div>
           </div>
 
@@ -1060,6 +1063,7 @@ export default function Settings() {
           </div>
         </div>
       )}
+      </AnimatedTabs>
 
       {/* Guided Connection Wizard Modal */}
       <BrokerConnectionWizard isOpen={wizardOpen} onClose={() => setWizardOpen(false)} />

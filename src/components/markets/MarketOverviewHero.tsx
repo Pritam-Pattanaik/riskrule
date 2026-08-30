@@ -54,7 +54,7 @@ function QuoteCard({
   index: number;
 }) {
   const isUp = market.changePercent >= 0;
-  const color = isUp ? '#10b981' : '#ef4444';
+  const color = isUp ? 'rgb(var(--color-success))' : 'rgb(var(--color-danger))';
   const flashUp = market.flash === 'up';
   const flashDown = market.flash === 'down';
 
@@ -65,27 +65,20 @@ function QuoteCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.06, ease: 'easeOut' }}
-      className="w-[210px] shrink-0 rounded-2xl p-4 text-left relative overflow-hidden transition-all duration-200 group"
+      className={cn(
+        "w-[215px] shrink-0 rounded-2xl p-4 text-left relative overflow-hidden transition-all duration-200 group border cursor-pointer outline-none select-none",
+        isActive
+          ? "bg-surface border-2 border-accent shadow-gold"
+          : "bg-surface border-border hover:border-border-hover hover:-translate-y-0.5 shadow-xs hover:shadow-card"
+      )}
       style={{
         background: isActive
-          ? 'linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(59,130,246,0.12) 100%)'
+          ? 'linear-gradient(135deg, rgb(var(--color-surface)) 0%, rgb(var(--color-surface-1)) 100%)'
           : flashUp
-          ? 'rgba(16,185,129,0.07)'
+          ? 'rgba(5,150,105,0.08)'
           : flashDown
-          ? 'rgba(239,68,68,0.07)'
-          : 'var(--color-surface-0)',
-        border: isActive
-          ? '1px solid rgba(139,92,246,0.35)'
-          : flashUp
-          ? '1px solid rgba(16,185,129,0.25)'
-          : flashDown
-          ? '1px solid rgba(239,68,68,0.25)'
-          : '1px solid rgba(var(--color-border-rgb), 0.1)',
-        boxShadow: isActive
-          ? '0 4px 24px rgba(139,92,246,0.18), inset 0 1px 0 rgba(var(--color-border-rgb),0.08)'
-          : 'none',
-        cursor: 'pointer',
-        outline: 'none',
+          ? 'rgba(220,38,38,0.08)'
+          : undefined,
       }}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
@@ -93,8 +86,7 @@ function QuoteCard({
       {/* Active top bar */}
       {isActive && (
         <div
-          className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
-          style={{ background: 'linear-gradient(90deg, rgba(139,92,246,0.8), rgba(59,130,246,0.6))' }}
+          className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl bg-gradient-to-r from-accent via-gold to-accent-hover"
         />
       )}
 
@@ -109,8 +101,8 @@ function QuoteCard({
             transition={{ duration: 0.4 }}
             style={{
               background: flashUp
-                ? 'rgba(16,185,129,0.12)'
-                : 'rgba(239,68,68,0.12)',
+                ? 'rgba(5,150,105,0.15)'
+                : 'rgba(220,38,38,0.15)',
             }}
           />
         )}
@@ -119,60 +111,42 @@ function QuoteCard({
       {/* Header row */}
       <div className="flex items-center justify-between mb-2.5">
         <span
-          className="text-[10px] font-black uppercase tracking-widest truncate max-w-[120px]"
-          style={{
-            color: isActive ? 'rgb(var(--color-iris))' : 'rgb(var(--color-text-secondary))',
-            transition: 'color 0.2s',
-          }}
+          className={cn(
+            "text-xs font-black uppercase tracking-wider truncate max-w-[120px]",
+            isActive ? "text-accent" : "text-primary"
+          )}
         >
           {market.name}
         </span>
 
         {/* Status badge */}
         <div
-          className="flex items-center gap-1 px-2 py-0.5 rounded-full flex-shrink-0"
-          style={{
-            background: market.status === 'OPEN'
-              ? 'rgba(16,185,129,0.1)'
+          className={cn(
+            "flex items-center gap-1 px-2 py-0.5 rounded-full flex-shrink-0 border font-bold text-[9px]",
+            market.status === 'OPEN'
+              ? 'bg-success/10 text-success border-success/30'
               : market.status === '24/7'
-              ? 'rgba(59,130,246,0.1)'
-              : 'rgba(var(--color-border-rgb), 0.05)',
-            border: market.status === 'OPEN'
-              ? '1px solid rgba(16,185,129,0.2)'
-              : '1px solid rgba(var(--color-border-rgb), 0.1)',
-          }}
+              ? 'bg-blue/10 text-blue border-blue/30'
+              : 'bg-surface-2 text-secondary border-border'
+          )}
         >
           <span
-            className="w-1 h-1 rounded-full"
-            style={{
-              background: market.status === 'OPEN' ? '#10b981' : market.status === '24/7' ? '#3b82f6' : '#6b7280',
-              boxShadow: market.status === 'OPEN' ? '0 0 5px rgba(16,185,129,0.6)' : 'none',
-              animation: (market.status === 'OPEN' || market.status === '24/7') ? 'pulse 2s infinite' : 'none',
-            }}
+            className={cn(
+              "w-1.5 h-1.5 rounded-full",
+              market.status === 'OPEN' ? 'bg-success animate-pulse' : market.status === '24/7' ? 'bg-blue animate-pulse' : 'bg-tertiary'
+            )}
           />
-          <span
-            className="text-[8.5px] font-bold"
-            style={{
-              color: market.status === 'OPEN' ? '#10b981' : market.status === '24/7' ? '#60a5fa' : '#6b7280',
-            }}
-          >
-            {market.status}
-          </span>
+          <span>{market.status}</span>
         </div>
       </div>
 
       {/* Price */}
       <div className="mb-1">
         <span
-          className="text-[22px] font-black tabular-nums tracking-tight leading-none transition-colors duration-300"
-          style={{
-            color: market.flash
-              ? color
-              : isActive
-              ? 'rgb(var(--color-text-primary))'
-              : 'rgb(var(--color-text-primary))',
-            fontVariantNumeric: 'tabular-nums',
-          }}
+          className={cn(
+            "text-2xl font-black font-mono tabular-nums tracking-tight leading-none transition-colors duration-300",
+            isActive ? "text-primary" : "text-primary"
+          )}
         >
           {market.price >= 1000
             ? market.price.toLocaleString('en-IN', { maximumFractionDigits: 2 })
@@ -182,24 +156,26 @@ function QuoteCard({
 
       {/* Change */}
       <div
-        className="flex items-center gap-1 mb-3"
-        style={{ color }}
+        className={cn(
+          "flex items-center gap-1 mb-3 text-xs font-bold font-mono tabular-nums",
+          isUp ? "text-success" : "text-danger"
+        )}
       >
         {isUp
-          ? <ArrowUpRight size={13} />
-          : <ArrowDownRight size={13} />
+          ? <ArrowUpRight size={14} strokeWidth={2.5} />
+          : <ArrowDownRight size={14} strokeWidth={2.5} />
         }
-        <span className="text-[11px] font-bold tabular-nums">
+        <span>
           {isUp ? '+' : ''}{market.change.toFixed(2)}
         </span>
-        <span className="text-[11px] font-bold tabular-nums opacity-80">
+        <span className="opacity-90">
           ({isUp ? '+' : ''}{market.changePercent.toFixed(2)}%)
         </span>
       </div>
 
       {/* Sparkline */}
       {market.sparkline && market.sparkline.length > 1 && (
-        <div className="h-9 w-full opacity-60 group-hover:opacity-90 transition-opacity">
+        <div className="h-9 w-full group-hover:scale-105 transition-transform">
           <ResponsiveContainer width="100%" height="100%" minWidth={10} minHeight={10}>
             <LineChart data={market.sparkline.map((v, i) => ({ v, i }))}>
               <YAxis domain={['auto', 'auto']} hide />
@@ -207,7 +183,7 @@ function QuoteCard({
                 type="monotone"
                 dataKey="v"
                 stroke={color}
-                strokeWidth={1.5}
+                strokeWidth={2.5}
                 dot={false}
                 isAnimationActive={false}
               />

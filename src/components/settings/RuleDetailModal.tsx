@@ -226,7 +226,7 @@ export function RuleDetailModal({
                   STEP 3
                 </span>
                 <span className="leading-relaxed">
-                  Log your execution in TradeVault right after closing the trade to receive personalized AI coach feedback.
+                  Log your execution in RiskRules right after closing the trade to receive personalized AI coach feedback.
                 </span>
               </div>
             </div>

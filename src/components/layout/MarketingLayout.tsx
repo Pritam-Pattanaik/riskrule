@@ -282,7 +282,7 @@ export default function MarketingLayout() {
 
         {/* Bottom Bar */}
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-[12px] text-tertiary font-medium">
-          <p>© 2026 TradeVault, Inc. Designed and implemented by the TradeVault Team.</p>
+          <p>© 2026 RiskRules, Inc. Designed and implemented by the RiskRules Team.</p>
           <div className="flex items-center gap-4 sm:gap-6">
             <span className="text-secondary font-semibold hidden sm:inline-block">Discipline Over Dopamine</span>
             <span className="hidden sm:inline-block">·</span>

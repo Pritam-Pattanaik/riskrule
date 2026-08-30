@@ -343,9 +343,9 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
       'MULTI_ACCOUNT'
     ],
     documentation: {
-      setupGuideUrl: 'https://tradevault.io/docs/bullforce',
-      apiDocsUrl: 'https://tradevault.io/docs/bullforce/api',
-      officialPortalUrl: 'https://tradevault.io/',
+      setupGuideUrl: 'https://RiskRules.in/docs/bullforce',
+      apiDocsUrl: 'https://RiskRules.in/docs/bullforce/api',
+      officialPortalUrl: 'https://RiskRules.in/',
     },
   },
   {

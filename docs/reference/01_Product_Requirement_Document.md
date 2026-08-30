@@ -1,4 +1,4 @@
-# TradeVault — Flow Intelligence
+# RiskRules — Flow Intelligence
 ## Product Requirements Document (PRD) v1.0
 ### Options Intelligence Platform — Full Research & Discovery Sprint
 
@@ -55,13 +55,13 @@ The cost of this fragmentation is not just inconvenience. It is cognitive overlo
 
 ## 1.2 The Opportunity
 
-TradeVault already has something no competitor has: **the user's own trading history, journal, and performance context**.
+RiskRules already has something no competitor has: **the user's own trading history, journal, and performance context**.
 
-By combining this with institutional-grade options analytics and a world-class AI layer, TradeVault can become the first platform that answers not just *what* the market is doing, but *what it means specifically for this trader and their open positions*.
+By combining this with institutional-grade options analytics and a world-class AI layer, RiskRules can become the first platform that answers not just *what* the market is doing, but *what it means specifically for this trader and their open positions*.
 
 ## 1.3 The Solution
 
-**Flow Intelligence** — TradeVault's flagship Options Intelligence workspace.
+**Flow Intelligence** — RiskRules's flagship Options Intelligence workspace.
 
 Not a chart. Not a table. Not another option chain.
 
@@ -86,7 +86,7 @@ When a trader wakes up at 8:45 AM and asks "What's happening in the market today
 
 Not Bloomberg. Not NSE website. Not WhatsApp groups.
 
-**TradeVault.**
+**RiskRules.**
 
 ---
 
@@ -132,7 +132,7 @@ Sub-second first meaningful paint. Sub-100ms data refresh. Any interaction that 
 
 > **Daily Active Traders (DAT)** who open Flow Intelligence before placing their first options trade of the day.
 
-Target: 60% of all TradeVault options traders open Flow Intelligence on any given trading day within 90 days of launch.
+Target: 60% of all RiskRules options traders open Flow Intelligence on any given trading day within 90 days of launch.
 
 ## 2.6 Secondary Metrics
 
@@ -459,7 +459,7 @@ No platform understands:
 - What they have been writing in their journal
 - What mistakes they repeatedly make
 
-**Flow Intelligence's answer:** The AI layer reads the user's TradeVault trade history, journal entries, and active positions. Insights are generated *in the context of the specific user*.
+**Flow Intelligence's answer:** The AI layer reads the user's RiskRules trade history, journal entries, and active positions. Insights are generated *in the context of the specific user*.
 
 "You have 3 Nifty CE positions open. Today's OI buildup at your strike suggests strong resistance. Based on your past 12 similar trades, you have a 27% win rate when you hold through this pattern. Here are your options."
 
@@ -593,7 +593,7 @@ Traders want to know:
 - Gamma risk — how fast will delta change if Nifty moves 100 points?
 - Max pain proximity — is expiry likely to pin near her profit zone?
 
-**Flow Intelligence Value Proposition:** Priya's positions are imported from her TradeVault journal. Flow Intelligence shows her active positions overlaid on the OI heatmap. She sees exactly where her short strikes sit relative to institutional OI walls. One alert: "OI buildup detected at your 23,200 CE short strike — 40% increase in last 2 hours." She adjusts her position proactively.
+**Flow Intelligence Value Proposition:** Priya's positions are imported from her RiskRules journal. Flow Intelligence shows her active positions overlaid on the OI heatmap. She sees exactly where her short strikes sit relative to institutional OI walls. One alert: "OI buildup detected at your 23,200 CE short strike — 40% increase in last 2 hours." She adjusts her position proactively.
 
 ---
 
@@ -705,7 +705,7 @@ Wake up → Check phone (Twitter/Telegram tips) → Open NSE site (slow)
 
 **Flow Intelligence Journey:**
 ```
-Wake up → Open TradeVault Flow Intelligence
+Wake up → Open RiskRules Flow Intelligence
 → Morning Brief: AI summary of overnight events + expected market context
 → OI structure overview: Key levels, PCR, Max Pain, IV state
 → Personalized alert: "Your open BankNifty CE position: IV is 2σ elevated — 
@@ -794,7 +794,7 @@ Rationale:
 - "Flow" directly references institutional order flow — a term respected by serious traders
 - "Intelligence" positions this as a thinking system, not a data display
 - Scalable: works for options, futures, and eventually cross-asset as the product grows
-- Memorable and premium — fits the TradeVault brand vocabulary
+- Memorable and premium — fits the RiskRules brand vocabulary
 - SEO advantage: "flow intelligence trading" is a rising search category
 
 **Navigation Label:** Flow  
@@ -915,7 +915,7 @@ Flow Intelligence
 #### Level 7 — My Positions Panel (Personalized)
 ```
 ┌─────────────────────────────────────────────────────┐
-│  MY POSITIONS (from TradeVault Journal)             │
+│  MY POSITIONS (from RiskRules Journal)             │
 │                                                     │
 │  NIFTY 23,000 CE @ 145 — Current: 98 (-32%)        │
 │  Position is 200pts OTM. Call wall at your strike. │
@@ -933,7 +933,7 @@ Flow Intelligence
 
 ## 7.3 Navigation Model
 
-**Primary navigation:** Left sidebar (consistent with rest of TradeVault)  
+**Primary navigation:** Left sidebar (consistent with rest of RiskRules)  
 **Secondary navigation:** Horizontal tab bar within Flow Intelligence  
 **Tertiary navigation:** Section accordion within each panel  
 
@@ -1055,7 +1055,7 @@ Animations must communicate state changes — never decorate:
 
 ## 9.1 Typography
 
-Following TradeVault's established system:
+Following RiskRules's established system:
 
 | Role | Font | Weight | Size |
 |------|------|--------|------|
@@ -1315,7 +1315,7 @@ The AI receives the following context to generate insights:
 - Options volume patterns
 - Underlying index price and technical levels
 
-**Personal Context (from TradeVault user data):**
+**Personal Context (from RiskRules user data):**
 - Open positions: strikes, expiry, quantity, average price
 - Unrealized P&L per position
 - Historical win rate for current strategy type
@@ -1356,7 +1356,7 @@ The AI receives the following context to generate insights:
 │                                                     │
 │  Context Assembler                                  │
 │    ├── Market Data Feed (live)                      │
-│    ├── User Profile Service (TradeVault DB)         │
+│    ├── User Profile Service (RiskRules DB)         │
 │    ├── Trade History Service                        │
 │    └── Journal Analysis (last 7 days)               │
 │                                                     │
@@ -1405,7 +1405,7 @@ The AI receives the following context to generate insights:
 | Feature ID | Feature | Description | Acceptance Criteria |
 |-----------|---------|-------------|---------------------|
 | F-011 | Institutional Flow Feed | Real-time feed of unusual large OI changes | Filters for size threshold; timestamped; AI interpretation per event |
-| F-012 | My Positions Overlay | User's open positions shown on OI heatmap | Integrates with TradeVault trade store; shows P&L overlay |
+| F-012 | My Positions Overlay | User's open positions shown on OI heatmap | Integrates with RiskRules trade store; shows P&L overlay |
 | F-013 | IV Surface Chart | 3D visualization of IV across strikes and expiries | Smooth rendering; interactive (rotate, zoom); shows current vs historical |
 | F-014 | Intraday OI Replay | Animated replay of how OI changed throughout the day | Playback speed control; key event markers; exportable |
 | F-015 | Greeks Dashboard | Market-level delta exposure, gamma wall, vega risk zones | Clearly labeled; AI interpretation; updated every minute |
@@ -1418,10 +1418,10 @@ The AI receives the following context to generate insights:
 | Feature ID | Feature | Description | Acceptance Criteria |
 |-----------|---------|-------------|---------------------|
 | F-019 | Multi-Symbol Grid | Side-by-side view of 2-4 indices simultaneously | Configurable grid; independent index selection per cell |
-| F-020 | Position AI Coach | AI analysis of open positions with historical context | Reads TradeVault history; generates personalized risk assessment |
+| F-020 | Position AI Coach | AI analysis of open positions with historical context | Reads RiskRules history; generates personalized risk assessment |
 | F-021 | Scenario Modeler | "What if Nifty moves to X?" payoff simulation | Interactive slider; instant recalculation; AI interpretation |
 | F-022 | Historical Backtesting | Test market conditions against historical OI data | 1-year lookback; key expiry comparison; pattern matching |
-| F-023 | Export & Reports | PDF/CSV export of daily analysis | Professional formatting; branded TradeVault report |
+| F-023 | Export & Reports | PDF/CSV export of daily analysis | Professional formatting; branded RiskRules report |
 | F-024 | API Access | Access Flow Intelligence data programmatically | REST + WebSocket; rate limited; JWT authenticated |
 
 ---
@@ -1490,7 +1490,7 @@ The AI receives the following context to generate insights:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     CLIENT LAYER                                 │
-│  React Frontend (TradeVault) — WebSocket + REST                  │
+│  React Frontend (RiskRules) — WebSocket + REST                  │
 └─────────────────────────┬───────────────────────────────────────┘
                           │
 ┌─────────────────────────▼───────────────────────────────────────┐
@@ -1985,7 +1985,7 @@ TTL: 300 seconds (alert cooldown)
 
 ## 16.1 Authentication & Authorization
 
-- All Flow Intelligence APIs require JWT Bearer token (inherited from TradeVault auth)
+- All Flow Intelligence APIs require JWT Bearer token (inherited from RiskRules auth)
 - WebSocket connections authenticate via one-time token issued by REST API
 - Token TTL: 15 minutes for access token, 7 days for refresh token
 - User's trading history/positions data: Only accessible to authenticated owner
@@ -2030,7 +2030,7 @@ TTL: 300 seconds (alert cooldown)
 | QA-F-004 | AI Brief | Request morning brief | Brief loads within 3s; contains conclusion + 3 observations |
 | QA-F-005 | Smart Alerts | Create OI threshold alert | Alert fires within 15s of threshold breach |
 | QA-F-006 | Option Chain | Sort by OI Change | Chain re-orders correctly; ATM indicator remains |
-| QA-F-007 | My Positions | Open position exists in TradeVault | Position appears on OI heatmap with correct strike marker |
+| QA-F-007 | My Positions | Open position exists in RiskRules | Position appears on OI heatmap with correct strike marker |
 | QA-F-008 | Max Pain | Calculation with known data | Max Pain = confirmed correct value |
 
 ### Performance Testing
@@ -2185,7 +2185,7 @@ Schedule-based auto-scaling:
 
 - [ ] HTTPS everywhere (HSTS enforced)
 - [ ] CSP headers configured
-- [ ] CORS restricted to TradeVault domains
+- [ ] CORS restricted to RiskRules domains
 - [ ] JWT secrets rotated quarterly
 - [ ] SQL injection prevention (parameterized queries only)
 - [ ] Input validation on all API endpoints
@@ -2218,7 +2218,7 @@ Schedule-based auto-scaling:
 - IV dashboard (IV percentile, trend)
 - Institutional flow feed
 - Smart alert system (all alert types)
-- My Positions integration (from TradeVault trades)
+- My Positions integration (from RiskRules trades)
 - Full option chain with Greeks
 - Post-market review mode
 
@@ -2342,7 +2342,7 @@ Schedule-based auto-scaling:
 ### RG-004: Mobile Options Trader Behavior
 **Gap:** Research specifically on how Indian options traders use mobile vs desktop for analysis (not execution) is limited.  
 **Impact:** Mobile feature prioritization decisions.  
-**Action:** Run a 2-week survey with TradeVault users before mobile design begins.
+**Action:** Run a 2-week survey with RiskRules users before mobile design begins.
 
 ### RG-005: AI Prompt Legal Review
 **Gap:** Whether AI-generated market observations constitute "investment advice" under SEBI regulations has not been formally reviewed.  
@@ -2417,6 +2417,6 @@ Schedule-based auto-scaling:
 
 ---
 
-*This PRD was generated through a comprehensive research and discovery sprint for TradeVault. All competitive intelligence is based on publicly available information, community feedback, and direct platform evaluation. This document represents a strategic recommendation and should be reviewed by qualified legal counsel before AI output framing is finalized.*
+*This PRD was generated through a comprehensive research and discovery sprint for RiskRules. All competitive intelligence is based on publicly available information, community feedback, and direct platform evaluation. This document represents a strategic recommendation and should be reviewed by qualified legal counsel before AI output framing is finalized.*
 
 *"The market. Decoded."*

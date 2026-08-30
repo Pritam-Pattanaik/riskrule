@@ -34,7 +34,7 @@ export function VoiceSettingsTab() {
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
   const [testingVoiceId, setTestingVoiceId] = useState<string | null>(null);
-  const [customTestText, setCustomTestText] = useState('TradeVault Voice AI is online. All trading risk parameters are within safe limits.');
+  const [customTestText, setCustomTestText] = useState('RiskRules Voice AI is online. All trading risk parameters are within safe limits.');
 
   useEffect(() => {
     loadVoices();
@@ -58,7 +58,7 @@ export function VoiceSettingsTab() {
     setSelectedVoice(voice.id);
 
     try {
-      const sampleText = `Hello, I am ${voice.name}. Your TradeVault AI voice assistant.`;
+      const sampleText = `Hello, I am ${voice.name}. Your RiskRules AI voice assistant.`;
       await speak(sampleText);
     } catch (err: any) {
       notify.error(err.message || 'Voice test failed');

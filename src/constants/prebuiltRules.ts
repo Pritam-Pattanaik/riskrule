@@ -717,7 +717,7 @@ export const PREBUILT_RULES: PrebuiltRule[] = [
     category: 'routine',
     categoryLabel: 'Daily Prep & Journaling',
     situation: 'Trade Close',
-    title: 'Log Every Trade in TradeVault Immediately',
+    title: 'Log Every Trade in RiskRules Immediately',
     description: 'Record entry reason, screenshot, mindset rating, and discipline score right after closing the trade while fresh in memory.',
     badge: 'Journaling',
     isBeginnerRecommended: true,

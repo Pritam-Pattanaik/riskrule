@@ -1,6 +1,6 @@
 # TradingEngine
 
-**TradeVault Platform — Market Data Provider Architecture, Broker Integrations & Trading Engine**
+**RiskRules Platform — Market Data Provider Architecture, Broker Integrations & Trading Engine**
 **Document ID:** TE-001
 **Version:** 2.0
 **Status:** Active

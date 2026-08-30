@@ -18,7 +18,7 @@ function getResendClient() {
   }
 }
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'TradeVault <onboarding@resend.dev>';
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'RiskRules <onboarding@resend.dev>';
 
 /**
  * Sends a password reset email.
@@ -51,7 +51,7 @@ export async function sendPasswordResetEmail(
     await client.emails.send({
       from: FROM_ADDRESS,
       to: [to],
-      subject: 'Reset your TradeVault password',
+      subject: 'Reset your RiskRules password',
       html,
       text,
     });
@@ -69,7 +69,7 @@ export async function sendPasswordResetEmail(
 function buildResetEmailText(name: string, resetUrl: string, expiryMinutes: number): string {
   return `Hi ${name},
 
-We received a request to reset your TradeVault password.
+We received a request to reset your RiskRules password.
 
 Reset your password by visiting this link:
 ${resetUrl}
@@ -78,10 +78,10 @@ This link will expire in ${expiryMinutes} minutes.
 
 If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
 
-— TradeVault
+— RiskRules
 
 This is an automated message. Please do not reply.
-If you need help, contact support@tradevault.app`;
+If you need help, contact support@riskrules.app`;
 }
 
 // ─── Minimal, Professional HTML Email Template ────────────────────────────────
@@ -96,7 +96,7 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
-  <title>Reset your TradeVault password</title>
+  <title>Reset your RiskRules password</title>
   <!--[if mso]>
   <noscript>
     <xml>
@@ -140,7 +140,7 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
       <tr>
         <td style="padding-bottom:28px;text-align:center;">
           <span class="heading" style="font-size:22px;font-weight:700;color:#1a1a1a;letter-spacing:-0.3px;">
-            TradeVault
+            RiskRules
           </span>
         </td>
       </tr>
@@ -158,7 +158,7 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
 
               <!-- Body -->
               <p class="body-text" style="font-size:15px;line-height:1.7;color:#4a4a4a;margin:0 0 24px 0;">
-                Hi ${name}, we received a request to reset the password for your TradeVault account. Click the button below to choose a new password.
+                Hi ${name}, we received a request to reset the password for your RiskRules account. Click the button below to choose a new password.
               </p>
 
               <!-- CTA Button -->
@@ -197,10 +197,10 @@ function buildResetEmailHtml(name: string, resetUrl: string, expiryMinutes: numb
       <tr>
         <td style="padding-top:24px;text-align:center;">
           <p class="footer-text" style="font-size:12px;color:#999999;line-height:1.6;margin:0 0 4px 0;">
-            &copy; ${new Date().getFullYear()} TradeVault &middot; Institutional Trading Journal
+            &copy; ${new Date().getFullYear()} RiskRules &middot; Institutional Trading Journal
           </p>
           <p class="footer-text" style="font-size:12px;color:#999999;line-height:1.6;margin:0;">
-            Need help? Contact <a href="mailto:support@tradevault.app" style="color:#6366f1;text-decoration:none;">support@tradevault.app</a>
+            Need help? Contact <a href="mailto:support@riskrules.app" style="color:#6366f1;text-decoration:none;">support@riskrules.app</a>
           </p>
         </td>
       </tr>

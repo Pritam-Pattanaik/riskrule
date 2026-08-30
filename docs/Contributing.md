@@ -1,6 +1,6 @@
 # Contributing
 
-**TradeVault Platform — Contributor Guide & Engineering Standards**
+**RiskRules Platform — Contributor Guide & Engineering Standards**
 **Document ID:** CONTRIB-001
 **Version:** 1.0
 **Status:** Active

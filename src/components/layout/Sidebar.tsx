@@ -122,7 +122,7 @@ export default function Sidebar() {
   }, [profile, fetchNotifications, initializeSSE]);
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full overflow-hidden bg-surface-0 border-r border-border">
+    <div className="flex flex-col h-full overflow-hidden bg-surface-1 border-r border-border">
       
       {/* Top Brand Area */}
       <div className={cn(
@@ -212,7 +212,7 @@ export default function Sidebar() {
             <span className="flex-1 font-medium flex justify-between items-center">
               Notifications
               {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 bg-accent text-inverse rounded-md text-[10px] font-bold leading-none">
+                <span className="px-1.5 py-0.5 bg-accent text-white rounded-md text-[10px] font-bold leading-none">
                   {unreadCount}
                 </span>
               )}

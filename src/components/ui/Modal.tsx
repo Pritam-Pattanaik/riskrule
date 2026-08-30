@@ -66,12 +66,12 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
           {/* Backdrop */}
           <motion.div
             key="modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(12px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
             onClick={onClose}
-            className="absolute inset-0 bg-surface-primary/60 backdrop-blur-md"
+            className="absolute inset-0"
             style={{
               background: 'rgba(2, 11, 24, 0.60)',
             }}
@@ -88,7 +88,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
             initial={{ opacity: 0, y: '100%', scale: 1 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: '100%', scale: 1 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
             style={{
               maxWidth: sizeMap[size] || 640,
             }}

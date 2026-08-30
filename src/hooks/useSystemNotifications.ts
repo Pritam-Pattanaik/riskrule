@@ -33,7 +33,7 @@ export function shouldSendGlobal(
 
 // ─── Dynamic Tab Title Flasher (for when user is in other tabs) ─────────────
 let _titleFlashInterval: any = null;
-const ORIGINAL_TITLE = typeof document !== 'undefined' ? document.title || 'TradeVault' : 'TradeVault';
+const ORIGINAL_TITLE = typeof document !== 'undefined' ? document.title || 'RiskRules' : 'RiskRules';
 
 function flashTab(titleText: string) {
   if (typeof document === 'undefined') return;
