@@ -1,6 +1,6 @@
 # AI
 
-**TradeVault Platform — AI Architecture, Models, Prompt Engineering & Compliance**
+**RiskRules Platform — AI Architecture, Models, Prompt Engineering & Compliance**
 **Document ID:** AI-001
 **Version:** 2.0
 **Status:** Active
@@ -27,7 +27,7 @@
 
 **Co-Pilot, Not Autopilot.**
 
-TradeVault AI (branded as **Lunar AI** / **AI Coach**) is designed to:
+RiskRules AI (branded as **Lunar AI** / **AI Coach**) is designed to:
 - **Analyze** trade patterns and behavioral data.
 - **Filter** noise from financial news with relevance scoring.
 - **Coach** on psychological pitfalls: revenge trading, FOMO, over-leveraging.
@@ -277,7 +277,7 @@ The following are strictly excluded to maintain focus and safety:
 
 All AI outputs automatically append:
 
-> *"This analysis is for educational purposes only and does not constitute financial advice or investment recommendations under SEBI regulations. TradeVault AI analyzes historical execution data to assist with process discipline. All market investments are subject to market risks."*
+> *"This analysis is for educational purposes only and does not constitute financial advice or investment recommendations under SEBI regulations. RiskRules AI analyzes historical execution data to assist with process discipline. All market investments are subject to market risks."*
 
 Rules enforced by the Compliance Filter:
 - No `BUY`, `SELL`, `SHORT`, `LONG` as action commands.

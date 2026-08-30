@@ -275,7 +275,7 @@ export const useNotificationStore = create<NotificationState>()(
 
     }),
     {
-      name: 'tradevault-notifications-settings',
+      name: 'riskrules-notifications-settings',
       partialize: (state) => ({ 
         soundEnabled: state.soundEnabled, 
         soundVolume: state.soundVolume,

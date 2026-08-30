@@ -8,15 +8,18 @@ interface PageWrapperProps {
 }
 
 import { PageTransition } from '../ui/Motion';
+import { AnimatePresence } from 'framer-motion';
 
 export default function PageWrapper({ children }: PageWrapperProps) {
   const location = useLocation();
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden w-full relative bg-canvas">
-      <PageTransition key={location.pathname} className={cn("p-6 w-full max-w-7xl mx-auto min-h-full pb-24")}>
-        {children}
-      </PageTransition>
+      <AnimatePresence mode="wait">
+        <PageTransition key={location.pathname} className={cn("p-6 w-full max-w-7xl mx-auto min-h-full pb-24")}>
+          {children}
+        </PageTransition>
+      </AnimatePresence>
     </div>
   );
 }

@@ -19,7 +19,7 @@ export default function Terms() {
             Terms of Service
           </h1>
           <p className="text-xl text-secondary max-w-2xl leading-relaxed">
-            By accessing or using TradeVault, you agree to be bound by these terms. 
+            By accessing or using RiskRules, you agree to be bound by these terms. 
             Designed for professional market participants.
           </p>
         </motion.div>
@@ -34,12 +34,12 @@ export default function Terms() {
 
           <h2>1. Acceptance of Terms</h2>
           <p>
-            These Terms of Service ("Terms") govern your use of the TradeVault platform, software, and associated services (collectively, the "Service"). By creating an account or using the Service, you signify your acceptance of these Terms. If you do not agree to these Terms, do not use the Service.
+            These Terms of Service ("Terms") govern your use of the RiskRules platform, software, and associated services (collectively, the "Service"). By creating an account or using the Service, you signify your acceptance of these Terms. If you do not agree to these Terms, do not use the Service.
           </p>
 
           <h2>2. Description of Service</h2>
           <p>
-            TradeVault is an analytics and behavioral journaling platform for traders. The Service includes features such as trade logging, performance analytics, AI-driven behavioral insights, and market data visualization. <strong>TradeVault is not a broker-dealer or investment advisor.</strong>
+            RiskRules is an analytics and behavioral journaling platform for traders. The Service includes features such as trade logging, performance analytics, AI-driven behavioral insights, and market data visualization. <strong>RiskRules is not a broker-dealer or investment advisor.</strong>
           </p>
 
           <h2>3. No Financial Advice</h2>
@@ -49,7 +49,7 @@ export default function Terms() {
 
           <h2>4. User Accounts &amp; Security</h2>
           <p>
-            You are responsible for maintaining the confidentiality of your account credentials. You agree to notify TradeVault immediately of any unauthorized use of your account. TradeVault will not be liable for any losses caused by unauthorized access to your account.
+            You are responsible for maintaining the confidentiality of your account credentials. You agree to notify RiskRules immediately of any unauthorized use of your account. RiskRules will not be liable for any losses caused by unauthorized access to your account.
           </p>
 
           <h2>5. Subscription &amp; Billing</h2>
@@ -59,7 +59,7 @@ export default function Terms() {
 
           <h2>6. API Usage &amp; Broker Sync</h2>
           <p>
-            When utilizing the Broker Sync features, you authorize TradeVault to access your third-party broker accounts on a read-only basis. You agree to comply with all terms and conditions of your respective brokers. TradeVault is not responsible for API outages, sync delays, or discrepancies in data provided by third-party APIs.
+            When utilizing the Broker Sync features, you authorize RiskRules to access your third-party broker accounts on a read-only basis. You agree to comply with all terms and conditions of your respective brokers. RiskRules is not responsible for API outages, sync delays, or discrepancies in data provided by third-party APIs.
           </p>
 
           <h2>7. Acceptable Use Policy</h2>
@@ -74,22 +74,22 @@ export default function Terms() {
 
           <h2>8. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by law, TradeVault and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, or goodwill, arising out of your access to or use of the Service.
+            To the maximum extent permitted by law, RiskRules and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, or goodwill, arising out of your access to or use of the Service.
           </p>
 
           <h2>9. Modifications to the Service</h2>
           <p>
-            TradeVault reserves the right to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. We shall not be liable to you or any third party for any modification, price change, suspension, or discontinuance of the Service.
+            RiskRules reserves the right to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. We shall not be liable to you or any third party for any modification, price change, suspension, or discontinuance of the Service.
           </p>
 
           <h2>10. Governing Law</h2>
           <p>
-            These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which TradeVault Inc. is registered, without regard to its conflict of law provisions.
+            These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which RiskRules Inc. is registered, without regard to its conflict of law provisions.
           </p>
 
           <h2>Contact</h2>
           <p>
-            For legal inquiries, please contact our legal department at <strong>legal@tradevault.com</strong>.
+            For legal inquiries, please contact our legal department at <strong>legal@RiskRules.in</strong>.
           </p>
         </motion.div>
       </div>

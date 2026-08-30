@@ -74,7 +74,7 @@ export default function UserProfileDropdown({ collapsed }: { collapsed?: boolean
             )}>
               <motion.div
                 layout
-                className="w-3 h-3 rounded-full bg-white shadow-xs"
+                className={cn("w-3 h-3 rounded-full shadow-xs", theme === 'dark' ? "bg-white" : "bg-primary")}
                 animate={{ x: theme === 'dark' ? 12 : 0 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />

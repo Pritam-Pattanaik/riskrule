@@ -25,7 +25,7 @@ const legitimateEmails = [
   'alice.bob@outlook.com',
   'developer@protonmail.com',
   'user@yahoo.co.in',
-  'trader@tradevault.com',
+  'trader@RiskRules.in',
 ];
 
 console.log('\n[1] Testing Disposable Email Filter:');

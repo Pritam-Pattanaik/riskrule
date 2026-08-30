@@ -27,7 +27,7 @@ export default function About() {
             whileHover={{ scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             src={aboutGraphic} 
-            alt="TradeVault AI Network" 
+            alt="RiskRules AI Network" 
             className="w-full h-[400px] object-cover rounded-3xl shadow-floating border border-border"
           />
         </Reveal>
@@ -39,13 +39,13 @@ export default function About() {
           <h2 className="font-display text-4xl font-bold text-primary mb-8 tracking-tight">Our Mission</h2>
           <div className="space-y-6 text-lg text-secondary leading-relaxed font-medium">
             <p>
-              TradeVault was built by traders, for traders. We grew tired of fragmented spreadsheets, complex Excel macros, and emotional trading days that wiped out weeks of progress because of a single lapse in discipline.
+              RiskRules was built by traders, for traders. We grew tired of fragmented spreadsheets, complex Excel macros, and emotional trading days that wiped out weeks of progress because of a single lapse in discipline.
             </p>
             <p>
               Our mission is to provide an all-in-one ecosystem that mathematically proves your edge and uses Artificial Intelligence to enforce discipline when human emotion fails.
             </p>
             <p>
-              Whether you are trading equities, forex, crypto, or futures, TradeVault is designed to be your unwavering companion in the markets, objectively analyzing your performance without bias.
+              Whether you are trading equities, forex, crypto, or futures, RiskRules is designed to be your unwavering companion in the markets, objectively analyzing your performance without bias.
             </p>
           </div>
         </Reveal>

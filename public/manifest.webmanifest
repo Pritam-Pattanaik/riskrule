@@ -1,6 +1,6 @@
 {
-  "name": "TradeVault",
-  "short_name": "TradeVault",
+  "name": "RiskRules",
+  "short_name": "RiskRules",
   "description": "Institutional Trading Journal & AI Behavioral Coach",
   "start_url": "/",
   "display": "standalone",

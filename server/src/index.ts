@@ -162,7 +162,7 @@ process.on('SIGINT', () => { stopNewsEngine(); marketWorker.stop(); flowDataWork
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`\n🚀 TradeVault API Server running on http://localhost:${PORT}`);
+    console.log(`\n🚀 RiskRules API Server running on http://localhost:${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/api/health\n`);
   });
 }

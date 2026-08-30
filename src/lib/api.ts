@@ -1,5 +1,5 @@
 /**
- * Centralized API client for TradeVault backend.
+ * Centralized API client for RiskRules backend.
  * Automatically attaches JWT token from localStorage.
  */
 

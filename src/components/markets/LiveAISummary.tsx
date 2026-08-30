@@ -77,20 +77,20 @@ function InfoSection({
 }) {
   return (
     <div
-      className="rounded-xl p-3.5"
+      className="rounded-xl p-4 transition-all"
       style={{ background: bg, border: `1px solid ${border}` }}
     >
-      <div className="flex items-center gap-1.5 mb-2.5">
-        <Icon size={11} style={{ color }} />
-        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color }}>
+      <div className="flex items-center gap-2 mb-2.5">
+        <Icon size={13} style={{ color }} />
+        <span className="text-xs font-black uppercase tracking-wider" style={{ color }}>
           {label}
         </span>
       </div>
-      <ul className="space-y-1.5">
+      <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i} className="flex items-start gap-2 text-[12px] leading-relaxed" style={{ color: 'rgba(var(--color-border-rgb),0.6)' }}>
-            <span className="mt-0.5 shrink-0 font-bold text-[10px]" style={{ color }}>{bullet}</span>
-            {item}
+          <li key={i} className="flex items-start gap-2 text-[13px] font-medium leading-relaxed text-primary">
+            <span className="mt-0.5 shrink-0 font-bold text-xs" style={{ color }}>{bullet}</span>
+            <span>{item}</span>
           </li>
         ))}
       </ul>
@@ -173,8 +173,7 @@ export default function LiveAISummary() {
 
   return (
     <div
-      className="rounded-2xl p-5 relative overflow-hidden"
-      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
+      className="card p-5 relative overflow-hidden border border-border shadow-card"
     >
       {/* Ambient glow from sentiment */}
       {cfg.glow !== 'none' && (

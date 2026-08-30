@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to TradeVault are documented in this file.
+All notable changes to RiskRules are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and versioning follows [Semantic Versioning](https://semver.org/).
 

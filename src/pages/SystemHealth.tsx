@@ -56,9 +56,9 @@ function StatusChip({ ok, label }: { ok: boolean; label?: string }) {
 
 function MetricRow({ label, value, status }: { label: string; value?: React.ReactNode; status?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
-      <span className="text-[11px] text-white/40">{label}</span>
-      <span className="text-[12px] font-mono font-semibold text-white/70">
+    <div className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
+      <span className="text-[11px] text-tertiary">{label}</span>
+      <span className="text-[12px] font-mono font-semibold text-secondary">
         {status !== undefined ? <StatusChip ok={status} /> : value}
       </span>
     </div>
@@ -73,14 +73,14 @@ function SectionCard({ title, icon, children, refreshFn, loading }: {
   loading?: boolean;
 }) {
   return (
-    <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="rounded-2xl p-5 bg-surface-1 border border-border">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="text-violet-400">{icon}</span>
-          <h3 className="text-[13px] font-bold text-white/80">{title}</h3>
+          <h3 className="text-[13px] font-bold text-primary">{title}</h3>
         </div>
         {refreshFn && (
-          <button onClick={refreshFn} className="p-1.5 rounded-lg text-white/30 hover:text-white/60 transition-colors">
+          <button onClick={refreshFn} className="p-1.5 rounded-lg text-tertiary hover:text-primary transition-colors">
             <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           </button>
         )}
@@ -164,12 +164,12 @@ export default function SystemHealth() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Activity size={20} className="text-violet-400" />
-              <h1 className="text-xl font-bold text-white/90">System Health Center</h1>
+              <h1 className="text-xl font-bold text-primary">System Health Center</h1>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>DEV ONLY</span>
             </div>
-            <p className="text-[12px] text-white/35">
+            <p className="text-[12px] text-tertiary">
               Real-time diagnostics · Auto-refreshes every 30s
-              {lastRefresh && <span className="ml-2 text-white/20">Last: {lastRefresh.toLocaleTimeString()}</span>}
+              {lastRefresh && <span className="ml-2 text-muted">Last: {lastRefresh.toLocaleTimeString()}</span>}
             </p>
           </div>
           <button onClick={refreshAll} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-bold text-violet-400 transition-colors" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
@@ -181,14 +181,14 @@ export default function SystemHealth() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
             { icon: <Server size={16} className="text-blue-400" />, label: "Backend", chip: <StatusChip ok={serverHealth?.status === "ok"} label={serverHealth?.status ?? "..."} /> },
-            { icon: <Radio size={16} className="text-emerald-400" />, label: "SSE", chip: sseConnected === null ? <span className="text-[11px] text-white/40">Checking...</span> : <StatusChip ok={sseConnected} label={sseConnected ? "Connected" : "Failed"} /> },
-            { icon: <Cpu size={16} className="text-yellow-400" />, label: "News Engine", chip: newsHealth ? <StatusChip ok={newsHealth.status === "healthy"} label={newsHealth.status} /> : <span className="text-[11px] text-white/40">Loading...</span> },
-            { icon: <Zap size={16} className="text-violet-400" />, label: "Market API", chip: marketHealth ? <StatusChip ok={Object.values(marketHealth.providers).some(p => p.healthy)} /> : <span className="text-[11px] text-white/40">Loading...</span> },
+            { icon: <Radio size={16} className="text-emerald-400" />, label: "SSE", chip: sseConnected === null ? <span className="text-[11px] text-tertiary">Checking...</span> : <StatusChip ok={sseConnected} label={sseConnected ? "Connected" : "Failed"} /> },
+            { icon: <Cpu size={16} className="text-yellow-400" />, label: "News Engine", chip: newsHealth ? <StatusChip ok={newsHealth.status === "healthy"} label={newsHealth.status} /> : <span className="text-[11px] text-tertiary">Loading...</span> },
+            { icon: <Zap size={16} className="text-violet-400" />, label: "Market API", chip: marketHealth ? <StatusChip ok={Object.values(marketHealth.providers).some(p => p.healthy)} /> : <span className="text-[11px] text-tertiary">Loading...</span> },
           ].map((item, i) => (
-            <div key={i} className="rounded-xl p-3 flex items-center gap-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <div key={i} className="rounded-xl p-3 flex items-center gap-3 bg-surface-1 border border-border">
               {item.icon}
               <div>
-                <p className="text-[10px] text-white/35 uppercase font-bold">{item.label}</p>
+                <p className="text-[10px] text-tertiary uppercase font-bold">{item.label}</p>
                 {item.chip}
               </div>
             </div>
@@ -200,9 +200,9 @@ export default function SystemHealth() {
             {marketHealth ? (
               <div className="flex flex-col gap-2">
                 {Object.values(marketHealth.providers).map(provider => (
-                  <div key={provider.name} className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div key={provider.name} className="p-3 rounded-xl bg-surface-2 border border-border">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[12px] font-bold text-white/70 capitalize">{provider.name}</span>
+                      <span className="text-[12px] font-bold text-primary capitalize">{provider.name}</span>
                       <StatusChip ok={provider.healthy} />
                     </div>
                     <MetricRow label="Fail Count" value={provider.failCount} />
@@ -211,7 +211,7 @@ export default function SystemHealth() {
                 ))}
                 <MetricRow label="Last Worker Update" value={formatTime(marketHealth.lastUpdate)} />
               </div>
-            ) : <div className="text-center py-4 text-white/30 text-[12px]">Loading...</div>}
+            ) : <div className="text-center py-4 text-tertiary text-[12px]">Loading...</div>}
           </SectionCard>
 
           <SectionCard title="AI News Engine" icon={<Cpu size={14} />} refreshFn={fetchNewsHealth} loading={loadingNews}>
@@ -226,7 +226,7 @@ export default function SystemHealth() {
                 <MetricRow label="Triage Cost/Day" value={`$${newsHealth.costs.triageDailyUsd}`} />
                 <MetricRow label="Scoring Cost/Day" value={`$${newsHealth.costs.scoringDailyUsd}`} />
               </div>
-            ) : <div className="text-center py-4 text-white/30 text-[12px]">Loading...</div>}
+            ) : <div className="text-center py-4 text-tertiary text-[12px]">Loading...</div>}
           </SectionCard>
 
           <SectionCard title="Backend Server" icon={<Server size={14} />} refreshFn={fetchServerHealth} loading={loadingServer}>
@@ -237,7 +237,7 @@ export default function SystemHealth() {
                 <MetricRow label="Environment" value={import.meta.env.MODE} />
                 <MetricRow label="API Base" value={import.meta.env.VITE_API_URL || "/api (proxy)"} />
               </div>
-            ) : <div className="text-center py-4 text-white/30 text-[12px]">Loading...</div>}
+            ) : <div className="text-center py-4 text-tertiary text-[12px]">Loading...</div>}
           </SectionCard>
 
           <SectionCard title="SSE Live Stream" icon={<Radio size={14} />}>
@@ -250,9 +250,9 @@ export default function SystemHealth() {
           </SectionCard>
         </div>
 
-        <div className="mt-6 p-3 rounded-xl text-center" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-          <p className="text-[10px] text-white/20">
-            🔒 Developer diagnostics · Press <kbd className="px-1 py-0.5 rounded bg-white/10 text-white/40 font-mono text-[10px]">Ctrl+Shift+D</kbd> to toggle
+        <div className="mt-6 p-3 rounded-xl text-center bg-surface-1 border border-border">
+          <p className="text-[10px] text-tertiary">
+            🔒 Developer diagnostics · Press <kbd className="px-1 py-0.5 rounded bg-surface-2 text-secondary font-mono text-[10px]">Ctrl+Shift+D</kbd> to toggle
           </p>
         </div>
       </div>

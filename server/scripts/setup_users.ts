@@ -8,16 +8,16 @@ async function main() {
 
   // Update or create super admin
   await prisma.user.upsert({
-    where: { email: 'superadmin@tradevault.in' },
+    where: { email: 'superadmin@riskrules.in' },
     update: { password: adminPassword, role: 'SUPER_ADMIN' },
-    create: { email: 'superadmin@tradevault.in', password: adminPassword, role: 'SUPER_ADMIN', fullName: 'Super Admin' }
+    create: { email: 'superadmin@riskrules.in', password: adminPassword, role: 'SUPER_ADMIN', fullName: 'Super Admin' }
   });
 
   // Update or create user
   await prisma.user.upsert({
-    where: { email: 'user@tradevault.in' },
+    where: { email: 'user@riskrules.in' },
     update: { password: userPassword, role: 'USER' },
-    create: { email: 'user@tradevault.in', password: userPassword, role: 'USER', fullName: 'Regular User' }
+    create: { email: 'user@riskrules.in', password: userPassword, role: 'USER', fullName: 'Regular User' }
   });
 
   console.log("Users configured successfully");

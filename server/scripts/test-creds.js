@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
-    const user = await prisma.user.findUnique({ where: { email: 'test@tradevault.com' } });
+    const user = await prisma.user.findUnique({ where: { email: 'test@RiskRules.in' } });
     if (!user) {
       console.log('User not found in DB');
       return;

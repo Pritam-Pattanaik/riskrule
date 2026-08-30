@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function seedAdmin() {
-  const email = process.env.ADMIN_EMAIL || 'superadmin@tradevault.com';
+  const email = process.env.ADMIN_EMAIL || 'superadmin@RiskRules.in';
   const password = process.env.ADMIN_PASSWORD || 'SuperAdmin123!';
   const fullName = 'System Super Admin';
 
@@ -40,7 +40,7 @@ async function seedAdmin() {
       { key: 'enable_ai_coach', value: 'true' },
       { key: 'enable_broker_sync', value: 'true' },
       { key: 'maintenance_mode', value: 'false' },
-      { key: 'system_announcement', value: 'Welcome to TradeVault!' },
+      { key: 'system_announcement', value: 'Welcome to RiskRules!' },
     ];
 
     for (const setting of settings) {

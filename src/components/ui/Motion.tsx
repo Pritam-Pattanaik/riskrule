@@ -148,34 +148,26 @@ export const Reveal = ({
   );
 };
 
-/**
- * PageTransition handles smooth route context shifts.
- */
-export const PageTransition = ({ 
-  children, 
-  className, 
-  mode = 'wait' 
-}: { 
-  children: React.ReactNode; 
-  className?: string; 
-  mode?: 'wait' | 'sync' | 'popLayout';
-}) => {
-  const shouldReduceMotion = useReducedMotion();
+export const PageTransition = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
+  ({ children, className, ...props }, ref) => {
+    const shouldReduceMotion = useReducedMotion();
 
-  return (
-    <AnimatePresence mode={mode}>
+    return (
       <motion.div
-        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, filter: 'blur(3px)', y: 8 }}
+        ref={ref}
+        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, filter: 'blur(4px)', y: 10 }}
         animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-        exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(3px)', y: -8 }}
-        transition={{ duration: 0.25, ease: easeEditorial }}
+        exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(4px)', y: -10 }}
+        transition={{ duration: 0.28, ease: easeEditorial }}
         className={className}
+        {...props}
       >
         {children}
       </motion.div>
-    </AnimatePresence>
-  );
-};
+    );
+  }
+);
+PageTransition.displayName = 'PageTransition';
 
 /**
  * Animated tabular numeral register that counts up to the target value with zero layout jitter.
@@ -215,4 +207,165 @@ export const NumberCounter = ({
   }, [value, duration, format, shouldReduceMotion]);
 
   return <span ref={nodeRef} className={className}>{format(shouldReduceMotion ? value : 0)}</span>;
+};
+
+/**
+ * FadeIn — Simple opacity entrance with optional delay.
+ * Lightweight alternative to Reveal when no directional movement is needed.
+ */
+export const FadeIn = ({
+  children,
+  delay = 0,
+  duration = 0.4,
+  className,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  duration?: number;
+  className?: string;
+}) => {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={{ opacity: shouldReduceMotion ? 1 : 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: shouldReduceMotion ? 0 : duration, ease: easeSubtle, delay: shouldReduceMotion ? 0 : delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/**
+ * SlideIn — Directional content reveal with configurable distance.
+ * Uses animate (not whileInView) for content that's already in viewport.
+ */
+export const SlideIn = ({
+  children,
+  direction = 'up',
+  delay = 0,
+  distance = 16,
+  className,
+}: {
+  children: React.ReactNode;
+  direction?: 'up' | 'down' | 'left' | 'right';
+  delay?: number;
+  distance?: number;
+  className?: string;
+}) => {
+  const shouldReduceMotion = useReducedMotion();
+  const axis = direction === 'up' || direction === 'down' ? 'y' : 'x';
+  const sign = direction === 'up' || direction === 'left' ? 1 : -1;
+
+  return (
+    <motion.div
+      initial={shouldReduceMotion ? {} : { opacity: 0, [axis]: distance * sign }}
+      animate={{ opacity: 1, [axis]: 0 }}
+      transition={{ duration: 0.5, ease: easeEditorial, delay: shouldReduceMotion ? 0 : delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/**
+ * AnimatedList — Renders children with staggered reveal.
+ * Ideal for notification lists, trade rows, sidebar items.
+ */
+export const AnimatedList = ({
+  children,
+  stagger = 0.04,
+  className,
+}: {
+  children: React.ReactNode;
+  stagger?: number;
+  className?: string;
+}) => {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: shouldReduceMotion ? 0 : stagger,
+          },
+        },
+      }}
+      className={className}
+    >
+      {React.Children.map(children, (child) => (
+        <motion.div
+          variants={{
+            hidden: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 8 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: easeEditorial } },
+          }}
+        >
+          {child}
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+};
+
+/**
+ * ScaleOnHover — Lightweight hover scale wrapper for interactive elements.
+ */
+export const ScaleOnHover = ({
+  children,
+  scale = 1.02,
+  className,
+}: {
+  children: React.ReactNode;
+  scale?: number;
+  className?: string;
+}) => {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      whileHover={shouldReduceMotion ? undefined : { scale, transition: { duration: 0.2, ease: easeSubtle } }}
+      whileTap={shouldReduceMotion ? undefined : { scale: 0.98, transition: springConfig }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/**
+ * AnimatedTabs — Smooth tab content transitions with AnimatePresence.
+ * Wraps tab content with cross-fade + slide animation.
+ */
+export const AnimatedTabs = ({
+  activeKey,
+  children,
+  className,
+}: {
+  activeKey: string;
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeKey}
+        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+        transition={{ duration: 0.2, ease: easeSubtle }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
 };

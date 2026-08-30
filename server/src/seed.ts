@@ -7,11 +7,11 @@ async function seed() {
   
   // 1. Find the test user
   const user = await prisma.user.findUnique({
-    where: { email: 'test@tradevault.com' },
+    where: { email: 'test@RiskRules.in' },
   });
 
   if (!user) {
-    console.error('❌ Test user not found. Please sign up with test@tradevault.com first.');
+    console.error('❌ Test user not found. Please sign up with test@RiskRules.in first.');
     process.exit(1);
   }
   

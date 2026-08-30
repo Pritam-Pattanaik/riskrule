@@ -1,4 +1,4 @@
-# TradeVault
+# RiskRules
 
 <div align="center">
 
@@ -15,9 +15,9 @@
 
 ---
 
-## What is TradeVault?
+## What is RiskRules?
 
-TradeVault bridges the gap between simplistic spreadsheet-based trade journals and prohibitively expensive institutional terminals. It combines:
+RiskRules bridges the gap between simplistic spreadsheet-based trade journals and prohibitively expensive institutional terminals. It combines:
 
 - 📊 **Intelligent Trade Journal** — Auto-sync from Dhan and AngelOne with FIFO position aggregation
 - 🤖 **AI Coach (Lunar AI)** — Behavioral pattern analysis with 12 dedicated trading modes

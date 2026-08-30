@@ -158,7 +158,7 @@ export default function Trades() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `tradevault_export_${getLocalYYYYMMDD()}.csv`);
+    link.setAttribute('download', `riskrules_export_${getLocalYYYYMMDD()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -354,19 +354,32 @@ export default function Trades() {
 
         {/* Desktop Table View */}
         <div className={cn("hidden md:block space-y-4 relative", viewMode === 'calendar' && "md:hidden")}>
-          {filteredTrades.length === 0 ? (
+          {loading && filteredTrades.length === 0 ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="card p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="v3-skeleton h-5 w-36" />
+                    <div className="v3-skeleton h-5 w-24" />
+                  </div>
+                  <div className="space-y-2 pt-2">
+                    <div className="v3-skeleton h-10 w-full rounded-lg" />
+                    <div className="v3-skeleton h-10 w-full rounded-lg" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredTrades.length === 0 ? (
             <div className="card hover:bg-transparent">
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="w-16 h-16 rounded-2xl bg-surface-1 border border-border flex items-center justify-center mb-4 text-tertiary">
-                  {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Activity className="w-8 h-8 opacity-50" />}
+                  <Activity className="w-8 h-8 opacity-50" />
                 </div>
                 <h3 className="text-lg font-bold text-primary mb-2 tracking-tight">
-                  {loading ? 'Loading Executions...' : 'No trades found'}
+                  No trades found
                 </h3>
-                <p className="text-sm text-secondary max-w-sm mx-auto">
-                  {loading 
-                    ? 'Please wait while we sync your data.' 
-                    : 'No executions match your current workspace filters. Adjust your search criteria.'}
+                <p className="text-sm text-secondary max-w-sm mx-auto text-center">
+                  No executions match your current workspace filters. Adjust your search criteria.
                 </p>
               </div>
             </div>

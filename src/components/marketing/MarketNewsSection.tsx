@@ -43,7 +43,7 @@ export default function MarketNewsSection() {
               Protect your equity during macro volatility spikes.
             </h2>
             <p className="text-secondary text-base sm:text-lg leading-relaxed mb-8 font-normal">
-              Most proprietary trading account losses occur within five minutes of unexpected macroeconomic announcements. TradeVault aligns live economic event schedules with your historical executions to reveal how news spikes impact your actual fill execution.
+              Most proprietary trading account losses occur within five minutes of unexpected macroeconomic announcements. RiskRules aligns live economic event schedules with your historical executions to reveal how news spikes impact your actual fill execution.
             </p>
             
             <div className="p-5 rounded-2xl bg-surface-1/70 border border-border flex items-start gap-4 shadow-sm">

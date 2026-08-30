@@ -55,6 +55,14 @@ export default React.memo(function StatCard({ label, value, subLabel, icon: Icon
     ? (rawValue >= 0 ? 'text-success' : 'text-danger')
     : 'text-primary';
 
+  // V3: Dynamic hover glow color based on card semantic type
+  const glowColor = (() => {
+    if (colorType === 'pnl') return rawValue >= 0 ? 'var(--color-success)' : 'var(--color-danger)';
+    if (colorType === 'winrate' || colorType === 'rr') return 'var(--color-gold)';
+    if (colorType === 'discipline') return rawValue >= 4 ? 'var(--color-success)' : rawValue >= 3 ? 'var(--color-gold)' : 'var(--color-danger)';
+    return 'var(--color-iris)';
+  })();
+
   const formatNumber = (val: number) => {
     if (colorType === 'pnl')        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
     if (colorType === 'winrate')    return `${val.toFixed(1)}%`;
@@ -67,22 +75,26 @@ export default React.memo(function StatCard({ label, value, subLabel, icon: Icon
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
+      whileHover={{ y: -4, scale: 1.015 }}
       whileTap={{ scale: 0.99 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
       className="card-raised relative overflow-hidden h-full min-h-[160px] flex flex-col justify-center items-center p-6 cursor-default select-none group border border-border-subtle shadow-xl shadow-black/5 dark:shadow-black/20"
     >
       {/* Top accent stripe */}
       <div className={cn('absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r', stripe)} />
 
-      {/* Subtle background glow */}
+      {/* V3: Brand-colored background glow on hover */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 0%, rgba(var(--color-iris), 0.04) 0%, transparent 70%)' }} />
+        style={{ background: `radial-gradient(circle at 50% 0%, rgba(${glowColor}, 0.06) 0%, transparent 70%)` }} />
 
       <div className="flex flex-col items-center justify-center text-center w-full z-10 pt-2">
-        <div className={cn('flex items-center justify-center w-10 h-10 rounded-xl mb-3 shrink-0 shadow-sm border border-white/5', iconClass)}>
+        <motion.div 
+          whileHover={{ scale: 1.1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className={cn('flex items-center justify-center w-10 h-10 rounded-xl mb-3 shrink-0 shadow-sm border border-white/5', iconClass)}
+        >
           <Icon size={20} strokeWidth={2.5} />
-        </div>
+        </motion.div>
         
         <div className={cn('font-mono text-4xl tabular-nums font-bold tracking-tight leading-none mb-3', valueClass)}>
           {colorType === 'pnl' && (
@@ -97,3 +109,4 @@ export default React.memo(function StatCard({ label, value, subLabel, icon: Icon
     </motion.div>
   );
 });
+

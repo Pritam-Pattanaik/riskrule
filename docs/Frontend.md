@@ -1,6 +1,6 @@
 # Frontend
 
-**TradeVault Platform — Frontend Architecture, Design System & UI/UX Specification**
+**RiskRules Platform — Frontend Architecture, Design System & UI/UX Specification**
 **Document ID:** FE-001
 **Version:** 2.0
 **Status:** Active
@@ -26,7 +26,7 @@
 
 **Premium, High-Density, Low-Noise.**
 
-TradeVault is designed for professional traders who demand speed, visual clarity, and zero distractions. The interface draws inspiration from **Linear, Bloomberg Terminal, and Claude**.
+RiskRules is designed for professional traders who demand speed, visual clarity, and zero distractions. The interface draws inspiration from **Linear, Bloomberg Terminal, and Claude**.
 
 - **Dark-mode optimized** — Calm, typography-driven aesthetic reduces decision fatigue.
 - **Keyboard-First** — Every critical action accessible within 2 clicks or a shortcut.

@@ -24,7 +24,7 @@ export default React.memo(function RecentTrades({ trades }: RecentTradesProps) {
             No recent trades recorded
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 v3-row-stagger">
             {recentTrades.map((trade) => {
               const isProfit = trade.netPnl >= 0;
               return (
