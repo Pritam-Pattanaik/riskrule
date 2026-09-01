@@ -195,6 +195,7 @@ export async function orchestrate(options: OrchestrateOptions): Promise<Orchestr
         speaker,
         languageCode,
         pace: Math.max(0.5, Math.min(2.0, pace)),
+        skipPreprocess: true,
       });
       break; // Success
     } catch (err: any) {

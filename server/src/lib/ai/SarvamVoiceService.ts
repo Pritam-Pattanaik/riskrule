@@ -172,6 +172,14 @@ export interface TTSOptions {
   speaker?: string;
   languageCode?: string;
   pace?: number;
+  /**
+   * When true, skips the internal stripMarkdownForSpeech() call.
+   * Set this when text has already been normalized by ttsOrchestrator
+   * (which uses the richer textNormalizer.ts pipeline) to avoid
+   * double-processing that corrupts language-specific output like
+   * Hindi currency labels (रुपये) being re-written back to "rupees".
+   */
+  skipPreprocess?: boolean;
 }
 
 export interface TTSResult {
@@ -190,19 +198,24 @@ export async function synthesizeSpeech(options: TTSOptions): Promise<TTSResult> 
     throw new Error('SARVAM_API_KEY is not configured');
   }
 
-  const cleanText = stripMarkdownForSpeech(options.text);
+  // When called via ttsOrchestrator, text is already normalized by the richer
+  // textNormalizer.ts pipeline. Skip re-processing to avoid corrupting language-
+  // specific labels (e.g. Hindi रुपये getting rewritten to "rupees").
+  const cleanText = options.skipPreprocess
+    ? options.text.trim()
+    : stripMarkdownForSpeech(options.text);
+
   if (!cleanText || cleanText.length < 2) {
     throw new Error('Text too short for synthesis');
   }
 
   const chunks = splitTextForTTS(cleanText);
-  // Default to kabir (deep JARVIS-like) or shubh (natural)
   const validSpeakerIds = SARVAM_VOICES.map(v => v.id);
   const speaker = (options.speaker && validSpeakerIds.includes(options.speaker)) ? options.speaker : 'kabir';
   const languageCode = options.languageCode || 'en-IN';
   const pace = options.pace ? Math.max(0.5, Math.min(2.0, options.pace)) : 1.0;
 
-  logger.info(`[Voice TTS] Synthesizing ${cleanText.length} chars in ${chunks.length} chunk(s) with speaker "${speaker}"`);
+  logger.info(`[Voice TTS] Synthesizing ${cleanText.length} chars in ${chunks.length} chunk(s) — lang=${languageCode} speaker="${speaker}" preprocess=${!options.skipPreprocess}`);
 
   const audioChunks: string[] = [];
   const requestIds: string[] = [];

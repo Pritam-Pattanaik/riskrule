@@ -10,11 +10,15 @@ import AuthLayout from '../../components/layout/AuthLayout';
 const RESEND_COOLDOWN_SECONDS = 60;
 
 const getFriendlyError = (msg: string): string => {
+  if (!msg) return 'Something went wrong. Please try again.';
   const lower = msg.toLowerCase();
   if (lower.includes('rate limit') || lower.includes('too many')) return 'Too many requests. Please wait a moment and try again.';
   if (lower.includes('network') || lower.includes('failed to fetch')) return 'Connection error. Please check your internet and try again.';
-  if (lower.includes('invalid email') || lower.includes('email')) return 'Please enter a valid email address.';
-  return 'Something went wrong. Please try again.';
+  if (lower.includes('no account found') || lower.includes('not found') || lower.includes('not registered') || lower.includes('does not exist')) {
+    return msg;
+  }
+  if (lower.includes('invalid email format') || lower === 'invalid email address') return 'Please enter a valid email address.';
+  return msg;
 };
 
 export default function ForgotPassword() {

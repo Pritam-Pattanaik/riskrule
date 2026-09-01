@@ -185,7 +185,22 @@ assert(hindiMixed.codeMixedSegments.length > 0, 'Code-mixed segments array is no
 const pureEnglish = normalizeForTTS('NIFTY gained 2.3% today', 'en-IN');
 assert(pureEnglish.isCodeMixed === false, 'Pure English text not flagged as code-mixed');
 
-// ─── Complex Mixed Inputs ─────────────────────────────────────────────────────
+// ─── Hindi & Multilingual Normalization ───────────────────────────────────────
+console.log('\n🇮🇳 Hindi & Multilingual Normalization');
+
+const hindiCurrency = normalizeForTTS('₹1,500 का लाभ', 'hi-IN').normalized;
+assertContains(hindiCurrency, '1500 रुपये', 'Hindi ₹ expands to रुपये');
+
+const hindiEnglishMix = normalizeForTTS('Your BANKNIFTY position gained ₹2,500 (3.5%).', 'hi-IN').normalized;
+assertContains(hindiEnglishMix, 'Bank Nifty', 'English LUNAR AI message in hi-IN mode expands BANKNIFTY');
+assertContains(hindiEnglishMix, '2500 रुपये', 'English LUNAR AI message in hi-IN mode uses रुपये');
+assertContains(hindiEnglishMix, '3.5%', 'Percentage in hi-IN mode leaves numeric format for Sarvam native reading');
+
+const devanagariNative = normalizeForTTS('निफ्टी 24,000 के स्तर पर है। आज 2.5% की बढ़त दर्ज की गई।', 'hi-IN').normalized;
+assertContains(devanagariNative, 'निफ्टी', 'Devanagari text preserved without corrupting script');
+assertContains(devanagariNative, '2.5%', 'Devanagari percentage preserved natively');
+assert(!devanagariNative.includes('..'), 'Devanagari text does not produce double punctuation');
+
 console.log('\n🔀 Complex Real-World LUNAR AI Outputs');
 
 const complex1 = normalizeForTTS(
