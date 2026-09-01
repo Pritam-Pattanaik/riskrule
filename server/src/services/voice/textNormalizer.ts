@@ -218,10 +218,25 @@ function expandCurrencies(text: string, langCode: string): string {
 
 // ─── Percentage Expansion ────────────────────────────────────────────────────
 
-function expandPercentages(text: string): string {
-  // e.g. "2.3%" → "two point three percent", "-1.5%" → "minus one point five percent"
+/**
+ * Expands percentage notation.
+ * For English (en-IN): "2.3%" → "two point three percent"
+ * For Indic languages (hi-IN, etc.): "2.3%" → "2.3 प्रतिशत" / keep numerals since Bulbul v3 reads them natively.
+ * For all other supported languages: pass numeric value through, append localized suffix.
+ */
+function expandPercentages(text: string, langCode: string = 'en-IN'): string {
+  const isEnglish = langCode.startsWith('en');
+  if (isEnglish) {
+    // English: convert to full words for natural reading
+    return text.replace(/(-?[\d,]+(?:\.\d+)?)%/g, (_, num) => {
+      return numberToWords(num) + ' percent';
+    });
+  }
+  // Indic languages: Bulbul v3 reads digits natively; just remove the % symbol
+  // with a language-aware spoken suffix so punctuation doesn't trip up TTS.
   return text.replace(/(-?[\d,]+(?:\.\d+)?)%/g, (_, num) => {
-    return numberToWords(num) + ' percent';
+    const clean = num.replace(/,/g, '');
+    return `${clean}%`; // Leave as-is — Sarvam handles this correctly for non-English
   });
 }
 
@@ -354,10 +369,10 @@ function detectCodeMix(text: string): { isCodeMixed: boolean; segments: string[]
  *
  * Pipeline:
  *   1. Strip markdown / HTML comments
- *   2. Expand currency symbols
- *   3. Expand percentages
- *   4. Expand ordinals (1st, 2nd, etc.)
- *   5. Expand known tickers + letter-spell unknown all-caps
+ *   2. Expand currency symbols (language-aware labels)
+ *   3. Expand percentages (language-aware — English gets word-form, Indic keeps numerals)
+ *   4. Expand ordinals (1st, 2nd, etc.) — English only
+ *   5. Expand known tickers + letter-spell unknown all-caps — English only
  *   6. Detect code-mixing in Indic-script text
  *
  * @param text       Raw LUNAR AI message text (may contain markdown)
@@ -368,26 +383,34 @@ export function normalizeForTTS(text: string, langCode: string = 'en-IN'): Norma
     return { normalized: '', isCodeMixed: false, codeMixedSegments: [] };
   }
 
-  // Step 1: Strip markdown/HTML
+  // Check if original source text contains native Indic script (e.g. Devanagari)
+  // before we perform any currency substitutions that might inject Indic characters.
+  const hasNativeIndicScript = containsNonLatin(text);
+
+  // Step 1: Strip markdown/HTML (language-agnostic — safe for all scripts)
   let normalized = stripMarkdownForSpeech(text);
 
-  // Step 2: Expand currency symbols (language-aware labels)
-  normalized = expandCurrencies(normalized, langCode);
-
-  // Step 3: Expand percentages → words (before generic number expansion so 2.3% → "two point three percent")
-  normalized = expandPercentages(normalized);
-
-  // Step 4: Expand ordinals
-  normalized = expandOrdinals(normalized);
-
-  // Step 5: Expand tickers & finance terms (known → override, unknown → spell)
-  // Only apply to English / Latin-script passes (don't corrupt Indic text)
-  if (!containsNonLatin(normalized) || langCode.startsWith('en')) {
+  // Step 2: Expand ordinals and tickers FIRST on Latin-script content
+  // LUNAR AI outputs Latin-script text in all language modes. Running this
+  // before currency expansion ensures tickers like BANKNIFTY or RSI are properly
+  // expanded without being blocked by localized currency words (e.g. रुपये).
+  if (!hasNativeIndicScript) {
+    normalized = expandOrdinals(normalized);
     normalized = expandTickers(normalized);
   }
 
-  // Step 6: Detect code-mixing for flagging
-  const { isCodeMixed, segments } = detectCodeMix(normalized);
+  // Step 3: Expand currency symbols (language-aware labels e.g. ₹ → rupees / रुपये)
+  normalized = expandCurrencies(normalized, langCode);
+
+  // Step 4: Expand percentages — language-aware
+  // English: "2.3%" → "two point three percent"
+  // Indic languages: leave numerals as digits, Sarvam Bulbul v3 reads them natively
+  normalized = expandPercentages(normalized, langCode);
+
+  // Step 5: Detect code-mixing for flagging (only if input was native Indic script)
+  const { isCodeMixed, segments } = hasNativeIndicScript
+    ? detectCodeMix(normalized)
+    : { isCodeMixed: false, segments: [] };
 
   // Final cleanup
   normalized = normalized.replace(/\s{2,}/g, ' ').trim();

@@ -45,6 +45,33 @@ export function VoiceSettingsTab() {
     return v.gender === genderFilter;
   });
 
+  const getSamplePreviewText = (voiceName: string, lang: string) => {
+    switch (lang) {
+      case 'hi-IN':
+        return `नमस्ते, मैं हूँ ${voiceName}। RiskRules में आपका स्वागत है।`;
+      case 'od-IN':
+        return `ନମସ୍କାର, ମୁଁ ${voiceName}। RiskRules କୁ ଆପଣଙ୍କୁ ସ୍ୱାଗତ।`;
+      case 'ta-IN':
+        return `வணக்கம், நான் ${voiceName}. RiskRules உங்களை வரவேற்கிறது.`;
+      case 'te-IN':
+        return `నమస్కారం, నేను ${voiceName}. RiskRules కు స్వాగతం.`;
+      case 'bn-IN':
+        return `নমস্কার, আমি ${voiceName}। RiskRules এ আপনাকে স্বাগতম।`;
+      case 'mr-IN':
+        return `नमस्कार, मी ${voiceName} आहे. RiskRules मध्ये आपले स्वागत आहे.`;
+      case 'gu-IN':
+        return `નમસ્તે, હું ${voiceName} છું. RiskRules માં આપનું સ્વાગત છે.`;
+      case 'kn-IN':
+        return `ನಮಸ್ಕಾರ, ನಾನು ${voiceName}. RiskRules ಗೆ ಸುಸ್ವಾಗತ.`;
+      case 'ml-IN':
+        return `നമസ്കാരം, ഞാൻ ${voiceName}. RiskRules ലേക്ക് സ്വാഗതം.`;
+      case 'pa-IN':
+        return `ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਮੈਂ ${voiceName} ਹਾਂ। RiskRules ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ।`;
+      default:
+        return `Hello, I am ${voiceName}. Your RiskRules AI voice assistant.`;
+    }
+  };
+
   const handlePreviewVoice = async (voice: VoiceInfo, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (isSpeaking && testingVoiceId === voice.id) {
@@ -54,11 +81,10 @@ export function VoiceSettingsTab() {
     }
 
     setTestingVoiceId(voice.id);
-    const originalSelected = selectedVoice;
     setSelectedVoice(voice.id);
 
     try {
-      const sampleText = `Hello, I am ${voice.name}. Your RiskRules AI voice assistant.`;
+      const sampleText = getSamplePreviewText(voice.name, languageCode);
       await speak(sampleText);
     } catch (err: any) {
       notify.error(err.message || 'Voice test failed');
