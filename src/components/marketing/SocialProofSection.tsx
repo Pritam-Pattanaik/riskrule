@@ -1,5 +1,6 @@
 import React from 'react';
-import { Star, CheckCircle, Award, TrendingUp, Shield, Terminal } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Star, CheckCircle, Award, TrendingUp, Shield, Terminal, ArrowRight } from 'lucide-react';
 import { Reveal, NumberCounter } from '../ui/Motion';
 
 export default function SocialProofSection() {
@@ -72,7 +73,7 @@ export default function SocialProofSection() {
           </div>
         </Reveal>
 
-        {/* ── Testimonial Bento Card Grid ── */}
+        {/* Testimonial Bento Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {verifiedTraders.map((trader, idx) => (
             <Reveal key={idx} direction="up" delay={0.1 + idx * 0.1}>
@@ -106,6 +107,17 @@ export default function SocialProofSection() {
               </div>
             </Reveal>
           ))}
+        </div>
+
+        {/* Deep-dive prop firm link */}
+        <div className="mt-14 text-center">
+          <Link
+            to="/prop-traders"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-1 border border-gold/30 hover:border-gold text-primary font-display font-bold text-sm transition-all shadow-xs hover:bg-surface-2"
+          >
+            <span>Explore Prop Firm Compatibility Matrix &amp; Drawdown Simulator</span>
+            <ArrowRight size={15} className="text-gold" />
+          </Link>
         </div>
 
       </div>

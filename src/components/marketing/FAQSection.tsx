@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown, Shield, Lock, Terminal, HelpCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronDown, Shield, Lock, Terminal, HelpCircle, ArrowRight } from 'lucide-react';
 import { Reveal } from '../ui/Motion';
 import { cn } from '../../lib/cn';
 
@@ -105,6 +106,17 @@ export default function FAQSection() {
             </Reveal>
           );
         })}
+
+        {/* View Full Searchable Knowledge Vault Link */}
+        <div className="mt-8 text-center">
+          <Link
+            to="/faq"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-1 border border-border hover:border-iris/40 text-primary font-display font-bold text-sm transition-all shadow-xs hover:bg-surface-2"
+          >
+            <span>Search Full Knowledge Vault &amp; Technical Docs</span>
+            <ArrowRight size={15} className="text-iris" />
+          </Link>
+        </div>
       </div>
 
       {/* Trust Support Bar */}

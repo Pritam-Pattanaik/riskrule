@@ -34,6 +34,12 @@ const Signup = React.lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('./pages/auth/ResetPassword'));
 const Home = React.lazy(() => import('./pages/marketing/Home'));
+const WorkspacePage = React.lazy(() => import('./pages/marketing/WorkspacePage'));
+const FeaturesPage = React.lazy(() => import('./pages/marketing/FeaturesPage'));
+const AICoachMarketing = React.lazy(() => import('./pages/marketing/AICoachPage'));
+const PropTradersPage = React.lazy(() => import('./pages/marketing/PropTradersPage'));
+const FAQPage = React.lazy(() => import('./pages/marketing/FAQPage'));
+const ChangelogPage = React.lazy(() => import('./pages/marketing/ChangelogPage'));
 const About = React.lazy(() => import('./pages/marketing/About'));
 const Pricing = React.lazy(() => import('./pages/marketing/Pricing'));
 const Privacy = React.lazy(() => import('./pages/marketing/Privacy'));
@@ -133,8 +139,14 @@ export default function App() {
         {/* Public SaaS Pages */}
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/workspace" element={<WorkspacePage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/ai-coach" element={<AICoachMarketing />} />
+          <Route path="/prop-traders" element={<PropTradersPage />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
         </Route>

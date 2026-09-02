@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
   TrendingUp, Activity, Brain, Shield, BarChart2, BookOpen, AlertCircle, 
-  CheckCircle, ArrowUpRight, ArrowDownRight, Zap, Target, Sliders, RefreshCw 
+  CheckCircle, ArrowUpRight, ArrowDownRight, Zap, Target, Sliders, RefreshCw, ArrowRight 
 } from 'lucide-react';
 import { Reveal } from '../ui/Motion';
 import { cn } from '../../lib/cn';
@@ -361,14 +362,18 @@ export default function InteractiveDashboard() {
               </AnimatePresence>
 
               {/* Bottom Assurance Bar */}
-              <div className="mt-6 pt-4 border-t border-border flex flex-wrap items-center justify-between gap-4 text-xs font-mono-stat text-tertiary">
+              <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono-stat text-tertiary">
                 <span className="flex items-center gap-2">
                   <CheckCircle size={14} className="text-success" />
                   <span>ALL CALCULATIONS IN REAL-TIME · SOC-2 COMPLIANT AUDIT TRAIL</span>
                 </span>
-                <span className="font-semibold text-secondary">
-                  LATENCY WITH BROKER TERMINAL: <strong className="text-success">&lt; 8ms</strong>
-                </span>
+                <Link
+                  to="/workspace"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-2 text-primary hover:bg-surface-elevated font-display font-bold text-xs transition-all border border-border"
+                >
+                  <span>Open Full Terminal &amp; Sizing Sandbox</span>
+                  <ArrowRight size={13} className="text-iris" />
+                </Link>
               </div>
             </div>
 
