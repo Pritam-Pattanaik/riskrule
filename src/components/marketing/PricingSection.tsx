@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Shield, Sparkles, TrendingUp } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { CheckCircle2, Shield, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
 import { Reveal } from '../ui/Motion';
 import { MagneticButton } from '../ui/MagneticButton';
 import { cn } from '../../lib/cn';
@@ -12,9 +12,9 @@ export default function PricingSection() {
 
   const plans = [
     {
-      name: 'Starter Tier',
+      name: 'Starter',
       badge: 'Forever Free',
-      price: annualBilling ? '₹0' : '₹0',
+      price: '₹0',
       period: '/ month',
       desc: 'Essential algorithmic journaling and expectancy analytics for developing traders.',
       cta: 'Claim Free Starter Plan',
@@ -28,16 +28,17 @@ export default function PricingSection() {
       ]
     },
     {
-      name: 'Pro Quantitative',
+      name: 'PRO',
       badge: 'Most Popular',
-      price: annualBilling ? '₹1,249' : '₹1,599',
-      period: '/ month (billed annually)',
+      price: annualBilling ? '₹1,199' : '₹1,499',
+      period: annualBilling ? '/ month (billed annually)' : '/ month',
       desc: 'The complete discipline workstation engineered to defend funded prop allocations.',
-      cta: 'Start 14-Day Free Trial',
+      cta: 'Start 14-Day Free PRO Trial',
       popular: true,
       features: [
         'Unlimited automated broker integration',
         'Real-time AI Behavioral Coach monitoring',
+        'Real-time AI Voice Guidance while trading',
         'Automated Daily Drawdown lockout guardrails',
         'Live economic event schedules & volatility alerts',
         'Full CSV audit exports for accounting compliance',
@@ -45,15 +46,16 @@ export default function PricingSection() {
       ]
     },
     {
-      name: 'Institutional Desk',
+      name: 'ELITE',
       badge: 'Custom Desk',
-      price: annualBilling ? '₹3,499' : '₹4,299',
-      period: '/ month (billed annually)',
+      price: annualBilling ? '₹3,199' : '₹3,999',
+      period: annualBilling ? '/ month (billed annually)' : '/ month',
       desc: 'Designed for multi-account algorithmic desks and proprietary evaluation firms.',
-      cta: 'Request Desk Setup',
+      cta: 'Launch ELITE Plan',
       popular: false,
       features: [
-        'Everything included in Pro Quantitative tier',
+        'Everything included in PRO tier',
+        'Real-time AI Voice Co-Pilot (Custom Personas)',
         'Multi-account copy orchestration ledgers',
         'Custom strategy alert webhooks & API access',
         'Dedicated quantitative desk architect',
@@ -215,6 +217,17 @@ export default function PricingSection() {
             </div>
           </Reveal>
         ))}
+      </div>
+
+      {/* Deep-dive Full Pricing & Comparison Matrix Link */}
+      <div className="mt-14 text-center">
+        <Link
+          to="/pricing"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-1 border border-border hover:border-iris/40 text-primary font-display font-bold text-sm transition-all shadow-xs hover:bg-surface-2"
+        >
+          <span>Compare Full Plan Specifications &amp; Capital Protection Calculator</span>
+          <ArrowRight size={15} className="text-iris" />
+        </Link>
       </div>
 
     </section>

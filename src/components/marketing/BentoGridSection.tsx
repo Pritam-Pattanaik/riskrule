@@ -1,5 +1,9 @@
 import React from 'react';
-import { Shield, Zap, RefreshCw, Layers, Brain, Lock, CheckCircle, BarChart, Sliders } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { 
+  Shield, Zap, RefreshCw, Layers, Brain, Lock, CheckCircle, BarChart, 
+  Sliders, ArrowRight, Headphones, Volume2, Sparkles 
+} from 'lucide-react';
 import { Reveal, HoverLift } from '../ui/Motion';
 
 export default function BentoGridSection() {
@@ -16,7 +20,7 @@ export default function BentoGridSection() {
             Engineered to defend your capital against psychological error.
           </h2>
           <p className="text-base sm:text-lg text-secondary leading-relaxed">
-            Standard retail tools record what you traded after the fact. RiskRules enforces positive expectancy in real-time before you pull the trigger.
+            Standard retail tools record what you traded after the fact. RiskRules enforces positive expectancy in real-time before and while you pull the trigger.
           </p>
         </Reveal>
       </div>
@@ -55,7 +59,38 @@ export default function BentoGridSection() {
           </div>
         </div>
 
-        {/* BENTO BOX 2 (2-Col Span): Automatic Broker Synchronization */}
+        {/* BENTO BOX 2 (2-Col Span): Real-Time AI Voice Guidance Co-Pilot */}
+        <div className="md:col-span-1 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden group border-border hover:border-iris/40 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-iris/10 rounded-full blur-3xl -z-10 group-hover:bg-iris/15 transition-colors" />
+          
+          <div>
+            <div className="w-12 h-12 rounded-2xl bg-iris/15 border border-iris/30 flex items-center justify-center text-iris mb-6 shadow-xs">
+              <Headphones size={24} strokeWidth={2.5} />
+            </div>
+            <span className="text-[11px] font-mono-stat font-extrabold uppercase tracking-wider text-iris px-2.5 py-1 rounded bg-iris/10 border border-iris/20 inline-block mb-3">
+              REAL-TIME AUDIO CO-PILOT
+            </span>
+            <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-3 tracking-tight">
+              Spoken AI Voice Guidance While Trading
+            </h3>
+            <p className="text-sm sm:text-base text-secondary leading-relaxed max-w-xl mb-8">
+              Stay 100% focused on your price action without reading pop-ups. RiskRules speaks directly in your ears with sub-300ms latency—calling out sizing spikes, macroeconomic event countdowns, and psychological grounding cues.
+            </p>
+          </div>
+
+          {/* Voice Prompt Bar */}
+          <div className="w-full p-4 rounded-xl bg-surface-1 border border-border flex items-center justify-between text-xs font-mono-stat">
+            <span className="flex items-center gap-2 text-iris font-bold">
+              <Volume2 size={15} className="animate-pulse" />
+              "2nd loss detected. 3-minute cooldown advised."
+            </span>
+            <span className="px-3 py-1 rounded-lg bg-surface-0 text-success font-extrabold border border-border">
+              VOICE ACTIVE
+            </span>
+          </div>
+        </div>
+
+        {/* BENTO BOX 3 (2-Col Span): Automatic Broker Synchronization */}
         <div className="md:col-span-1 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden group border-border hover:border-accent/40 transition-all duration-300">
           <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-accent/10 rounded-full blur-3xl -z-10 group-hover:bg-accent/15 transition-colors" />
           
@@ -78,32 +113,12 @@ export default function BentoGridSection() {
           <div className="w-full grid grid-cols-3 gap-2 text-center text-xs font-mono-stat font-bold text-tertiary">
             <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">MT4 &amp; MT5 SYNC</div>
             <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">APEX TRADERS</div>
-            <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">ZERODHA &amp; ANGEL</div>
-          </div>
-        </div>
-
-        {/* BENTO BOX 3 (1-Col Span): Automated Setup Tagging */}
-        <div className="md:col-span-1 lg:col-span-1 card p-7 flex flex-col justify-between border-border hover:border-iris/40 transition-all duration-300">
-          <div>
-            <div className="w-11 h-11 rounded-xl bg-iris/15 border border-iris/30 flex items-center justify-center text-iris mb-5 shadow-xs">
-              <Layers size={22} strokeWidth={2.5} />
-            </div>
-            <h3 className="font-display text-xl font-bold text-primary mb-2">
-              Automated Setup Attribution &amp; Tagging
-            </h3>
-            <p className="text-sm text-secondary leading-relaxed">
-              Our pattern recognition engine automatically categorizes your fills by setup type: Opening Gap Reversal, Breakout, VWAP Bounce, or Order Block Mitigation.
-            </p>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-1.5 pt-4 border-t border-border/60 text-[11px] font-mono-stat font-semibold text-iris">
-            <span className="px-2 py-1 rounded bg-surface-1 border border-border">#OPENING_RANGE</span>
-            <span className="px-2 py-1 rounded bg-surface-1 border border-border">#VWAP_REVERSAL</span>
-            <span className="px-2 py-1 rounded bg-surface-1 border border-border">#LIQUIDITY_SWEEP</span>
+            <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">TRADOVATE</div>
           </div>
         </div>
 
         {/* BENTO BOX 4 (2-Col Span): R:R Expectancy Mathematics */}
-        <div className="md:col-span-2 lg:col-span-2 card p-7 flex flex-col justify-between border-border hover:border-success/40 transition-all duration-300">
+        <div className="md:col-span-2 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between border-border hover:border-success/40 transition-all duration-300">
           <div>
             <div className="w-11 h-11 rounded-xl bg-success/15 border border-success/30 flex items-center justify-center text-success mb-5 shadow-xs">
               <BarChart size={22} strokeWidth={2.5} />
@@ -127,25 +142,17 @@ export default function BentoGridSection() {
           </div>
         </div>
 
-        {/* BENTO BOX 5 (1-Col Span): Zero Cloud Data Leakage */}
-        <div className="md:col-span-1 lg:col-span-1 card p-7 flex flex-col justify-between border-border hover:border-gold/40 transition-all duration-300">
-          <div>
-            <div className="w-11 h-11 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold mb-5 shadow-xs">
-              <Shield size={22} strokeWidth={2.5} />
-            </div>
-            <h3 className="font-display text-xl font-bold text-primary mb-2">
-              Read-Only Bank-Grade Encryption
-            </h3>
-            <p className="text-sm text-secondary leading-relaxed">
-              We connect exclusively via OAuth and Read-Only API keys. We cannot initiate orders or withdraw capital under any technical circumstance.
-            </p>
-          </div>
-          <div className="mt-6 flex items-center gap-2 text-xs font-mono-stat font-bold text-gold pt-4 border-t border-border/60">
-            <CheckCircle size={14} className="text-gold" />
-            <span>SOC-2 TYPE II AUDIT READY</span>
-          </div>
-        </div>
+      </div>
 
+      {/* Deep-Dive Pillar Link */}
+      <div className="mt-12 text-center">
+        <Link
+          to="/features"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-1 border border-border hover:border-iris/40 text-primary font-display font-bold text-sm transition-all shadow-xs hover:bg-surface-2"
+        >
+          <span>Explore All 7 Institutional Engineering Pillars &amp; Audio Co-Pilot</span>
+          <ArrowRight size={15} className="text-iris" />
+        </Link>
       </div>
 
     </section>

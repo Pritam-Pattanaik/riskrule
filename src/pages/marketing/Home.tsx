@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import HeroSection from '../../components/marketing/HeroSection';
 import TrustTicker from '../../components/marketing/TrustTicker';
+import DisciplineSimulatorSection from '../../components/marketing/DisciplineSimulatorSection';
+import TraderJourneySection from '../../components/marketing/TraderJourneySection';
+import EdgeLeakCheckerSection from '../../components/marketing/EdgeLeakCheckerSection';
 import InteractiveDashboard from '../../components/marketing/InteractiveDashboard';
 import BentoGridSection from '../../components/marketing/BentoGridSection';
 import MarketNewsSection from '../../components/marketing/MarketNewsSection';
@@ -20,11 +23,6 @@ export default function Home() {
 
   return (
     <div className="w-full relative overflow-hidden bg-canvas text-primary">
-      {/* 
-        NOTE: All old global window mousemove event listeners that caused 
-        120 re-renders per second have been permanently removed.
-        Animation and atmospheric illumination operate strictly via GPU-accelerated CSS.
-      */}
       
       {/* 01. Hero Positioning & Value Conversion Section */}
       <HeroSection />
@@ -32,30 +30,41 @@ export default function Home() {
       {/* 02. Institutional Broker Ecosystem Marquee */}
       <TrustTicker />
 
-      {/* 03. Interactive Showcase Centerpiece (Live 3-Tab Simulation) */}
-      <div className="pt-20">
+      {/* 03. Interactive Discipline-to-Profit Simulator (How discipline changes the equity curve) */}
+      <div id="discipline-simulator" className="pt-8 scroll-mt-20">
+        <DisciplineSimulatorSection />
+      </div>
+
+      {/* 04. The 4-Step Blueprint to Trader Consistency */}
+      <TraderJourneySection />
+
+      {/* 05. Interactive Diagnostic: Where are you leaking capital right now? */}
+      <EdgeLeakCheckerSection />
+
+      {/* 06. Interactive Command Center Showcase (Live 4-Tab Simulation) */}
+      <div className="pt-12">
         <InteractiveDashboard />
       </div>
 
-      {/* 04. Core Anatomy Pillars (Asymmetric Bento Modular Grid) */}
+      {/* 07. Concrete Trader Benefits & Engineering Pillars Bento Grid */}
       <BentoGridSection />
 
-      {/* 05. Macroevent Intelligence & Pre-News Lockouts */}
+      {/* 08. Macroeconomic News Protection & Event Lockouts */}
       <MarketNewsSection />
 
-      {/* 06. AI Behavioral Coach Deep-Dive Engine */}
+      {/* 09. AI Behavioral Coach Deep-Dive Engine */}
       <AICoachSection />
 
-      {/* 07. Verified Social Proof & Audited Prop Performance */}
+      {/* 10. Verified Social Proof & Audited Prop Performance */}
       <SocialProofSection />
 
-      {/* 08. Transparent Investment Plans & ROI Calculator */}
+      {/* 11. Transparent Investment Plans & ROI Calculator */}
       <PricingSection />
 
-      {/* 09. Objection Resolution FAQ Accordion Vault */}
+      {/* 12. Objection Resolution FAQ Accordion Vault */}
       <FAQSection />
 
-      {/* 10. High-Conversion Closing Trigger */}
+      {/* 13. High-Conversion Closing Trigger */}
       <FinalCTASection />
 
     </div>

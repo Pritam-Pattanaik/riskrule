@@ -1,5 +1,6 @@
 import React from 'react';
-import { Brain, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Brain, CheckCircle2, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
 import { Reveal } from '../ui/Motion';
 
 export default function AICoachSection() {
@@ -39,6 +40,16 @@ export default function AICoachSection() {
                     <span>{item}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="pt-4">
+                <Link
+                  to="/ai-coach"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-canvas font-display font-bold text-sm shadow-md hover:opacity-95 transition-all"
+                >
+                  <span>Launch Interactive AI Behavioral Simulator</span>
+                  <ArrowRight size={15} />
+                </Link>
               </div>
             </Reveal>
           </div>
