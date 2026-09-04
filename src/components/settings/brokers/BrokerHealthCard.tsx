@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronUp, History, Zap, DatabaseZap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrokerLogo } from './BrokerLogo';
 
 
 interface BrokerHealthCardProps {
@@ -55,12 +56,12 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
       <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle">
         <div className="flex items-start gap-4">
           {/* Brand logo */}
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center font-display font-black text-white text-base shadow-lg shrink-0 select-none"
-            style={{ backgroundColor: provider?.themeColor || '#3B82F6' }}
-          >
-            {provider?.logoText || connection.broker.slice(0, 2).toUpperCase()}
-          </div>
+          <BrokerLogo
+            providerId={connection.providerId || connection.broker}
+            fallbackText={provider?.logoText || connection.broker.slice(0, 2).toUpperCase()}
+            themeColor={provider?.themeColor || '#3B82F6'}
+            size="md"
+          />
 
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">

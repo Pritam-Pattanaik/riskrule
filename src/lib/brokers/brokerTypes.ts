@@ -8,6 +8,8 @@ export type AuthModel =
   | 'JWT' 
   | 'MANUAL_IMPORT_ONLY';
 
+export type SyncStatus = 'ACTIVE' | 'COMING_SOON' | 'BETA';
+
 export type BrokerCapability = 
   | 'AUTO_SYNC' 
   | 'PORTFOLIO' 
@@ -35,6 +37,20 @@ export interface BrokerFormField {
   regexValidation?: string;
   validationErrorMessage?: string;
   helperText?: string;
+  /** Step-by-step instructions for finding this credential */
+  whereToFind?: string;
+  /** Example format shown as ghost text (e.g. "AB1234", "eyJhbGci...") */
+  exampleFormat?: string;
+  /** Security note for this field (e.g. "Stored encrypted, never shared") */
+  securityNote?: string;
+  /** Direct link to official docs page for this credential */
+  docLink?: string;
+}
+
+export interface ConnectionGuideStep {
+  title: string;
+  description: string;
+  actionUrl?: string; // Optional URL for "Open Portal" buttons
 }
 
 export interface BrokerProviderDefinition {
@@ -42,9 +58,25 @@ export interface BrokerProviderDefinition {
   name: string;
   tagline: string;
   logoText: string;
+  /** Path to official SVG logo asset (imported via Vite) */
+  logoSrc?: string;
   themeColor: string; // Tailwind or Hex color accent for card identity
   region: 'INDIA' | 'USA' | 'GLOBAL';
   authModel: AuthModel;
+  /** Whether server-side trade sync is implemented for this broker */
+  syncStatus?: SyncStatus;
+  /** Estimated availability for COMING_SOON brokers (e.g., "Q4 2026") */
+  comingSoonEta?: string;
+  /** Short description shown in the Coming Soon modal */
+  comingSoonDescription?: string;
+  /** Market segments this broker supports (e.g., ['NSE', 'BSE', 'F&O']) */
+  marketSegments?: string[];
+  /** Human-readable explanation of the authentication flow */
+  authDescription?: string;
+  /** Estimated time to complete setup (e.g., "~2 minutes") */
+  setupTimeEstimate?: string;
+  /** Step-by-step guide shown to the user BEFORE they see the form */
+  connectionGuide?: ConnectionGuideStep[];
   tokenLifecycle: {
     expiresDaily: boolean;
     expiryTimeLocal?: string; // e.g., '06:00' or '23:59' IST

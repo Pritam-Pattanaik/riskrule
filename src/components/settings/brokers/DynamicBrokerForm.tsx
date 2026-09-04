@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BrokerProviderDefinition } from '../../../lib/brokers/brokerTypes';
 import { cn } from '../../../lib/cn';
-import { Eye, EyeOff, AlertCircle, Lock, Shield, ExternalLink, HelpCircle } from 'lucide-react';
+import { 
+  Eye, EyeOff, AlertCircle, Lock, ShieldCheck, CheckCircle2
+} from 'lucide-react';
 import { Button } from '../../ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DynamicBrokerFormProps {
   provider: BrokerProviderDefinition;
@@ -23,10 +26,9 @@ export const DynamicBrokerForm: React.FC<DynamicBrokerFormProps> = ({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // Reset form when switching provider
   useEffect(() => {
     setFormData({});
-    setAccountAlias(`${provider.name} Primary Vault`);
+    setAccountAlias(`${provider.name} Portfolio`);
     setValidationErrors({});
     setTouched({});
   }, [provider.providerId, provider.name]);
@@ -34,7 +36,6 @@ export const DynamicBrokerForm: React.FC<DynamicBrokerFormProps> = ({
   const handleInputChange = (id: string, value: string) => {
     setFormData(prev => ({ ...prev, [id]: value }));
     
-    // Perform inline regex validation if touched
     const fieldDef = provider.fields.find(f => f.id === id);
     if (fieldDef && fieldDef.regexValidation) {
       const regex = new RegExp(fieldDef.regexValidation);
@@ -61,12 +62,12 @@ export const DynamicBrokerForm: React.FC<DynamicBrokerFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Final check for all required fields
     const errors: Record<string, string> = {};
+    
     provider.fields.forEach(field => {
       const val = formData[field.id] || '';
       if (field.required && !val.trim()) {
-        errors[field.id] = `${field.label} is strictly required`;
+        errors[field.id] = `${field.label} is required`;
       }
       if (val && field.regexValidation) {
         const regex = new RegExp(field.regexValidation);
@@ -86,131 +87,105 @@ export const DynamicBrokerForm: React.FC<DynamicBrokerFormProps> = ({
   };
 
   const inputCls = cn(
-    'w-full h-11 rounded-xl border bg-surface-1 px-4 text-[13px] text-primary font-medium',
-    'placeholder:text-muted outline-none transition-all duration-200 font-mono',
-    'focus:border-iris/50 focus:bg-surface focus:shadow-[0_0_0_3px_rgba(var(--color-iris),0.12)]'
+    'w-full h-14 rounded-xl border bg-surface-0 px-5 text-base text-primary font-bold',
+    'placeholder:text-muted outline-none transition-all duration-300 font-mono shadow-inner',
+    'focus:border-iris focus:bg-surface-0 focus:shadow-[0_0_0_4px_rgba(var(--color-iris),0.15)]'
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 font-sans">
-      {/* Account Alias Input (Multi-Account Architecture) */}
-      <div className="p-3.5 rounded-xl border border-border bg-surface-1/40">
-        <label className="text-[11px] font-bold uppercase tracking-widest text-secondary mb-1 block">
-          Account Name / Label <span className="normal-case font-normal text-muted">(Multi-Account Support)</span>
+    <form onSubmit={handleSubmit} className="space-y-6 font-sans w-full">
+      {/* Account Alias Input */}
+      <div className="space-y-2">
+        <label className="text-sm font-bold text-secondary block">
+          Account Alias <span className="font-normal text-tertiary ml-1">(Internal Label)</span>
         </label>
         <input
           type="text"
           value={accountAlias}
           onChange={e => setAccountAlias(e.target.value)}
-          placeholder="e.g. Personal Kite Portfolio or F&O Algovault"
-          className={cn(inputCls, 'font-sans font-semibold text-[13px]')}
+          placeholder="e.g. Primary Trading Vault"
+          className={cn(inputCls, 'font-sans font-bold text-lg text-primary')}
           required
         />
       </div>
 
-      {/* Dynamic Required & Optional Fields from Provider Definition */}
-      <div className="space-y-4 pt-1">
+      {/* Dynamic Fields */}
+      <div className="space-y-6">
         {provider.fields.map(field => {
           const hasError = touched[field.id] && !!validationErrors[field.id];
           const isPasswordField = field.isSecret && !showSecret[field.id];
+          const hasValue = !!formData[field.id];
+          const isValid = hasValue && !hasError;
 
           return (
-            <div key={field.id} className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-tertiary flex items-center gap-1.5">
-                  {field.label}
-                  {field.required && <span className="text-iris font-mono">*</span>}
-                  {field.isSecret && (
-                    <span title="AES-256 Vaulted" className="text-muted inline-flex items-center gap-1 text-[10px] normal-case bg-surface-2 px-1.5 py-0.2 rounded">
-                      <Lock size={9} className="text-success" /> Vaulted
-                    </span>
-                  )}
-                </label>
-                {field.helperText && (
-                  <span className="text-[10px] text-muted flex items-center gap-1" title={field.helperText}>
-                    <HelpCircle size={10} /> {field.helperText.slice(0, 38)}...
+            <div key={field.id} className="space-y-2">
+              <label className="text-sm font-bold text-primary flex items-center gap-2">
+                {field.label}
+                {field.required && <span className="text-danger">*</span>}
+                {field.isSecret && (
+                  <span className="inline-flex items-center justify-center bg-surface-2 text-tertiary w-5 h-5 rounded-md border border-border" title="Stored securely">
+                    <Lock size={10} />
                   </span>
                 )}
-              </div>
+              </label>
 
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type={isPasswordField ? 'password' : 'text'}
                   autoComplete={field.isSecret ? 'new-password' : 'off'}
-                  placeholder={field.placeholder}
+                  placeholder={field.exampleFormat ? `e.g. ${field.exampleFormat}` : field.placeholder}
                   value={formData[field.id] || ''}
                   onChange={e => handleInputChange(field.id, e.target.value)}
                   onBlur={() => handleBlur(field.id)}
                   className={cn(
                     inputCls,
-                    hasError ? 'border-danger focus:border-danger bg-danger/5' : 'border-border',
-                    field.isSecret && 'pr-11'
+                    hasError ? 'border-danger focus:border-danger focus:shadow-[0_0_0_4px_rgba(var(--color-danger),0.15)] bg-danger/5' : isValid ? 'border-success/50 bg-success/5' : 'border-border',
+                    field.isSecret ? 'pr-20' : isValid ? 'pr-12' : ''
                   )}
                 />
-                {field.isSecret && (
-                  <button
-                    type="button"
-                    onClick={() => setShowSecret(prev => ({ ...prev, [field.id]: !prev[field.id] }))}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-primary transition-colors focus:outline-none p-1"
-                    title={showSecret[field.id] ? "Hide Secret" : "Reveal Secret"}
-                  >
-                    {showSecret[field.id] ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                )}
+                
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {isValid && !field.isSecret && (
+                    <CheckCircle2 size={20} className="text-success animate-in zoom-in duration-200" />
+                  )}
+                  
+                  {field.isSecret && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSecret(prev => ({ ...prev, [field.id]: !prev[field.id] }))}
+                      className="text-tertiary hover:text-primary transition-colors focus:outline-none p-1.5 rounded-md hover:bg-surface-2"
+                    >
+                      {showSecret[field.id] ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {hasError && (
-                <p className="text-[11px] font-semibold text-danger flex items-center gap-1.5 mt-1 animate-fadeIn">
-                  <AlertCircle size={12} className="shrink-0" /> {validationErrors[field.id]}
-                </p>
-              )}
+              <AnimatePresence>
+                {hasError && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="text-sm font-bold text-danger flex items-center gap-1.5 mt-2"
+                  >
+                    <AlertCircle size={16} /> <span>{validationErrors[field.id]}</span>
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}
       </div>
 
-      {/* Security & Regulatory Token Expiration Advisory */}
-      <div className="p-3.5 rounded-xl bg-surface-1 border border-border flex items-start gap-3 text-xs text-tertiary">
-        <Shield className="w-4 h-4 text-iris shrink-0 mt-0.5" />
-        <div className="space-y-1 min-w-0">
-          <p className="font-semibold text-secondary">
-            {provider.tokenLifecycle.expiresDaily
-              ? `Mandatory SEBI Daily Expiration Policy (${provider.tokenLifecycle.expiryTimeLocal || 'Daily'})`
-              : 'Institutional Long-Lived Rolling Token Authentication'}
-          </p>
-          <p className="text-[11px] leading-relaxed">
-            Your secrets are encrypted with zero-knowledge AES-256 cloud vaults and purged from local runtime DOM memory immediately upon successful connection.
-          </p>
-          <div className="flex items-center gap-3 pt-1 text-[11px] font-semibold">
-            <a
-              href={provider.documentation.setupGuideUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-iris hover:underline flex items-center gap-1"
-            >
-              Setup Guide <ExternalLink size={11} />
-            </a>
-            <a
-              href={provider.documentation.officialPortalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-tertiary hover:text-primary transition-colors flex items-center gap-1"
-            >
-              Official Portal <ExternalLink size={11} />
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
+      <div className="pt-6 mt-6 border-t border-border flex justify-between items-center">
         {onCancel && (
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={isLoading}>
-            Cancel
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isLoading} className="font-bold text-tertiary hover:text-primary">
+            Review Instructions
           </Button>
         )}
-        <Button type="submit" isLoading={isLoading} className="min-w-[150px] font-bold">
-          {!isLoading && `Validate & Connect ${provider.name}`}
+        <Button type="submit" isLoading={isLoading} className="h-12 px-8 font-bold text-base shadow-iris">
+          {!isLoading && `Authenticate Connection`}
         </Button>
       </div>
     </form>
