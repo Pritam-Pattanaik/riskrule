@@ -35,5 +35,5 @@ export default function AnimatedNumber({ value, duration = 1000, prefix = '', su
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
   }, [value, duration]);
 
-  return <span className={className}>{prefix}{display.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</span>;
+  return <span className={className}>{prefix}{display.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}</span>;
 }

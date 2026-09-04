@@ -48,7 +48,7 @@ export default function Sidebar() {
         {
           label: 'System',
           items: [
-            { name: 'Settings', path: '/app/settings', icon: Settings },
+            { name: 'Platform Settings', path: '/app/admin/settings', icon: Settings },
           ]
         }
       ];
@@ -138,7 +138,9 @@ export default function Sidebar() {
               transition={{ duration: 0.2 }}
               className="whitespace-nowrap overflow-hidden"
             >
-              <Logo variant="full" size="md" />
+              <Link to={profile?.role === 'SUPER_ADMIN' ? '/app/admin' : '/app'}>
+                <Logo variant="full" size="md" />
+              </Link>
             </motion.div>
           ) : (
             <motion.div
@@ -147,7 +149,9 @@ export default function Sidebar() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Logo variant="icon" size="md" />
+              <Link to={profile?.role === 'SUPER_ADMIN' ? '/app/admin' : '/app'}>
+                <Logo variant="icon" size="md" />
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>

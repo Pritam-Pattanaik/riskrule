@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { TrendingUp, Target, Scale, Shield, Flame, Zap, TrendingDown, ArrowUpRight, BarChart3, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTradeStore } from '../stores/tradeStore';
+import { useAuthStore } from '../stores/authStore';
 import {
   computeStats, computeCumulativePnl, computeStrategyPnl,
   computeDisciplineDistribution, computeCurrentStreak,
@@ -33,8 +34,13 @@ const filterLabels: { key: DateFilter; label: string }[] = [
 ];
 
 export default function Dashboard() {
+  const { profile } = useAuthStore();
   const { trades, loading } = useTradeStore();
   const [dateFilter, setDateFilter] = useState<DateFilter>('week');
+
+  if (profile?.role === 'SUPER_ADMIN') {
+    return <Navigate to="/app/admin" replace />;
+  }
 
   const filteredTrades = useMemo(() => {
     if (dateFilter === 'all') return trades;

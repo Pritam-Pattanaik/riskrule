@@ -82,11 +82,11 @@ export default function UserProfileDropdown({ collapsed }: { collapsed?: boolean
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
-            onSelect={() => navigate('/app/settings')}
+            onSelect={() => navigate(profile?.role === 'SUPER_ADMIN' ? '/app/admin/settings' : '/app/settings')}
             className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-surface-1 transition-colors cursor-pointer outline-none select-none"
           >
             <Settings className="w-4 h-4" />
-            Settings
+            {profile?.role === 'SUPER_ADMIN' ? 'Platform Settings' : 'Settings'}
           </DropdownMenu.Item>
 
           <DropdownMenu.Separator className="h-px bg-border my-1 mx-1" />

@@ -29,8 +29,20 @@ export default function Header() {
 
   const getBreadcrumbs = (pathname: string) => {
     const parts = pathname.split('/').filter(Boolean);
-    if (parts.length <= 2) return []; // Hide breadcrumbs for top-level pages (e.g. /app, /app/markets)
+    if (parts.length <= 2 && parts[1] !== 'admin') return []; // Hide breadcrumbs for top-level pages (e.g. /app, /app/markets)
     
+    // Check if in admin portal
+    if (parts[1] === 'admin') {
+      const crumbs = [{ name: 'Admin Dashboard', path: '/app/admin' }];
+      if (parts[2]) {
+        crumbs.push({
+          name: parts[2].charAt(0).toUpperCase() + parts[2].slice(1).replace(/-/g, ' '),
+          path: `/app/admin/${parts[2]}`,
+        });
+      }
+      return crumbs;
+    }
+
     const crumbs = [{ name: 'Dashboard', path: '/app' }];
     if (parts[1]) {
       crumbs.push({

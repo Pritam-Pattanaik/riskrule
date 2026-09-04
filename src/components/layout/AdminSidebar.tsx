@@ -6,6 +6,7 @@ import {
   Server, FileText, Bell, ScrollText, Lock, Database, PlayCircle, Network,
   AlertTriangle, Gauge, Settings, ChevronLeft, ChevronRight, X, Search, Brain, Target
 } from 'lucide-react';
+import logoUrl from '../../assets/images/RiskRules.png';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/cn';
@@ -54,13 +55,13 @@ export default function AdminSidebar() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full overflow-hidden bg-surface-0 border-r border-border">
       
-      {/* Top Brand Area */}
+      {/* Top Brand Area with Official RiskRules Logo */}
       <div className={cn(
         "flex items-center p-4 shrink-0 h-[68px]",
         desktopSidebarExpanded ? "justify-between" : "justify-center"
       )}>
         <AnimatePresence initial={false}>
-          {desktopSidebarExpanded && (
+          {desktopSidebarExpanded ? (
             <motion.div
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: 'auto' }}
@@ -68,10 +69,36 @@ export default function AdminSidebar() {
               transition={{ duration: 0.2 }}
               className="whitespace-nowrap overflow-hidden flex items-center gap-2"
             >
-              <div className="w-8 h-8 rounded-lg bg-danger/20 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-danger" />
-              </div>
-              <span className="font-display font-bold text-primary tracking-tight leading-tight text-lg">Super Admin</span>
+              <Link to="/app/admin" className="flex items-center gap-2.5 group">
+                <img
+                  src={logoUrl}
+                  alt="RiskRules"
+                  className="h-8 w-8 object-contain drop-shadow-md shrink-0"
+                />
+                <div className="flex flex-col">
+                  <span className="font-display font-bold text-primary tracking-tight leading-none text-base group-hover:text-indigo-400 transition-colors">
+                    RiskRules
+                  </span>
+                  <span className="text-[10px] font-mono font-bold tracking-wider text-rose-400 uppercase leading-tight mt-0.5">
+                    Super Admin
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link to="/app/admin" title="RiskRules Super Admin" className="flex items-center justify-center">
+                <img
+                  src={logoUrl}
+                  alt="RiskRules"
+                  className="h-8 w-8 object-contain drop-shadow-md shrink-0 hover:scale-105 transition-transform"
+                />
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>

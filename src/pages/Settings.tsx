@@ -310,6 +310,22 @@ export default function Settings() {
   return (
     <div className="max-w-5xl mx-auto pb-28 space-y-8 font-sans animate-fadeIn">
       
+      {/* Super Admin Institutional Quick Switch Banner */}
+      {profile?.role === 'SUPER_ADMIN' && (
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-rose-300 font-medium">
+            <Shield className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>You are logged in as <strong>Super Admin</strong>. This page manages personal retail trader rules and personal broker tokens.</span>
+          </div>
+          <a
+            href="/app/admin/settings"
+            className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold tracking-wide transition-all shrink-0 shadow-sm"
+          >
+            Go to Platform System Settings &rarr;
+          </a>
+        </div>
+      )}
+
       {/* Institutional Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
         <div>

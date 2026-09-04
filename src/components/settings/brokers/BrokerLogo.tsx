@@ -3,7 +3,7 @@ import { cn } from '../../../lib/cn';
 
 // Import all broker SVG logos
 import angeloneLogo from '../../../assets/brokers/angelone.svg';
-import dhanLogo from '../../../assets/brokers/dhan.svg';
+import dhanLogo from '../../../assets/brokers/dhan.png';
 import zerodhaLogo from '../../../assets/brokers/zerodha.svg';
 import deltaExchangeLogo from '../../../assets/brokers/delta_exchange.svg';
 import upstoxLogo from '../../../assets/brokers/upstox.svg';
