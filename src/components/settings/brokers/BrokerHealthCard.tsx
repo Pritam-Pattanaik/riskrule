@@ -32,9 +32,11 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
   const [showTokenVault, setShowTokenVault] = useState(false);
   const [newTokenValue, setNewTokenValue] = useState('');
 
-  // Angel One re-auth is FULLY AUTOMATIC (server uses stored TOTP secret).
-  // Only non-Angel-One brokers need a manual token paste.
-  const isAngelOne = connection.broker === 'angelone';
+  // Determine UI behaviour from the broker's auth model, NOT from a hardcoded name check.
+  // Brokers using CLIENT_ID_SECRET_TOTP (e.g. Angel One) support automatic daily re-auth
+  // via stored TOTP — no manual token paste is ever required.
+  // All other NONE_MANDATORY_REAUTH brokers (e.g. Dhan) require a daily manual token paste.
+  const usesAutoTotp = provider?.authModel === 'CLIENT_ID_SECRET_TOTP';
 
   const statusColors = {
     ONLINE:       'bg-success/10 border-success/25 text-success',
@@ -80,7 +82,7 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
               <span>⚡ Avg speed: {connection.lastSyncDurationMs || 380}ms</span>
               <span>📥 {connection.todaySyncCount || 0} syncs today</span>
             </p>
-            {isAngelOne && (
+            {usesAutoTotp && (
               <p className="text-[11px] text-iris/80 mt-1 flex items-center gap-1.5 font-medium">
                 <Zap size={11} className="shrink-0" />
                 Daily token auto-refreshed via stored TOTP secret — no manual re-auth needed.
@@ -122,8 +124,8 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
             Full Sync
           </Button>
 
-          {/* Show token vault button only for non-Angel-One brokers */}
-          {!isAngelOne && (
+          {/* Show token vault only for brokers that require manual daily token refresh */}
+          {!usesAutoTotp && (
             <Button
               variant="ghost" size="icon-sm"
               onClick={() => setShowTokenVault(!showTokenVault)}
@@ -151,7 +153,7 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
 
       {/* ── Token Vault (non-Angel-One brokers only) ──────────────────────── */}
       <AnimatePresence>
-        {!isAngelOne && (showTokenVault || connection.healthStatus === 'EXPIRED' || connection.healthStatus === 'WARNING') && (
+        {!usesAutoTotp && (showTokenVault || connection.healthStatus === 'EXPIRED' || connection.healthStatus === 'WARNING') && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
