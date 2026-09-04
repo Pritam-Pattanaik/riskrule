@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { useTradeStore } from './tradeStore';
 import { useAnalyticsStore } from './analyticsStore';
 import { BrokerAccountConnection } from '../lib/brokers/brokerTypes';
+import { getBrokerProvider } from '../lib/brokers/brokerRegistry';
 
 export interface BrokerConnection extends BrokerAccountConnection {
   broker: string; // Alias for providerId to maintain backwards compatibility
@@ -47,11 +48,13 @@ export const useBrokerStore = create<BrokerStore>((set, get) => ({
       // Enrich raw database connections into institutional multi-account BMS states
       const enriched: BrokerConnection[] = (rawData || []).map((raw: any) => {
         const providerId = raw.broker || raw.providerId || 'zerodha';
+        const provider = getBrokerProvider(providerId);
         return {
           id: raw.id || providerId,
           providerId: providerId,
           broker: providerId,
-          accountAlias: raw.accountAlias || (providerId === 'dhan' ? 'Primary F&O Vault' : 'Equity Portfolio'),
+          // Priority: 1) persisted accountAlias from DB, 2) registry name, 3) raw providerId
+          accountAlias: raw.accountAlias || provider?.name || providerId,
           clientId: raw.clientId || 'Client Account',
           isActive: raw.isActive ?? true,
           healthStatus: raw.lastSyncError ? 'WARNING' : (raw.isActive ? 'ONLINE' : 'DISCONNECTED'),

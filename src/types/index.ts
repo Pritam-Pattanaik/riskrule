@@ -139,7 +139,9 @@ export const BREAKDOWN_LABELS: { key: string; label: string }[] = [
 
 export interface BrokerConnection {
   id: string;
-  broker: 'zerodha' | 'angelone';
+  // Use string instead of a union — the registry (brokerRegistry.ts) is the source of truth
+  // for all valid providerIds. A hardcoded union here silently breaks for Dhan, Delta, etc.
+  broker: string;
   clientId: string;
   isActive: boolean;
   lastSyncedAt?: string;
