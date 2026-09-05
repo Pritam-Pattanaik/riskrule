@@ -28,7 +28,7 @@ http.get('http://localhost:3000/api/auth/csrf', (res) => {
         console.log('Login Body:', data2);
       });
     });
-    req.write(JSON.stringify({ email: 'trader@RiskRules.in', password: 'Test@12345' }));
+    req.write(JSON.stringify({ email: 'trader@RiskRule.in', password: 'Test@12345' }));
     req.end();
   });
 });

@@ -141,7 +141,7 @@ export default function AICoachPage() {
               </span>
             </h1>
             <p className="font-sans text-base sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-8 leading-relaxed">
-              Willpower alone cannot protect your account during high-stress drawdowns. RiskRules analyzes order telemetry and speaks audio guidance directly into your ears to enforce discipline before tilt takes over.
+              Willpower alone cannot protect your account during high-stress drawdowns. RiskRule analyzes order telemetry and speaks audio guidance directly into your ears to enforce discipline before tilt takes over.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3.5">
               <Link
@@ -174,7 +174,7 @@ export default function AICoachPage() {
               Select a trader mistake to test the AI voice &amp; risk intervention.
             </h2>
             <p className="text-base sm:text-lg text-secondary leading-relaxed">
-              Click through the scenarios below to see how RiskRules analyzes live order stream anomalies, provides spoken verbal cues, and locks rogue orders.
+              Click through the scenarios below to see how RiskRule analyzes live order stream anomalies, provides spoken verbal cues, and locks rogue orders.
             </p>
           </Reveal>
         </div>
@@ -243,7 +243,7 @@ export default function AICoachPage() {
                       <Brain size={20} />
                     </div>
                     <div>
-                      <h4 className="font-display font-bold text-base text-primary">RiskRules AI Behavioral Core</h4>
+                      <h4 className="font-display font-bold text-base text-primary">RiskRule AI Behavioral Core</h4>
                       <p className="text-xs text-secondary font-medium">Spoken Audio + Real-Time Telemetry Debrief</p>
                     </div>
                   </div>
@@ -306,7 +306,7 @@ export default function AICoachPage() {
                 Whispers discipline directly into your ears.
               </h2>
               <p className="text-base text-secondary leading-relaxed font-normal">
-                During fast market breakouts and high-stress drawdowns, reading screen notifications breaks visual focus. RiskRules's neural audio engine delivers spoken cues right when you need them—calming your heart rate and grounding your execution.
+                During fast market breakouts and high-stress drawdowns, reading screen notifications breaks visual focus. RiskRule's neural audio engine delivers spoken cues right when you need them—calming your heart rate and grounding your execution.
               </p>
 
               <div className="space-y-3 pt-2">
@@ -385,7 +385,7 @@ export default function AICoachPage() {
               6 psychological biases that bankrupt retail traders.
             </h2>
             <p className="text-base sm:text-lg text-secondary leading-relaxed">
-              Every trader battles these evolutionary human biases. RiskRules replaces willpower with programmatic guardrails and voice guidance.
+              Every trader battles these evolutionary human biases. RiskRule replaces willpower with programmatic guardrails and voice guidance.
             </p>
           </Reveal>
         </div>
@@ -405,7 +405,7 @@ export default function AICoachPage() {
                 </div>
 
                 <div className="p-4 rounded-xl bg-surface-0 border border-iris/20 space-y-1">
-                  <span className="text-[10px] font-mono-stat text-iris font-bold uppercase block">RiskRules Solution</span>
+                  <span className="text-[10px] font-mono-stat text-iris font-bold uppercase block">RiskRule Solution</span>
                   <p className="text-xs font-semibold text-primary leading-relaxed">
                     {bias.solution}
                   </p>

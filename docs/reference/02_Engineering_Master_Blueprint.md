@@ -1,4 +1,4 @@
-﻿# RiskRules â€” Flow Intelligence
+﻿# RiskRule â€” Flow Intelligence
 # Engineering Master Blueprint (EMB)
 # Version 1.0
 
@@ -68,7 +68,7 @@ DATA PLANE
 
 **Decision:** Flow Intelligence is a standalone route at `/app/flow`, not a tab within Markets.
 
-**Rationale:** The PRD's layout template (Â§9.5) shows a full-screen workspace with command bar, tab strip, and 7-panel hierarchy â€” this cannot coexist with the Markets page layout. The session-adaptive interface (Â§8.3) requires ownership of the page lifecycle. The PRD's north star metric measures "opens Flow Intelligence" â€” implying a distinct navigable destination. RiskRules's sidebar already supports named routes (`/markets`, `/journal`) â€” adding `/flow` is architecturally consistent.
+**Rationale:** The PRD's layout template (Â§9.5) shows a full-screen workspace with command bar, tab strip, and 7-panel hierarchy â€” this cannot coexist with the Markets page layout. The session-adaptive interface (Â§8.3) requires ownership of the page lifecycle. The PRD's north star metric measures "opens Flow Intelligence" â€” implying a distinct navigable destination. RiskRule's sidebar already supports named routes (`/markets`, `/journal`) â€” adding `/flow` is architecturally consistent.
 
 ### OQ-2 â†’ V1 Supports 4 Symbols
 
@@ -86,11 +86,11 @@ DATA PLANE
 
 **Cost model:** 4 index-level calls/hour (one per symbol). Personal overlay triggered only on page load when user has active OPTIONS positions.
 
-### OQ-5 â†’ Bundled with RiskRules Premium
+### OQ-5 â†’ Bundled with RiskRule Premium
 
-**Decision:** Flow Intelligence is included in RiskRules Premium â€” not separately gated.
+**Decision:** Flow Intelligence is included in RiskRule Premium â€” not separately gated.
 
-**Rationale:** Core value (personalization via RiskRules history) only works for logged-in active users. Separate subscription creates friction. PRD business metric (Â§21.2) measures "premium conversion influenced by Flow" â€” meaning Flow is a conversion driver, not a separate revenue stream. Sensibull charges â‚¹2,999/mo standalone â€” bundling makes RiskRules Premium more compelling.
+**Rationale:** Core value (personalization via RiskRule history) only works for logged-in active users. Separate subscription creates friction. PRD business metric (Â§21.2) measures "premium conversion influenced by Flow" â€” meaning Flow is a conversion driver, not a separate revenue stream. Sensibull charges â‚¹2,999/mo standalone â€” bundling makes RiskRule Premium more compelling.
 
 ### RG-001 â†’ Dealer Gamma from OI Proxy
 
@@ -1597,7 +1597,7 @@ Every empty state must follow: **What happened â†’ Why â†’ What to do 
 
 | State | Message |
 |-------|---------|
-| No active positions | "Your positions will appear here once you have open trades logged in RiskRules" |
+| No active positions | "Your positions will appear here once you have open trades logged in RiskRule" |
 | No alerts configured | "Set an OI threshold alert and we'll notify you when institutional activity moves near your strike" |
 | Morning brief not yet ready | "The market brief will be available at 8:30 AM. Check back 45 minutes before open." |
 | Market closed | "Flow Intelligence shows live data during market hours (9:15 AM â€“ 3:30 PM IST). Historical replay is available for post-market analysis." |
@@ -2715,7 +2715,7 @@ Cursor-based pagination is used (not offset-based) to avoid phantom reads in hig
 
 ### JWT Token Strategy
 
-Flow Intelligence inherits the existing RiskRules JWT strategy:
+Flow Intelligence inherits the existing RiskRule JWT strategy:
 - Access token TTL: 15 minutes (PRD Â§16.1)
 - Refresh token TTL: 7 days
 - Algorithm: RS256 (asymmetric) â€” not HS256. Private key for signing on server, public key for verification.
@@ -2830,7 +2830,7 @@ X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
 X-XSS-Protection: 1; mode=block
 Referrer-Policy: strict-origin-when-cross-origin
-Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{nonce}'; connect-src 'self' wss://api.riskrules.in; img-src 'self' data:; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com
+Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{nonce}'; connect-src 'self' wss://api.riskrule.in; img-src 'self' data:; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com
 Permissions-Policy: geolocation=(), microphone=(), camera=()
 ```
 
@@ -2843,9 +2843,9 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 
 ## 13.8 CORS Configuration
 
-CORS restricted to RiskRules domains (PRD Â§18.6):
+CORS restricted to RiskRule domains (PRD Â§18.6):
 ```
-Access-Control-Allow-Origin: https://app.riskrules.in, https://riskrules.in
+Access-Control-Allow-Origin: https://app.riskrule.in, https://riskrule.in
 Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
 Access-Control-Allow-Headers: Authorization, Content-Type, X-Request-ID
 Access-Control-Max-Age: 86400
@@ -3749,7 +3749,7 @@ Each phase has a "Go/No-Go" checkpoint reviewed by Engineering Lead + Product Le
 
 - [ ] HTTPS enforced on all endpoints (HSTS enabled)
 - [ ] All security headers configured (CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy)
-- [ ] CORS restricted to riskrules.in and app.riskrules.in
+- [ ] CORS restricted to riskrule.in and app.riskrule.in
 - [ ] JWT RS256 keys rotated from any test keys used in development
 - [ ] JWT refresh token rotation implemented
 - [ ] API keys in environment variables only â€” no keys in codebase or database

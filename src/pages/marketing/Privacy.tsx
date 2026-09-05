@@ -19,7 +19,7 @@ export default function Privacy() {
             Privacy Policy
           </h1>
           <p className="text-xl text-secondary max-w-2xl leading-relaxed">
-            RiskRules is built for institutional trading desks and disciplined speculators. 
+            RiskRule is built for institutional trading desks and disciplined speculators. 
             We protect your data with the same rigor you apply to risk management.
           </p>
         </motion.div>
@@ -34,7 +34,7 @@ export default function Privacy() {
 
           <h2>1. Information We Collect</h2>
           <p>
-            When you use RiskRules, we collect the necessary information to provide our algorithmic journaling and coaching services:
+            When you use RiskRule, we collect the necessary information to provide our algorithmic journaling and coaching services:
           </p>
           <ul>
             <li><strong>Account Data:</strong> Email address, name, and basic profile information.</li>
@@ -54,7 +54,7 @@ export default function Privacy() {
 
           <h2>3. Data Security &amp; Encryption</h2>
           <p>
-            RiskRules employs bank-grade security protocols:
+            RiskRule employs bank-grade security protocols:
           </p>
           <ul>
             <li><strong>At Rest:</strong> All databases are encrypted using AES-256 encryption.</li>
@@ -64,7 +64,7 @@ export default function Privacy() {
 
           <h2>4. Third-Party Integrations</h2>
           <p>
-            RiskRules integrates with external brokerages and data providers (e.g., Yahoo Finance). We only request read-only access where possible. We are not responsible for the privacy practices of these third-party services.
+            RiskRule integrates with external brokerages and data providers (e.g., Yahoo Finance). We only request read-only access where possible. We are not responsible for the privacy practices of these third-party services.
           </p>
 
           <h2>5. Your Rights &amp; Controls</h2>
@@ -79,7 +79,7 @@ export default function Privacy() {
 
           <h2>6. Contact Our Security Team</h2>
           <p>
-            If you have questions regarding our privacy practices or wish to report a security vulnerability, please contact our compliance team at <strong>security@RiskRules.in</strong>.
+            If you have questions regarding our privacy practices or wish to report a security vulnerability, please contact our compliance team at <strong>security@RiskRule.in</strong>.
           </p>
         </motion.div>
       </div>

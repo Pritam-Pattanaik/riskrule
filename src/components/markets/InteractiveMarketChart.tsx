@@ -378,7 +378,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     ctx.drawImage(canvas, 0, 0);
 
     const link = document.createElement('a');
-    link.download = `RiskRules_${symbol.toUpperCase()}_${timeframe}_${Date.now()}.png`;
+    link.download = `RiskRule_${symbol.toUpperCase()}_${timeframe}_${Date.now()}.png`;
     link.href = offscreen.toDataURL('image/png');
     link.click();
   }, [symbol, timeframe]);

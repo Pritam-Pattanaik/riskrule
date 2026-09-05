@@ -137,7 +137,7 @@ export function StrategyDetailModal({
                   <ShieldCheck size={14} /> Curated Platform Default Template (Read-Only)
                 </p>
                 <p className="text-secondary">
-                  This strategy is maintained by RiskRules as an institutional default setup and cannot be directly modified or deleted. You can click <strong className="text-primary font-medium">Clone as Custom Strategy</strong> below to create your own editable copy.
+                  This strategy is maintained by RiskRule as an institutional default setup and cannot be directly modified or deleted. You can click <strong className="text-primary font-medium">Clone as Custom Strategy</strong> below to create your own editable copy.
                 </p>
               </div>
             </div>

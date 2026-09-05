@@ -47,7 +47,7 @@ export default function HeroSection() {
         {/* Narrative Sub-text */}
         <Reveal direction="up" delay={0.15}>
           <p className="font-sans text-base sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-            90% of traders fail not because of entries, but because of revenge sizing, broken stop-losses, and psychological tilt in drawdown. RiskRules is the intelligent risk layer that intercepts emotional mistakes before they hit your broker, turning erratic trading into consistent, funded profitability.
+            90% of traders fail not because of entries, but because of revenge sizing, broken stop-losses, and psychological tilt in drawdown. RiskRule is the intelligent risk layer that intercepts emotional mistakes before they hit your broker, turning erratic trading into consistent, funded profitability.
           </p>
         </Reveal>
 

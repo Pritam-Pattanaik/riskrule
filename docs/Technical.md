@@ -1,6 +1,6 @@
 # Technical
 
-**RiskRules Platform — Complete Technical Reference**
+**RiskRule Platform — Complete Technical Reference**
 **Document ID:** TECH-001
 **Version:** 2.0
 **Status:** Active
@@ -26,7 +26,7 @@
 To become the ultimate operating system for independent traders, empowering them with data-driven insights to reduce emotional trading and improve win rates consistently over time.
 
 ### Mission
-To bridge the gap between simplistic spreadsheet-based trade journals and prohibitively expensive institutional terminals (Bloomberg). RiskRules provides a unified platform to log trades, analyze performance, understand macroeconomic conditions, and receive unbiased, data-driven AI coaching.
+To bridge the gap between simplistic spreadsheet-based trade journals and prohibitively expensive institutional terminals (Bloomberg). RiskRule provides a unified platform to log trades, analyze performance, understand macroeconomic conditions, and receive unbiased, data-driven AI coaching.
 
 ### Problem Statement
 Retail traders consistently underperform due to psychological pitfalls: lack of discipline, poor position sizing, and emotional "revenge trading." Existing journals merely record PnL. They fail to provide contextual market analysis, correlate market breadth with trade success, or offer proactive, personalized coaching.

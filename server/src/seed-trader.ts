@@ -2,7 +2,7 @@ import { prisma } from './db';
 import bcrypt from 'bcrypt';
 
 async function seedTrader() {
-  const email = 'trader@RiskRules.in';
+  const email = 'trader@RiskRule.in';
   const password = 'Test@12345';
   
   try {

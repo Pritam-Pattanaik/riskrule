@@ -3,7 +3,7 @@ import { getContractMultiplier } from './multipliers';
 
 
 /**
- * Maps Dhan exchangeSegment values to RiskRules market categories.
+ * Maps Dhan exchangeSegment values to RiskRule market categories.
  * Must match the frontend Trade type: 'NSE' | 'BSE' | 'F&O' | 'MCX' | 'Crypto'
  */
 function mapExchangeSegmentToMarket(segment: string): string {
@@ -21,7 +21,7 @@ function mapExchangeSegmentToMarket(segment: string): string {
 }
 
 /**
- * Maps Dhan instrument field + exchangeSegment to RiskRules instrumentType.
+ * Maps Dhan instrument field + exchangeSegment to RiskRule instrumentType.
  * Must match the frontend Trade type: 'EQ' | 'CE' | 'PE' | 'FUT' | 'CRYPTO'
  */
 function mapInstrumentType(

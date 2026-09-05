@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MASTER_IMAGE = 'C:/Users/HP/.gemini/antigravity-ide/brain/3fb4e05e-7b65-40dd-9b82-1a2957f4b6ff/media__1786531260845.png';
+const MASTER_IMAGE = path.resolve(__dirname, '../src/assets/images/RiskRule.png');
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const ASSETS_DIR = path.resolve(__dirname, '../src/assets/images');
 

@@ -16,5 +16,5 @@ const req = http.request({
 });
 
 req.on('error', console.error);
-req.write(JSON.stringify({ email: 'trader@RiskRules.in', password: 'Test@12345' }));
+req.write(JSON.stringify({ email: 'trader@RiskRule.in', password: 'Test@12345' }));
 req.end();

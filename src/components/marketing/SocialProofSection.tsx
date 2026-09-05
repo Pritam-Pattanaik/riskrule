@@ -6,21 +6,21 @@ import { Reveal, NumberCounter } from '../ui/Motion';
 export default function SocialProofSection() {
   const verifiedTraders = [
     {
-      quote: "RiskRules's daily drawdown lockout saved my $200k Apex account twice last month during volatile CPI announcements. It literally paid for a decade of subscription cost in one afternoon.",
+      quote: "RiskRule's daily drawdown lockout saved my $200k Apex account twice last month during volatile CPI announcements. It literally paid for a decade of subscription cost in one afternoon.",
       author: "Vikram Mehta",
       role: "Funded Futures Speculator ($400k Allocation)",
       tag: "Verified FTMO & Apex Trader",
       metrics: "+₹8.4 Lakh Net Profit (Q3)",
     },
     {
-      quote: "Most journals make you manually input messy spreadsheets until you quit after three weeks. RiskRules automatically syncs directly with my broker, runs mathematical R:R expectancies, and points out exactly where I leak edge.",
+      quote: "Most journals make you manually input messy spreadsheets until you quit after three weeks. RiskRule automatically syncs directly with my broker, runs mathematical R:R expectancies, and points out exactly where I leak edge.",
       author: "Sneha Ramanujan",
       role: "Quantitative Discretionary Trader",
       tag: "Interactive Brokers TWS",
       metrics: "Win Rate: 72.4% · Avg Expectancy +2.4R",
     },
     {
-      quote: "The AI Behavioral Coach felt unsettling at first because it accurately predicted when I was about to enter an emotional revenge trade. Now I refuse to execute without RiskRules running in the background.",
+      quote: "The AI Behavioral Coach felt unsettling at first because it accurately predicted when I was about to enter an emotional revenge trade. Now I refuse to execute without RiskRule running in the background.",
       author: "Marcus Vance",
       role: "Senior Algorithmic Desk Speculator",
       tag: "MetaTrader 5 & Tradovate",

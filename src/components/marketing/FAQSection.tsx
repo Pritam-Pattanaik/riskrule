@@ -9,15 +9,15 @@ export default function FAQSection() {
 
   const faqs = [
     {
-      q: "How does RiskRules connect to my brokerage without risking my trading capital?",
-      a: "RiskRules integrates exclusively via standard OAuth protocols and Read-Only API tokens. When configuring credentials in MetaTrader, Interactive Brokers, Tradovate, or custom webhooks, you strictly leave 'Order Execution' and 'Fund Withdrawal' permissions disabled in your broker portal. Our software cannot initiate trades or move funds under any technical circumstance."
+      q: "How does RiskRule connect to my brokerage without risking my trading capital?",
+      a: "RiskRule integrates exclusively via standard OAuth protocols and Read-Only API tokens. When configuring credentials in MetaTrader, Interactive Brokers, Tradovate, or custom webhooks, you strictly leave 'Order Execution' and 'Fund Withdrawal' permissions disabled in your broker portal. Our software cannot initiate trades or move funds under any technical circumstance."
     },
     {
       q: "How does the automated daily drawdown lockout work with evaluation prop firms?",
-      a: "You enter your evaluation's specific daily drawdown barrier into your RiskRules risk preferences (for example, a maximum $2,000 drawdown threshold in a 24-hour cycle). When account equity reaches this limit, our real-time engine intervenes by blocking further order transmission from our connected tools and initiating an automated cooling-off period, preserving your challenge status."
+      a: "You enter your evaluation's specific daily drawdown barrier into your RiskRule risk preferences (for example, a maximum $2,000 drawdown threshold in a 24-hour cycle). When account equity reaches this limit, our real-time engine intervenes by blocking further order transmission from our connected tools and initiating an automated cooling-off period, preserving your challenge status."
     },
     {
-      q: "Does RiskRules cause any execution delays or impact terminal performance?",
+      q: "Does RiskRule cause any execution delays or impact terminal performance?",
       a: "No. Our quantitative analytics and broker synchronizations run asynchronously in the background via lightweight webhooks and read-only APIs. Your charting platforms and trading terminals operate at absolute peak local speed without interference."
     },
     {
@@ -26,7 +26,7 @@ export default function FAQSection() {
     },
     {
       q: "What differentiates the AI Behavioral Coach from automated retail trading bots?",
-      a: "RiskRules is strictly a quantitative risk management and journaling workstation; we do not sell retail trading signal bots. Our embedded AI acts as an objective behavioral mentor trained on quantitative risk discipline models. It reviews your real-time order history to identify detrimental habit patterns—such as sizing spikes after consecutive stop-outs or unmanaged risk during macroeconomic announcements—to help you protect your capital."
+      a: "RiskRule is strictly a quantitative risk management and journaling workstation; we do not sell retail trading signal bots. Our embedded AI acts as an objective behavioral mentor trained on quantitative risk discipline models. It reviews your real-time order history to identify detrimental habit patterns—such as sizing spikes after consecutive stop-outs or unmanaged risk during macroeconomic announcements—to help you protect your capital."
     },
     {
       q: "Can I adjust or cancel my subscription anytime without loss of historical logs?",

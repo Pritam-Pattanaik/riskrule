@@ -26,7 +26,7 @@ const CATEGORY_OPTIONS: { id: PrebuiltRule['category']; label: string }[] = [
   { id: 'routine', label: '⏰ Daily Prep & Journaling' },
 ];
 
-const LOCAL_STORAGE_KEY = 'riskrules_admin_rules_library_v2';
+const LOCAL_STORAGE_KEY = 'riskrule_admin_rules_library_v2';
 
 import { api } from '../../lib/api';
 
@@ -157,7 +157,7 @@ export default function AdminTradingRules() {
 
   // Reset to Factory Library in Database
   const handleResetToFactory = async () => {
-    if (window.confirm('Reset the rules library to official RiskRules factory defaults (62 situational rules) in the database?')) {
+    if (window.confirm('Reset the rules library to official RiskRule factory defaults (62 situational rules) in the database?')) {
       try {
         setLoading(true);
         const res = await api.post<{ success: boolean; rules: PrebuiltRule[] }>('/platform-rules/reset', {});

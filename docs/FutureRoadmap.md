@@ -1,6 +1,6 @@
 # Future Roadmap
 
-**RiskRules Platform — Product & Engineering Roadmap**
+**RiskRule Platform — Product & Engineering Roadmap**
 **Document ID:** ROAD-001
 **Version:** 2.0
 **Status:** Active | Last Updated: 2026-08-16

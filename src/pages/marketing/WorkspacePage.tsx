@@ -550,7 +550,7 @@ export default function WorkspacePage() {
 
               <div className="p-3 rounded-xl bg-surface-1/50 border border-border/80 text-xs font-mono-stat text-tertiary flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-success shrink-0" />
-                <span>RiskRules automatically locks execution if loss threshold is reached.</span>
+                <span>RiskRule automatically locks execution if loss threshold is reached.</span>
               </div>
             </div>
 

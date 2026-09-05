@@ -102,7 +102,7 @@ export default function Pricing() {
   const faqs = [
     {
       q: 'Do I need to enter a credit card to start the free trial?',
-      a: 'No. You can start exploring RiskRules without entering any payment information or credit card credentials.'
+      a: 'No. You can start exploring RiskRule without entering any payment information or credit card credentials.'
     },
     {
       q: 'How does the annual discount work?',

@@ -34,7 +34,7 @@ export function VoiceSettingsTab() {
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
   const [testingVoiceId, setTestingVoiceId] = useState<string | null>(null);
-  const [customTestText, setCustomTestText] = useState('RiskRules Voice AI is online. All trading risk parameters are within safe limits.');
+  const [customTestText, setCustomTestText] = useState('RiskRule Voice AI is online. All trading risk parameters are within safe limits.');
 
   useEffect(() => {
     loadVoices();
@@ -48,27 +48,27 @@ export function VoiceSettingsTab() {
   const getSamplePreviewText = (voiceName: string, lang: string) => {
     switch (lang) {
       case 'hi-IN':
-        return `नमस्ते, मैं हूँ ${voiceName}। RiskRules में आपका स्वागत है।`;
+        return `नमस्ते, मैं हूँ ${voiceName}। RiskRule में आपका स्वागत है।`;
       case 'od-IN':
-        return `ନମସ୍କାର, ମୁଁ ${voiceName}। RiskRules କୁ ଆପଣଙ୍କୁ ସ୍ୱାଗତ।`;
+        return `ନମସ୍କାର, ମୁଁ ${voiceName}। RiskRule କୁ ଆପଣଙ୍କୁ ସ୍ୱାଗତ।`;
       case 'ta-IN':
-        return `வணக்கம், நான் ${voiceName}. RiskRules உங்களை வரவேற்கிறது.`;
+        return `வணக்கம், நான் ${voiceName}. RiskRule உங்களை வரவேற்கிறது.`;
       case 'te-IN':
-        return `నమస్కారం, నేను ${voiceName}. RiskRules కు స్వాగతం.`;
+        return `నమస్కారం, నేను ${voiceName}. RiskRule కు స్వాగతం.`;
       case 'bn-IN':
-        return `নমস্কার, আমি ${voiceName}। RiskRules এ আপনাকে স্বাগতম।`;
+        return `নমস্কার, আমি ${voiceName}। RiskRule এ আপনাকে স্বাগতম।`;
       case 'mr-IN':
-        return `नमस्कार, मी ${voiceName} आहे. RiskRules मध्ये आपले स्वागत आहे.`;
+        return `नमस्कार, मी ${voiceName} आहे. RiskRule मध्ये आपले स्वागत आहे.`;
       case 'gu-IN':
-        return `નમસ્તે, હું ${voiceName} છું. RiskRules માં આપનું સ્વાગત છે.`;
+        return `નમસ્તે, હું ${voiceName} છું. RiskRule માં આપનું સ્વાગત છે.`;
       case 'kn-IN':
-        return `ನಮಸ್ಕಾರ, ನಾನು ${voiceName}. RiskRules ಗೆ ಸುಸ್ವಾಗತ.`;
+        return `ನಮಸ್ಕಾರ, ನಾನು ${voiceName}. RiskRule ಗೆ ಸುಸ್ವಾಗತ.`;
       case 'ml-IN':
-        return `നമസ്കാരം, ഞാൻ ${voiceName}. RiskRules ലേക്ക് സ്വാഗതം.`;
+        return `നമസ്കാരം, ഞാൻ ${voiceName}. RiskRule ലേക്ക് സ്വാഗതം.`;
       case 'pa-IN':
-        return `ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਮੈਂ ${voiceName} ਹਾਂ। RiskRules ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ।`;
+        return `ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਮੈਂ ${voiceName} ਹਾਂ। RiskRule ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ।`;
       default:
-        return `Hello, I am ${voiceName}. Your RiskRules AI voice assistant.`;
+        return `Hello, I am ${voiceName}. Your RiskRule AI voice assistant.`;
     }
   };
 

@@ -1,6 +1,6 @@
 # API Reference
 
-**RiskRules Platform — REST API Reference**
+**RiskRule Platform — REST API Reference**
 **Document ID:** API-001
 **Version:** 2.0
 **Status:** Active
@@ -10,7 +10,7 @@
 ## Overview
 
 - **Base URL (Local):** `http://localhost:3000`
-- **Base URL (Production):** `https://riskrules.vercel.app`
+- **Base URL (Production):** `https://riskrule.vercel.app`
 - **API Prefix:** All endpoints are prefixed with `/api`
 - **Auth:** JWT Bearer token required for all protected routes
 - **Format:** JSON (`Content-Type: application/json`)
