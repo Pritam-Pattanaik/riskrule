@@ -1,6 +1,6 @@
 # Testing
 
-**RiskRules Platform — Quality Assurance Strategy & Test Verification Guide**
+**RiskRule Platform — Quality Assurance Strategy & Test Verification Guide**
 **Document ID:** TEST-001
 **Version:** 2.0
 **Status:** Active
@@ -21,7 +21,7 @@
 
 ## 1. Testing Philosophy
 
-RiskRules enforces a **zero-regression, evidence-based testing pipeline** across all real-time and AI workloads. Financial applications demand mathematical precision — a single incorrect PnL calculation damages user trust irreparably.
+RiskRule enforces a **zero-regression, evidence-based testing pipeline** across all real-time and AI workloads. Financial applications demand mathematical precision — a single incorrect PnL calculation damages user trust irreparably.
 
 **Core Testing Principles:**
 - Every critical calculation has a corresponding unit test.

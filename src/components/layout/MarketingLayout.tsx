@@ -218,7 +218,7 @@ export default function MarketingLayout() {
 
               <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-2 gap-2 text-xs font-medium text-tertiary">
                 <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-lg bg-surface-1 hover:text-primary">
-                  About RiskRules
+                  About RiskRule
                 </Link>
                 <Link to="/changelog" onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-lg bg-surface-1 hover:text-primary flex items-center justify-between">
                   <span>Changelog</span>
@@ -346,7 +346,7 @@ export default function MarketingLayout() {
 
         {/* Bottom Bar */}
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-[12px] text-tertiary font-medium">
-          <p>© 2026 RiskRules, Inc. Designed and engineered for high-frequency discipline.</p>
+          <p>© 2026 RiskRule, Inc. Designed and engineered for high-frequency discipline.</p>
           <div className="flex items-center gap-4 sm:gap-6">
             <span className="text-secondary font-semibold hidden sm:inline-block">Discipline Over Dopamine</span>
             <span className="hidden sm:inline-block">·</span>

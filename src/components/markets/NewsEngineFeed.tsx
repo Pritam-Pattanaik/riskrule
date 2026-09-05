@@ -378,7 +378,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
       {filteredFeed.length > 0 && (
         <div className="mt-4 rounded-lg px-3 py-2" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.1)' }}>
           <p className="text-[10px] text-amber-400/50 leading-relaxed">
-            ⚠️ All analysis is for educational purposes only and does not constitute investment advice. RiskRules is not a SEBI-registered Research Analyst.
+            ⚠️ All analysis is for educational purposes only and does not constitute investment advice. RiskRule is not a SEBI-registered Research Analyst.
           </p>
         </div>
       )}

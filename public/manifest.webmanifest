@@ -1,6 +1,6 @@
 {
-  "name": "RiskRules",
-  "short_name": "RiskRules",
+  "name": "RiskRule",
+  "short_name": "RiskRule",
   "description": "Institutional Trading Journal & AI Behavioral Coach",
   "start_url": "/",
   "display": "standalone",

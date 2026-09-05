@@ -1,6 +1,6 @@
 # Database
 
-**RiskRules Platform — Database Architecture, Schema Reference & Data Design**
+**RiskRule Platform — Database Architecture, Schema Reference & Data Design**
 **Document ID:** DB-001
 **Version:** 2.0
 **Status:** Active
@@ -22,7 +22,7 @@
 
 ## 1. Database Overview
 
-RiskRules uses **PostgreSQL** (hosted on Neon Serverless) accessed exclusively through **Prisma ORM 6**. The schema enforces strict multi-tenancy — every user's data is completely isolated.
+RiskRule uses **PostgreSQL** (hosted on Neon Serverless) accessed exclusively through **Prisma ORM 6**. The schema enforces strict multi-tenancy — every user's data is completely isolated.
 
 ---
 

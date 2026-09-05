@@ -15,7 +15,7 @@ export default function TraderJourneySection() {
       title: 'Programmatic Risk Guardrails',
       icon: Lock,
       color: 'danger',
-      description: 'Define your non-negotiable risk rules: maximum daily loss, maximum contract sizing, and trading time windows. When a rule is reached, RiskRules automatically freezes order routing for 24 hours.',
+      description: 'Define your non-negotiable risk rules: maximum daily loss, maximum contract sizing, and trading time windows. When a rule is reached, RiskRule automatically freezes order routing for 24 hours.',
       benefit: 'Eliminates the catastrophic -10% tilt day that wipes out weeks of progress.',
       tags: ['Daily Loss Caps', 'Max Lot Sizing', 'Prop Drawdown Rules']
     },
@@ -62,7 +62,7 @@ export default function TraderJourneySection() {
             <span>The Consistency Blueprint</span>
           </div>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight mb-4">
-            How RiskRules turns chaotic trading into steady profit.
+            How RiskRule turns chaotic trading into steady profit.
           </h2>
           <p className="text-base sm:text-lg text-secondary leading-relaxed">
             You don't need another technical indicator. You need a systematic, algorithmic system that protects you from your own worst psychological impulses.

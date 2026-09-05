@@ -65,7 +65,7 @@ export default function About() {
               whileHover={{ scale: 1.01 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               src={aboutGraphic} 
-              alt="RiskRules AI Architecture" 
+              alt="RiskRule AI Architecture" 
               className="w-full h-[360px] sm:h-[440px] object-cover rounded-3xl shadow-floating border border-border"
             />
           </Reveal>
@@ -81,10 +81,10 @@ export default function About() {
           </h2>
           <div className="space-y-4 text-base text-secondary leading-relaxed font-normal">
             <p>
-              RiskRules was conceived by institutional prop traders and algorithmic engineers who grew tired of watching talented traders blow up funded accounts during a single 30-minute lapse in psychological discipline.
+              RiskRule was conceived by institutional prop traders and algorithmic engineers who grew tired of watching talented traders blow up funded accounts during a single 30-minute lapse in psychological discipline.
             </p>
             <p>
-              Traditional trading journals are passive post-mortems—they tell you what went wrong hours after you have already lost your capital. RiskRules flips the paradigm by acting as an active, real-time risk guardian that detects tilt anomalies and locks orders before catastrophic damage occurs.
+              Traditional trading journals are passive post-mortems—they tell you what went wrong hours after you have already lost your capital. RiskRule flips the paradigm by acting as an active, real-time risk guardian that detects tilt anomalies and locks orders before catastrophic damage occurs.
             </p>
           </div>
         </Reveal>

@@ -44,7 +44,7 @@ export default function InteractiveDashboard() {
             An algorithmic command center for your trading brain.
           </h2>
           <p className="text-secondary text-base sm:text-lg leading-relaxed">
-            Toggle the live tabs below to inspect how RiskRules transforms chaotic execution into verified, repeatable positive expectancy.
+            Toggle the live tabs below to inspect how RiskRule transforms chaotic execution into verified, repeatable positive expectancy.
           </p>
         </Reveal>
       </div>
@@ -316,7 +316,7 @@ export default function InteractiveDashboard() {
                           Revenge Trade Interception
                         </h4>
                         <p className="text-sm text-secondary leading-relaxed mb-4">
-                          Our continuous behavioral engine audits your execution velocity. When emotional variance spikes after a loss, RiskRules intervenes instantly.
+                          Our continuous behavioral engine audits your execution velocity. When emotional variance spikes after a loss, RiskRule intervenes instantly.
                         </p>
                       </div>
                       <div className="p-3 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-between text-xs font-mono-stat font-bold text-danger">
@@ -348,7 +348,7 @@ export default function InteractiveDashboard() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between text-xs font-mono-stat font-bold mb-1">
-                            <span className="text-iris font-extrabold">RISKRULES GUARDRAIL ACTIVE</span>
+                            <span className="text-iris font-extrabold">RISKRULE GUARDRAIL ACTIVE</span>
                             <span className="text-success">CAPITAL LOCKED</span>
                           </div>
                           <p className="text-primary font-semibold">

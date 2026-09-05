@@ -11,7 +11,7 @@ const EDUCATIONAL_DISCLAIMER =
   '⚠️ Educational Use Only: This analysis is for educational purposes and market awareness only. ' +
   'It does not constitute investment advice, research, or a recommendation to buy, sell, or hold ' +
   'any security. Past sector observations do not guarantee future performance. Please consult a ' +
-  'SEBI-registered financial advisor before making investment decisions. RiskRules is not a ' +
+  'SEBI-registered financial advisor before making investment decisions. RiskRule is not a ' +
   'SEBI-registered Research Analyst.';
 
 const router = Router();

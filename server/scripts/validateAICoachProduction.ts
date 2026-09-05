@@ -10,7 +10,7 @@ import { cache } from '../src/lib/redis';
 
 async function runProductionValidation() {
   console.log('===============================================================');
-  console.log('🧪 RISKRULES AI COACH — PRODUCTION VALIDATION SUITE');
+  console.log('🧪 RISKRULE AI COACH — PRODUCTION VALIDATION SUITE');
   console.log('===============================================================\n');
 
   const results: { test: string; status: 'PASS' | 'FAIL'; durationMs: number; details?: string }[] = [];
@@ -20,7 +20,7 @@ async function runProductionValidation() {
   if (!testUser) {
     testUser = await prisma.user.create({
       data: {
-        email: `test-coach-${Date.now()}@riskrules.local`,
+        email: `test-coach-${Date.now()}@riskrule.local`,
         password: 'Password123!',
         fullName: 'Elite Test Trader',
       },
@@ -178,7 +178,7 @@ async function runProductionValidation() {
 
     await provider.streamChat(
       [
-        { role: 'system', content: 'You are RiskRules AI Coach. Respond in exactly 2 concise sentences.' },
+        { role: 'system', content: 'You are RiskRule AI Coach. Respond in exactly 2 concise sentences.' },
         { role: 'user', content: 'What is the most important rule when facing a 3-trade losing streak?' }
       ],
       (chunk) => {

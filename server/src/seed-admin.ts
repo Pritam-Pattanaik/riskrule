@@ -50,7 +50,7 @@ async function seedAdmin() {
       { key: 'enable_ai_coach', value: 'true' },
       { key: 'enable_broker_sync', value: 'true' },
       { key: 'maintenance_mode', value: 'false' },
-      { key: 'system_announcement', value: 'Welcome to RiskRules!' },
+      { key: 'system_announcement', value: 'Welcome to RiskRule!' },
     ];
 
     for (const setting of settings) {

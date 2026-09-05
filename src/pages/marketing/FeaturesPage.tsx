@@ -53,7 +53,7 @@ export default function FeaturesPage() {
       title: 'Automated Daily Drawdown Lockouts',
       icon: Lock,
       color: 'danger',
-      desc: 'Set strict daily loss thresholds modeled directly on FTMO, Apex, and Topstep parameters. When your stop-out barrier is approached, RiskRules initiates an automated cooling-off lockout, blocking further API order transmissions to eliminate emotional tilt spirals.',
+      desc: 'Set strict daily loss thresholds modeled directly on FTMO, Apex, and Topstep parameters. When your stop-out barrier is approached, RiskRule initiates an automated cooling-off lockout, blocking further API order transmissions to eliminate emotional tilt spirals.',
       stats: '100% Breaches Blocked',
       highlights: [
         'Trailing & balance-based drawdown detection',
@@ -68,7 +68,7 @@ export default function FeaturesPage() {
       title: 'Real-Time AI Voice Guidance & Audio Co-Pilot',
       icon: Headphones,
       color: 'iris',
-      desc: 'When charts move fast and stress induces tunnel vision, looking away to read alerts is impossible. RiskRules speaks directly into your ears—whispering sizing confirmations, risk warnings, pacing cues, and news countdowns in sub-300ms neural real-time voice.',
+      desc: 'When charts move fast and stress induces tunnel vision, looking away to read alerts is impossible. RiskRule speaks directly into your ears—whispering sizing confirmations, risk warnings, pacing cues, and news countdowns in sub-300ms neural real-time voice.',
       stats: '< 300ms Spoken Latency',
       highlights: [
         'Natural low-latency neural voice synthesis directly in headphones',
@@ -84,7 +84,7 @@ export default function FeaturesPage() {
       title: 'Sub-Second Broker Synchronization',
       icon: RefreshCw,
       color: 'accent',
-      desc: 'Never manually log another spreadsheet again. RiskRules connects seamlessly to MetaTrader 4/5, Interactive Brokers, Tradovate, Binance, and Apex. Every fill, execution timestamp, commission fee, and slippage delta is ingested within 800 milliseconds.',
+      desc: 'Never manually log another spreadsheet again. RiskRule connects seamlessly to MetaTrader 4/5, Interactive Brokers, Tradovate, Binance, and Apex. Every fill, execution timestamp, commission fee, and slippage delta is ingested within 800 milliseconds.',
       stats: '0.8ms Ingestion Latency',
       highlights: [
         'Instant read-only API & webhook integrations',
@@ -114,7 +114,7 @@ export default function FeaturesPage() {
       title: 'Pre-News High-Impact Event Lockouts',
       icon: Flame,
       color: 'gold',
-      desc: 'Volatility spikes around CPI, FOMC, and Non-Farm Payrolls often trigger unmanageable slippage. RiskRules monitors the macroeconomic calendar in real time, automatically notifying you and locking order submissions 5 minutes before Tier-1 releases.',
+      desc: 'Volatility spikes around CPI, FOMC, and Non-Farm Payrolls often trigger unmanageable slippage. RiskRule monitors the macroeconomic calendar in real time, automatically notifying you and locking order submissions 5 minutes before Tier-1 releases.',
       stats: '0 Unplanned Slippage Events',
       highlights: [
         'Live economic calendar sync with impact tags',
@@ -129,7 +129,7 @@ export default function FeaturesPage() {
       title: 'Multi-Asset Execution Coverage',
       icon: Layers,
       color: 'success',
-      desc: 'Whether you trade E-mini Nasdaq futures, gold spot, forex majors, single-stock options, or crypto perps, RiskRules handles tick values, multiplier contracts, and currency conversions automatically.',
+      desc: 'Whether you trade E-mini Nasdaq futures, gold spot, forex majors, single-stock options, or crypto perps, RiskRule handles tick values, multiplier contracts, and currency conversions automatically.',
       stats: '400+ Instruments Supported',
       highlights: [
         'Futures: NQ, ES, CL, GC, ZB, RTY',
@@ -144,7 +144,7 @@ export default function FeaturesPage() {
       title: 'Bank-Grade Read-Only Security Vault',
       icon: Shield,
       color: 'accent',
-      desc: 'Your capital is sacred. RiskRules operates exclusively with Read-Only API permissions. We never request execution rights or withdrawal access. All credentials are encrypted with AES-256 and stored in SOC-2 compliant hardware security modules.',
+      desc: 'Your capital is sacred. RiskRule operates exclusively with Read-Only API permissions. We never request execution rights or withdrawal access. All credentials are encrypted with AES-256 and stored in SOC-2 compliant hardware security modules.',
       stats: '256-Bit Hardware Encryption',
       highlights: [
         'Zero withdrawal or fund transfer permissions',
@@ -183,7 +183,7 @@ export default function FeaturesPage() {
               </span>
             </h1>
             <p className="font-sans text-base sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-8 leading-relaxed">
-              Explore the mathematical architecture behind the RiskRules execution engine—including real-time AI voice guidance, programmatic lockouts, and sub-second broker telemetry.
+              Explore the mathematical architecture behind the RiskRule execution engine—including real-time AI voice guidance, programmatic lockouts, and sub-second broker telemetry.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3.5">
               <Link
@@ -326,7 +326,7 @@ export default function FeaturesPage() {
               Real-Time AI Voice Guidance While Trading.
             </h2>
             <p className="text-base sm:text-lg text-secondary leading-relaxed">
-              When the market accelerates, reading text alerts creates visual friction. RiskRules speaks directly to you through low-latency neural audio—grounding your psychology and calling out risk before you pull the trigger.
+              When the market accelerates, reading text alerts creates visual friction. RiskRule speaks directly to you through low-latency neural audio—grounding your psychology and calling out risk before you pull the trigger.
             </p>
           </Reveal>
         </div>
@@ -433,7 +433,7 @@ export default function FeaturesPage() {
         </Reveal>
       </section>
 
-      {/* ── Architecture Comparison: Manual Spreadsheets vs RiskRules ── */}
+      {/* ── Architecture Comparison: Manual Spreadsheets vs RiskRule ── */}
       <section className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-20 relative z-20">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <Reveal direction="up">
@@ -494,7 +494,7 @@ export default function FeaturesPage() {
             </div>
           </Reveal>
 
-          {/* RiskRules Algorithmic Card */}
+          {/* RiskRule Algorithmic Card */}
           <Reveal direction="up" delay={0.1}>
             <div className="p-8 rounded-3xl bg-surface-1 border border-iris/40 shadow-card space-y-6 h-full flex flex-col justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-iris/10 rounded-full blur-3xl -z-10" />
@@ -506,7 +506,7 @@ export default function FeaturesPage() {
                       <Zap size={22} />
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-lg text-primary">RiskRules Quantitative Engine</h3>
+                      <h3 className="font-display font-bold text-lg text-primary">RiskRule Quantitative Engine</h3>
                       <p className="text-xs text-success font-mono-stat">Real-Time Audio Sync · Active Tilt Blocking</p>
                     </div>
                   </div>

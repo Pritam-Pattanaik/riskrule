@@ -20,7 +20,7 @@ export function generateDeltaSignature(
 }
 
 /**
- * Maps Delta Exchange symbol to RiskRules market categories.
+ * Maps Delta Exchange symbol to RiskRule market categories.
  * Options & Futures -> 'F&O' or 'Crypto'
  */
 export function mapDeltaSymbolToMarket(symbol: string): string {
@@ -33,7 +33,7 @@ export function mapDeltaSymbolToMarket(symbol: string): string {
 }
 
 /**
- * Maps Delta Exchange product/symbol to RiskRules instrumentType: 'EQ' | 'CE' | 'PE' | 'FUT' | 'CRYPTO'
+ * Maps Delta Exchange product/symbol to RiskRule instrumentType: 'EQ' | 'CE' | 'PE' | 'FUT' | 'CRYPTO'
  */
 export function mapDeltaInstrumentType(symbol: string): string {
   if (!symbol) return 'CRYPTO';

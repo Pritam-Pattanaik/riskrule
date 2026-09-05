@@ -1,4 +1,4 @@
-# RiskRules Documentation Index
+# RiskRule Documentation Index
 
 **Single Source of Truth — All Official Documentation**
 **Last Updated:** 2026-08-16

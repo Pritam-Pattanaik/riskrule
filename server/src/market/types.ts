@@ -1,5 +1,5 @@
 /**
- * Canonical Market Data Models — RiskRules V2
+ * Canonical Market Data Models — RiskRule V2
  *
  * Every provider MUST normalize its response into these types.
  * The frontend never sees provider-specific shapes.

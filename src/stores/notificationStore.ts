@@ -275,7 +275,7 @@ export const useNotificationStore = create<NotificationState>()(
 
     }),
     {
-      name: 'riskrules-notifications-settings',
+      name: 'riskrule-notifications-settings',
       partialize: (state) => ({ 
         soundEnabled: state.soundEnabled, 
         soundVolume: state.soundVolume,

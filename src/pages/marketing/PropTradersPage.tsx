@@ -70,7 +70,7 @@ export default function PropTradersPage() {
       payout: '₹14.2 Lakhs ($17,200)',
       trades: '184 Trades',
       winRate: '71.2%',
-      quote: 'The trailing threshold on Apex was my kryptonite for 2 years. RiskRules locked my terminal every day before I hit the threshold. Now I have 4 funded accounts.'
+      quote: 'The trailing threshold on Apex was my kryptonite for 2 years. RiskRule locked my terminal every day before I hit the threshold. Now I have 4 funded accounts.'
     },
     {
       name: 'Sneha Ramanujan',
@@ -78,7 +78,7 @@ export default function PropTradersPage() {
       payout: 'Passed Phase 1 & 2 in 18 Days',
       trades: '42 Trades',
       winRate: '68.5%',
-      quote: 'RiskRules eliminated the anxiety of breaching the 5% daily drawdown rule. The software does the math and enforces the stop with zero delay.'
+      quote: 'RiskRule eliminated the anxiety of breaching the 5% daily drawdown rule. The software does the math and enforces the stop with zero delay.'
     },
     {
       name: 'Marcus Vance',
@@ -86,7 +86,7 @@ export default function PropTradersPage() {
       payout: '₹9.8 Lakhs ($11,800)',
       trades: '96 Trades',
       winRate: '74.0%',
-      quote: 'If you trade prop firms without an algorithmic daily loss lockout, you are gambling. RiskRules is an essential piece of professional risk equipment.'
+      quote: 'If you trade prop firms without an algorithmic daily loss lockout, you are gambling. RiskRule is an essential piece of professional risk equipment.'
     },
   ];
 
@@ -116,7 +116,7 @@ export default function PropTradersPage() {
               </span>
             </h1>
             <p className="font-sans text-base sm:text-lg md:text-xl text-secondary max-w-2xl mx-auto mb-8 leading-relaxed">
-              92% of failed prop challenges occur because of a single day of emotional tilt. RiskRules connects directly to your evaluation accounts to mathematically prevent daily drawdown violations.
+              92% of failed prop challenges occur because of a single day of emotional tilt. RiskRule connects directly to your evaluation accounts to mathematically prevent daily drawdown violations.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3.5">
               <Link
@@ -281,7 +281,7 @@ export default function PropTradersPage() {
 
               <div className="p-3 rounded-xl bg-surface-1/50 border border-border/80 text-xs font-mono-stat text-tertiary flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-success shrink-0" />
-                <span>RiskRules monitors trailing threshold tick-by-tick to prevent violations.</span>
+                <span>RiskRule monitors trailing threshold tick-by-tick to prevent violations.</span>
               </div>
             </div>
 

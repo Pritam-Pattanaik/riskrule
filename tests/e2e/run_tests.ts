@@ -76,7 +76,7 @@ async function acquireTokens() {
   const saRes = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'superadmin@riskrules.in', password: 'admin123' })
+    body: JSON.stringify({ email: 'superadmin@riskrule.in', password: 'admin123' })
   });
   const saJson: any = await saRes.json();
   superAdminToken = saJson.token;
@@ -85,7 +85,7 @@ async function acquireTokens() {
   const uRes = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'user@riskrules.in', password: 'user123' })
+    body: JSON.stringify({ email: 'user@riskrule.in', password: 'user123' })
   });
   const uJson: any = await uRes.json();
   userToken = uJson.token;
@@ -175,13 +175,13 @@ async function runTier1FeatureCoverage() {
     const normalUserId = users.find(u => u.role === 'USER' && !u.isSuspended)?.id || '';
     const res = await fetch(`${BASE_URL}/admin/users/${normalUserId}`, { headers: { 'Authorization': `Bearer ${superAdminToken}` } });
     const data: any = await res.json();
-    const ok = res.status === 200 && data.email === 'user@riskrules.in' && Array.isArray(data.trades);
+    const ok = res.status === 200 && data.email === 'user@riskrule.in' && Array.isArray(data.trades);
     recordResult('TC-T1-US-02', 'Tier 1', 'Users', 'Fetch detailed user profile', ok);
   } catch (e: any) { recordResult('TC-T1-US-02', 'Tier 1', 'Users', 'Fetch detailed user profile', false, e.message); }
 
   // TC-T1-US-03
   try {
-    const userToPromote = users.find(u => u.email === 'suspended@riskrules.in')?.id || '';
+    const userToPromote = users.find(u => u.email === 'suspended@riskrule.in')?.id || '';
     const res = await fetch(`${BASE_URL}/admin/users/${userToPromote}/role`, {
       method: 'PATCH',
       headers: { 'Authorization': `Bearer ${superAdminToken}`, 'Content-Type': 'application/json' },
@@ -194,7 +194,7 @@ async function runTier1FeatureCoverage() {
 
   // TC-T1-US-04
   try {
-    const userToSuspend = users.find(u => u.email === 'user@riskrules.in')?.id || '';
+    const userToSuspend = users.find(u => u.email === 'user@riskrule.in')?.id || '';
     const res = await fetch(`${BASE_URL}/admin/users/${userToSuspend}/status`, {
       method: 'PATCH',
       headers: { 'Authorization': `Bearer ${superAdminToken}`, 'Content-Type': 'application/json' },
@@ -211,7 +211,7 @@ async function runTier1FeatureCoverage() {
     const signupRes = await fetch(`${BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'delete-me@riskrules.in', password: 'password123', fullName: 'Delete Me' })
+      body: JSON.stringify({ email: 'delete-me@riskrule.in', password: 'password123', fullName: 'Delete Me' })
     });
     const signupJson: any = await signupRes.json();
     const tempId = signupJson.user.id;
@@ -237,7 +237,7 @@ async function runTier1FeatureCoverage() {
 
   // TC-T1-TR-02
   try {
-    const userId = users.find(u => u.email === 'user@riskrules.in')?.id || '';
+    const userId = users.find(u => u.email === 'user@riskrule.in')?.id || '';
     const res = await fetch(`${BASE_URL}/admin/trades?user=${userId}`, { headers: { 'Authorization': `Bearer ${superAdminToken}` } });
     const data: any = await res.json();
     const ok = res.status === 200 && data.trades.every((t: any) => t.userId === userId);
@@ -281,7 +281,7 @@ async function runTier1FeatureCoverage() {
   // TC-T1-BR-02
   try {
     // Unsuspend user first to allow sync
-    const uid = users.find(u => u.email === 'user@riskrules.in')?.id || '';
+    const uid = users.find(u => u.email === 'user@riskrule.in')?.id || '';
     await fetch(`${BASE_URL}/admin/users/${uid}/status`, {
       method: 'PATCH',
       headers: { 'Authorization': `Bearer ${superAdminToken}`, 'Content-Type': 'application/json' },
@@ -773,7 +773,7 @@ async function runTier2BoundaryAndCorner() {
   // TC-T2-AI-04
   try {
     // Inject corrupt insight
-    const badInsight: any = { id: 'ai-bad', userId: 'u-user-2222', userEmail: 'user@riskrules.in', content: 'hello', type: null };
+    const badInsight: any = { id: 'ai-bad', userId: 'u-user-2222', userEmail: 'user@riskrule.in', content: 'hello', type: null };
     aiInsights.push(badInsight);
 
     const res = await fetch(`${BASE_URL}/admin/ai`, { headers: { 'Authorization': `Bearer ${superAdminToken}` } });
@@ -951,7 +951,7 @@ async function runTier3CrossFeature() {
   // TC-T3-CF-03: Users & Broker Connections & Trades
   try {
     // 1. Suspend the user
-    const userId = users.find(u => u.email === 'user@riskrules.in')?.id || '';
+    const userId = users.find(u => u.email === 'user@riskrule.in')?.id || '';
     await fetch(`${BASE_URL}/admin/users/${userId}/status`, {
       method: 'PATCH',
       headers: { 'Authorization': `Bearer ${superAdminToken}`, 'Content-Type': 'application/json' },
@@ -978,7 +978,7 @@ async function runTier3CrossFeature() {
 
   // TC-T3-CF-04: Users & Audit Logs
   try {
-    const targetId = users.find(u => u.email === 'user@riskrules.in')?.id || '';
+    const targetId = users.find(u => u.email === 'user@riskrule.in')?.id || '';
     
     // 1. Trigger role change
     await fetch(`${BASE_URL}/admin/users/${targetId}/role`, {
@@ -1010,7 +1010,7 @@ async function runTier3CrossFeature() {
     const signupRes = await fetch(`${BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'temp-count@riskrules.in', password: 'password123', fullName: 'Temp User' })
+      body: JSON.stringify({ email: 'temp-count@riskrule.in', password: 'password123', fullName: 'Temp User' })
     });
     const signupJson: any = await signupRes.json();
     const tempId = signupJson.user.id;
@@ -1086,7 +1086,7 @@ async function runTier4RealWorldScenarios() {
 
   // === TC-T4-RW-01: User Suspension & Access Enforcement Flow ===
   try {
-    const targetUserId = users.find(u => u.email === 'user@riskrules.in')?.id || '';
+    const targetUserId = users.find(u => u.email === 'user@riskrule.in')?.id || '';
     
     // Step 1: Admin views stats and lists users
     const r1 = await fetch(`${BASE_URL}/admin/overview`, { headers: { 'Authorization': `Bearer ${superAdminToken}` } });
@@ -1199,7 +1199,7 @@ async function runTier4RealWorldScenarios() {
     const signupRes = await fetch(`${BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'cascade@riskrules.in', password: 'password123', fullName: 'Cascade User' })
+      body: JSON.stringify({ email: 'cascade@riskrule.in', password: 'password123', fullName: 'Cascade User' })
     });
     const signupJson: any = await signupRes.json();
     const tempId = signupJson.user.id;
@@ -1214,7 +1214,7 @@ async function runTier4RealWorldScenarios() {
     brokerConnections.push({
       id: 'bc-cascade-temp',
       userId: tempId,
-      userEmail: 'cascade@riskrules.in',
+      userEmail: 'cascade@riskrule.in',
       broker: 'dhan',
       clientId: 'cli-temp',
       apiKey: 'key-temp',
@@ -1251,7 +1251,7 @@ async function runTier4RealWorldScenarios() {
     const signupRes = await fetch(`${BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'promo@riskrules.in', password: 'password123', fullName: 'Promo User' })
+      body: JSON.stringify({ email: 'promo@riskrule.in', password: 'password123', fullName: 'Promo User' })
     });
     const signupJson: any = await signupRes.json();
     const tempId = signupJson.user.id;
@@ -1276,7 +1276,7 @@ async function runTier4RealWorldScenarios() {
     const loginRes = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'promo@riskrules.in', password: 'password123' })
+      body: JSON.stringify({ email: 'promo@riskrule.in', password: 'password123' })
     });
     const loginJson: any = await loginRes.json();
     tempToken = loginJson.token;
@@ -1300,7 +1300,7 @@ async function runTier4RealWorldScenarios() {
     const loginRes2 = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'promo@riskrules.in', password: 'password123' })
+      body: JSON.stringify({ email: 'promo@riskrule.in', password: 'password123' })
     });
     const loginJson2: any = await loginRes2.json();
     tempToken = loginJson2.token;

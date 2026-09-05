@@ -25,7 +25,7 @@ export default function AICoachSection() {
               </h2>
               
               <p className="text-base sm:text-lg text-secondary leading-relaxed font-normal">
-                Trading consistency cannot rely solely on human willpower during extended drawdown sequences. RiskRules’s embedded analytical core continuously evaluates your order submission patterns, contract sizing anomalies, and loss frequency in real-time.
+                Trading consistency cannot rely solely on human willpower during extended drawdown sequences. RiskRule’s embedded analytical core continuously evaluates your order submission patterns, contract sizing anomalies, and loss frequency in real-time.
               </p>
 
               <div className="space-y-3.5 pt-4">
@@ -65,7 +65,7 @@ export default function AICoachSection() {
                       <Brain size={20} />
                     </div>
                     <div>
-                      <h4 className="font-display font-bold text-base text-primary">RiskRules Behavioral Core</h4>
+                      <h4 className="font-display font-bold text-base text-primary">RiskRule Behavioral Core</h4>
                       <p className="text-xs text-secondary font-medium flex items-center gap-1.5 pt-0.5">
                         <span className="w-2 h-2 rounded-full bg-success inline-block" />
                         <span>Real-time Order Evaluation</span>

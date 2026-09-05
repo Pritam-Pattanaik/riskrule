@@ -88,7 +88,7 @@ export default function EdgeLeakCheckerSection() {
             Where are you leaking capital right now?
           </h2>
           <p className="text-base sm:text-lg text-secondary leading-relaxed">
-            Select the psychological and execution mistakes you experience. See how much capital you leak annually and how RiskRules fixes them programmatically.
+            Select the psychological and execution mistakes you experience. See how much capital you leak annually and how RiskRule fixes them programmatically.
           </p>
         </Reveal>
       </div>
@@ -167,7 +167,7 @@ export default function EdgeLeakCheckerSection() {
               {/* Selected Solutions Summary */}
               <div className="space-y-3">
                 <span className="text-[11px] font-mono-stat text-tertiary uppercase font-bold block">
-                  The RiskRules Automated Fixes:
+                  The RiskRule Automated Fixes:
                 </span>
 
                 {selectedLeaks.length === 0 ? (
@@ -198,7 +198,7 @@ export default function EdgeLeakCheckerSection() {
                   to="/signup"
                   className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-canvas font-display font-bold text-xs shadow-md hover:opacity-95 transition-all"
                 >
-                  <span>Plug Your Leaks With RiskRules</span>
+                  <span>Plug Your Leaks With RiskRule</span>
                   <ArrowRight size={14} />
                 </Link>
                 <p className="text-[11px] text-tertiary text-center mt-2">

@@ -461,7 +461,7 @@ export default function NotificationSettings() {
                 <PermissionBadge permission={permission} />
               </div>
               <p className="text-xs text-tertiary mt-0.5">
-                Configure how RiskRules alerts reach you when browsing other tabs or apps.
+                Configure how RiskRule alerts reach you when browsing other tabs or apps.
               </p>
             </div>
           </div>
@@ -494,7 +494,7 @@ export default function NotificationSettings() {
               </div>
               <div>
                 <p className="text-xs font-bold text-primary">Grant Browser Notification Permission</p>
-                <p className="text-[11px] text-tertiary mt-0.5">Click to allow RiskRules to send OS alerts when the tab is in the background.</p>
+                <p className="text-[11px] text-tertiary mt-0.5">Click to allow RiskRule to send OS alerts when the tab is in the background.</p>
               </div>
             </div>
             <button
@@ -649,7 +649,7 @@ export default function NotificationSettings() {
             <div className="p-3.5 rounded-xl bg-surface-1/60 border border-border/40 flex items-start gap-2.5 text-xs text-tertiary leading-relaxed">
               <Info className="w-4 h-4 text-iris shrink-0 mt-0.5" />
               <span>
-                System notifications display when RiskRules is running in the background or minimized. If you completely close the browser tab, notifications will pause until you return.
+                System notifications display when RiskRule is running in the background or minimized. If you completely close the browser tab, notifications will pause until you return.
               </span>
             </div>
           </div>

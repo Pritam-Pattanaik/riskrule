@@ -22,8 +22,8 @@ export default function FAQPage() {
   const allFaqs: FAQItem[] = [
     {
       category: 'brokers',
-      q: 'How does RiskRules connect to my brokerage without risking my trading capital?',
-      a: 'RiskRules integrates strictly through standard OAuth 2.0 and Read-Only API tokens. When linking MetaTrader 4/5, Interactive Brokers, Tradovate, or custom webhooks, you explicitly leave "Order Execution" and "Fund Withdrawal" permissions disabled. Our servers cannot initiate trades or move funds under any technical circumstance.'
+      q: 'How does RiskRule connect to my brokerage without risking my trading capital?',
+      a: 'RiskRule integrates strictly through standard OAuth 2.0 and Read-Only API tokens. When linking MetaTrader 4/5, Interactive Brokers, Tradovate, or custom webhooks, you explicitly leave "Order Execution" and "Fund Withdrawal" permissions disabled. Our servers cannot initiate trades or move funds under any technical circumstance.'
     },
     {
       category: 'brokers',
@@ -33,17 +33,17 @@ export default function FAQPage() {
     {
       category: 'prop',
       q: 'How does the automated daily drawdown lockout work with evaluation prop firms?',
-      a: 'You input your specific prop challenge threshold (e.g. $2,000 maximum daily loss on Apex or 5% on FTMO). When your account equity reaches the warning buffer, RiskRules intervenes by locking further order routing from your connected tools and initiating an automated 24-hour cooling off period, preserving your challenge status.'
+      a: 'You input your specific prop challenge threshold (e.g. $2,000 maximum daily loss on Apex or 5% on FTMO). When your account equity reaches the warning buffer, RiskRule intervenes by locking further order routing from your connected tools and initiating an automated 24-hour cooling off period, preserving your challenge status.'
     },
     {
       category: 'prop',
-      q: 'Does RiskRules support trailing drawdown thresholds (e.g., Apex, TradeDay)?',
-      a: 'Yes. RiskRules tracks both end-of-day and live intraday trailing drawdown peaks tick-by-tick. You can configure high-water-mark tracking so that your allowable loss adjusts dynamically with floating profit.'
+      q: 'Does RiskRule support trailing drawdown thresholds (e.g., Apex, TradeDay)?',
+      a: 'Yes. RiskRule tracks both end-of-day and live intraday trailing drawdown peaks tick-by-tick. You can configure high-water-mark tracking so that your allowable loss adjusts dynamically with floating profit.'
     },
     {
       category: 'ai',
       q: 'What makes the AI Behavioral Coach different from automated trading bots?',
-      a: 'RiskRules is strictly a quantitative risk management and discipline workstation—we do not sell retail trading signal bots. The AI Behavioral Coach analyzes your real-time order history to identify psychological flaws (such as sizing spikes after a loss, trading during fatigue hours, or revenge trading) and prevents unmanaged risk before it hurts your equity.'
+      a: 'RiskRule is strictly a quantitative risk management and discipline workstation—we do not sell retail trading signal bots. The AI Behavioral Coach analyzes your real-time order history to identify psychological flaws (such as sizing spikes after a loss, trading during fatigue hours, or revenge trading) and prevents unmanaged risk before it hurts your equity.'
     },
     {
       category: 'ai',

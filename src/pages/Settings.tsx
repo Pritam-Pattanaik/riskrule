@@ -240,7 +240,7 @@ export default function Settings() {
     const trades = useTradeStore.getState().trades || [];
     const realExport = {
       timestamp: new Date().toISOString(),
-      account: profile?.email || 'trader@RiskRules.in',
+      account: profile?.email || 'trader@RiskRule.in',
       connectionsCount: connections.length,
       riskRules: { maxDailyLoss, maxLossPerTrade, killSwitchEnabled },
       executionsCount: trades.length,
@@ -270,7 +270,7 @@ export default function Settings() {
     
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `RiskRules_Audit_Backup_${new Date().toISOString().slice(0, 10)}.${format}`);
+    downloadAnchor.setAttribute("download", `RiskRule_Audit_Backup_${new Date().toISOString().slice(0, 10)}.${format}`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -923,7 +923,7 @@ export default function Settings() {
             </div>
             <div>
               <h4 className="font-display font-bold text-lg text-primary">{profileName || 'Principal Trader'}</h4>
-              <p className="text-xs font-mono text-tertiary">{profile?.email || 'trader@RiskRules.in'} • Tier 1 Institutional Subscription</p>
+              <p className="text-xs font-mono text-tertiary">{profile?.email || 'trader@RiskRule.in'} • Tier 1 Institutional Subscription</p>
             </div>
           </div>
 

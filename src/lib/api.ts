@@ -1,5 +1,5 @@
 /**
- * Centralized API client for RiskRules backend.
+ * Centralized API client for RiskRule backend.
  * Automatically attaches JWT token from localStorage.
  */
 

@@ -1,6 +1,6 @@
 # Architecture
 
-**RiskRules Platform — Canonical System Architecture Reference**
+**RiskRule Platform — Canonical System Architecture Reference**
 **Document ID:** ARCH-001
 **Version:** 2.0
 **Status:** Active
@@ -25,7 +25,7 @@
 
 ## 1. High-Level Overview
 
-RiskRules is an institutional-grade trading journal and live market intelligence platform tailored for Indian financial markets (NSE/BSE/MCX). It combines:
+RiskRule is an institutional-grade trading journal and live market intelligence platform tailored for Indian financial markets (NSE/BSE/MCX). It combines:
 
 - **Trade Journal** — Automated sync from Dhan and AngelOne brokers, manual entry, and rich annotations.
 - **Analytics Engine** — Win rate, drawdown, strategy performance, and discipline scoring.

@@ -147,7 +147,7 @@ export default function DisciplineSimulatorSection() {
                 ) : (
                   <div className="space-y-2 text-xs">
                     <p className="text-success font-bold flex items-center gap-1.5">
-                      <CheckCircle2 size={15} /> RiskRules Algorithmic Protection Active
+                      <CheckCircle2 size={15} /> RiskRule Algorithmic Protection Active
                     </p>
                     <p className="text-secondary leading-relaxed">
                       Strict 1% max risk per trade, automated 24H daily drawdown lockout, AI behavioral intervention on sizing spikes, and clean positive expectancy.
@@ -251,7 +251,7 @@ export default function DisciplineSimulatorSection() {
           <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs text-secondary font-medium">
               <Zap size={15} className="text-iris shrink-0" />
-              <span>RiskRules enforces this level of discipline automatically via sub-second broker APIs.</span>
+              <span>RiskRule enforces this level of discipline automatically via sub-second broker APIs.</span>
             </div>
             <Link
               to="/signup"
