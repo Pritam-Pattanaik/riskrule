@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronUp, History, Zap, DatabaseZap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrokerLogo } from './BrokerLogo';
 
 
 interface BrokerHealthCardProps {
@@ -31,9 +32,11 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
   const [showTokenVault, setShowTokenVault] = useState(false);
   const [newTokenValue, setNewTokenValue] = useState('');
 
-  // Angel One re-auth is FULLY AUTOMATIC (server uses stored TOTP secret).
-  // Only non-Angel-One brokers need a manual token paste.
-  const isAngelOne = connection.broker === 'angelone';
+  // Determine UI behaviour from the broker's auth model, NOT from a hardcoded name check.
+  // Brokers using CLIENT_ID_SECRET_TOTP (e.g. Angel One) support automatic daily re-auth
+  // via stored TOTP — no manual token paste is ever required.
+  // All other NONE_MANDATORY_REAUTH brokers (e.g. Dhan) require a daily manual token paste.
+  const usesAutoTotp = provider?.authModel === 'CLIENT_ID_SECRET_TOTP';
 
   const statusColors = {
     ONLINE:       'bg-success/10 border-success/25 text-success',
@@ -55,12 +58,12 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
       <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle">
         <div className="flex items-start gap-4">
           {/* Brand logo */}
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center font-display font-black text-white text-base shadow-lg shrink-0 select-none"
-            style={{ backgroundColor: provider?.themeColor || '#3B82F6' }}
-          >
-            {provider?.logoText || connection.broker.slice(0, 2).toUpperCase()}
-          </div>
+          <BrokerLogo
+            providerId={connection.providerId || connection.broker}
+            fallbackText={provider?.logoText || connection.broker.slice(0, 2).toUpperCase()}
+            themeColor={provider?.themeColor || '#3B82F6'}
+            size="md"
+          />
 
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
@@ -79,7 +82,7 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
               <span>⚡ Avg speed: {connection.lastSyncDurationMs || 380}ms</span>
               <span>📥 {connection.todaySyncCount || 0} syncs today</span>
             </p>
-            {isAngelOne && (
+            {usesAutoTotp && (
               <p className="text-[11px] text-iris/80 mt-1 flex items-center gap-1.5 font-medium">
                 <Zap size={11} className="shrink-0" />
                 Daily token auto-refreshed via stored TOTP secret — no manual re-auth needed.
@@ -121,8 +124,8 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
             Full Sync
           </Button>
 
-          {/* Show token vault button only for non-Angel-One brokers */}
-          {!isAngelOne && (
+          {/* Show token vault only for brokers that require manual daily token refresh */}
+          {!usesAutoTotp && (
             <Button
               variant="ghost" size="icon-sm"
               onClick={() => setShowTokenVault(!showTokenVault)}
@@ -150,7 +153,7 @@ export const BrokerHealthCard: React.FC<BrokerHealthCardProps> = ({
 
       {/* ── Token Vault (non-Angel-One brokers only) ──────────────────────── */}
       <AnimatePresence>
-        {!isAngelOne && (showTokenVault || connection.healthStatus === 'EXPIRED' || connection.healthStatus === 'WARNING') && (
+        {!usesAutoTotp && (showTokenVault || connection.healthStatus === 'EXPIRED' || connection.healthStatus === 'WARNING') && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}

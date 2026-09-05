@@ -62,6 +62,9 @@ model BrokerConnection {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId       String    @map("user_id") @db.Uuid
   broker       String
+  // Human-readable label for this connection (e.g. "Primary F&O Vault", "Equity Portfolio").
+  // Defaults to the broker's registry name on the frontend if not set.
+  accountAlias String?   @map("account_alias")
   apiKey       String?   @map("api_key")
   apiSecret    String?   @map("api_secret")
   accessToken  String?   @map("access_token")

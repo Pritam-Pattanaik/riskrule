@@ -86,57 +86,7 @@ export function computeDisciplineDistribution(trades: Trade[]): { name: string; 
   ];
 }
 
-export function detectRevengeTrades(trades: Trade[]): number {
-  const sorted = [...trades].sort((a, b) => {
-    const dA = new Date(a.date).getTime();
-    const dB = new Date(b.date).getTime();
-    return dA - dB || a.id.localeCompare(b.id);
-  });
-  let count = 0;
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1];
-    const curr = sorted[i];
-    const isSameDay = getLocalDateKey(curr.date) === getLocalDateKey(prev.date);
-    if (prev.status === 'LOSS' && curr.disciplineScore != null && curr.disciplineScore <= 2 && isSameDay) {
-      count++;
-    }
-    if (prev.status === 'WIN' && curr.disciplineScore != null && curr.disciplineScore <= 2 && isSameDay) {
-      count++;
-    }
-  }
-  return count;
-}
 
-export function detectBoredomTrades(trades: Trade[]): number {
-  const keywords = ['bored', 'forced', 'no setup', 'no good setup', 'nothing else'];
-  return trades.filter(t => {
-    const text = `${t.mindset ?? ''} ${t.decisionNotes ?? ''}`.toLowerCase();
-    return keywords.some(kw => text.includes(kw));
-  }).length;
-}
-
-export function findBestStrategy(trades: Trade[]): { name: string; winRate: number; pnl: number } | null {
-  const stratMap = new Map<string, { wins: number; total: number; pnl: number }>();
-  trades.forEach(t => {
-    const name = t.strategyName;
-    if (!name) return;
-    const entry = stratMap.get(name) || { wins: 0, total: 0, pnl: 0 };
-    entry.total++;
-    if (t.status === 'WIN') entry.wins++;
-    entry.pnl += t.netPnl;
-    stratMap.set(name, entry);
-  });
-
-  let best: { name: string; winRate: number; pnl: number } | null = null;
-  stratMap.forEach((v, name) => {
-    const winRate = (v.wins / v.total) * 100;
-    if (!best || v.pnl > best.pnl) {
-      best = { name, winRate, pnl: v.pnl };
-    }
-  });
-
-  return best;
-}
 
 export function computeCurrentStreak(trades: Trade[]): { type: 'WIN' | 'LOSS' | 'NONE'; count: number } {
   if (trades.length === 0) return { type: 'NONE', count: 0 };

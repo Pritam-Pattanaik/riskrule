@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedTabs } from '../components/ui/Motion';
 import { BrokerHealthCard } from '../components/settings/brokers/BrokerHealthCard';
 import { BrokerConnectionWizard } from '../components/settings/brokers/BrokerConnectionWizard';
+import { getBrokerProvider } from '../lib/brokers/brokerRegistry';
 import { PREBUILT_RULES, PREBUILT_RULE_CATEGORIES, PrebuiltRule } from '../constants/prebuiltRules';
 import { RuleDetailModal } from '../components/settings/RuleDetailModal';
 import { VoiceSettingsTab } from '../components/settings/VoiceSettingsTab';
@@ -208,12 +209,22 @@ export default function Settings() {
     }
   };
 
-  // broker param is always the broker NAME (e.g. 'angelone'), never the UUID.
+  // broker param is always the broker NAME (e.g. 'dhan'), never the UUID.
   // The sync, disconnect, and token-update routes all expect /api/brokers/:brokerName.
   const handleBrokerSync = async (broker: string, fullSync = false) => {
     const { error, count, needsReauth } = await syncConnection(broker, fullSync);
     if (needsReauth) {
-      notify.warning('Angel One session expired. Click the 📱 icon to enter your TOTP and refresh.');
+      // Resolve the display name from the registry — never hardcode a broker name here.
+      const provider = getBrokerProvider(broker);
+      const brokerName = provider?.name ?? broker.toUpperCase();
+      const authModel = provider?.tokenLifecycle.refreshStrategy;
+      // For brokers with auto-refresh (TOTP/MPIN), the server handles re-auth automatically.
+      // Only show a manual action prompt for brokers that require a daily token paste.
+      if (authModel === 'NONE_MANDATORY_REAUTH' && provider?.authModel !== 'CLIENT_ID_SECRET_TOTP') {
+        notify.warning(`${brokerName} session expired. Paste your new daily access token in the Token Vault.`);
+      } else {
+        notify.warning(`${brokerName} session expired. The server will attempt automatic re-authentication.`);
+      }
     } else if (error) {
       notify.error(`Sync failed: ${error}`);
     } else {
@@ -373,8 +384,8 @@ export default function Settings() {
                 <h5 className="font-display font-bold text-[13px] text-primary">AI Diagnostic Advisory & Token Watchdog</h5>
                 <p className="text-xs text-tertiary mt-0.5">
                   {connections.length > 0
-                    ? `Active surveillance operational. All ${connections.length} account tokens are within healthy execution tolerances for today’s NSE market session.`
-                    : 'No connected brokerage vaults detected. Connect Zerodha or DhanHQ to enable real-time ledger synchronization.'}
+                    ? `Active surveillance operational. All ${connections.length} account token${connections.length !== 1 ? 's are' : ' is'} within healthy execution tolerances for today's NSE market session.`
+                    : 'No connected brokerage vaults detected. Connect a broker to enable real-time ledger synchronization.'}
                 </p>
               </div>
             </div>

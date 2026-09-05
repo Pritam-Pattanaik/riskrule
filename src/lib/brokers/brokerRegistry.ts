@@ -4,11 +4,34 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'zerodha',
     name: 'Zerodha Kite',
-    tagline: 'India’s largest retail brokerage engine with ultra-fast Kite Connect APIs.',
+    tagline: 'India\'s largest retail brokerage with the Kite Connect API platform.',
     logoText: 'ZK',
     themeColor: '#FF5722',
     region: 'INDIA',
     authModel: 'API_KEY_SECRET',
+    syncStatus: 'ACTIVE',
+    marketSegments: ['NSE', 'BSE', 'F&O', 'MCX'],
+    authDescription: 'Zerodha uses an OAuth-like redirect flow. You provide your API Key and Secret, then log in on Zerodha\'s website to generate a request token, which is exchanged for a daily access token.',
+    setupTimeEstimate: '~3 minutes',
+    connectionGuide: [
+      {
+        title: 'Access Kite Connect',
+        description: 'Go to developers.zerodha.com and log in with your Kite credentials.',
+        actionUrl: 'https://developers.zerodha.com/'
+      },
+      {
+        title: 'Subscribe',
+        description: 'Ensure you have an active Kite Connect API subscription (₹2,000/month).'
+      },
+      {
+        title: 'Create App',
+        description: 'Click "Create New App" on your developer dashboard.'
+      },
+      {
+        title: 'Copy Keys',
+        description: 'Once created, your app dashboard will display your API Key and API Secret. Copy both. RiskRules requires read-only access. Do not share your API Secret with anyone else.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: true,
       expiryTimeLocal: '06:00 IST',
@@ -18,32 +41,37 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
     fields: [
       {
         id: 'clientId',
-        label: 'Client ID (User ID)',
+        label: 'Zerodha User ID',
         placeholder: 'e.g. AB1234',
         type: 'text',
         required: true,
         isSecret: false,
         regexValidation: '^[A-Za-z]{2,3}[0-9]{4,6}$',
-        validationErrorMessage: 'Client ID should be 6-8 alphanumeric characters (e.g., AB1234).',
-        helperText: 'Your standard 6-character Zerodha Kite login username.',
+        validationErrorMessage: 'User ID should be 2-3 letters followed by 4-6 digits (e.g., AB1234).',
+        whereToFind: 'Your Zerodha User ID is the username you use to log into Kite (kite.zerodha.com). It\'s typically 2-3 letters followed by 4-6 numbers, like AB1234.',
+        exampleFormat: 'AB1234',
       },
       {
         id: 'apiKey',
         label: 'Kite Connect API Key',
-        placeholder: 'Enter 32-character API key...',
+        placeholder: 'Enter your API key...',
         type: 'text',
         required: true,
         isSecret: false,
-        helperText: 'Generated from developer.zerodha.com after app subscription.',
+        whereToFind: '1. Go to developers.zerodha.com\n2. Subscribe to Kite Connect (₹2,000/month)\n3. Create a new app\n4. Copy the API Key from your app dashboard',
+        exampleFormat: 'xxxxxxxxxxxxxxxx',
+        docLink: 'https://developers.zerodha.com/',
       },
       {
         id: 'apiSecret',
-        label: 'API Secret Vault Key',
+        label: 'API Secret',
         placeholder: '••••••••••••••••••••••••••••••••',
         type: 'password',
         required: true,
         isSecret: true,
-        helperText: 'Encrypted at rest with AES-256 Cloud Security. Never shared.',
+        whereToFind: 'Found in the same Kite Connect app page as your API Key at developers.zerodha.com.',
+        securityNote: 'Stored encrypted on the server. Never transmitted back to your browser after saving.',
+        docLink: 'https://kite.trade/docs/connect/v3/',
       },
     ],
     capabilities: [
@@ -52,7 +80,7 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
       'MULTI_ACCOUNT', 'OPTIONS', 'FNO'
     ],
     documentation: {
-      setupGuideUrl: 'https://kite.trade/docs/connect/v3/exceptions/',
+      setupGuideUrl: 'https://kite.trade/docs/connect/v3/',
       apiDocsUrl: 'https://kite.trade/docs/connect/v3/',
       officialPortalUrl: 'https://developers.zerodha.com/',
       troubleshootingUrl: 'https://kite.trade/forum/',
@@ -61,11 +89,38 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'dhan',
     name: 'DhanHQ SuperAPI',
-    tagline: 'Institutional lightning-fast direct market access with zero API charges.',
+    tagline: 'Lightning-fast direct market access with zero API charges.',
     logoText: 'DH',
     themeColor: '#00D09C',
     region: 'INDIA',
     authModel: 'DAILY_SESSION_TOKEN',
+    syncStatus: 'ACTIVE',
+    marketSegments: ['NSE', 'BSE', 'F&O', 'MCX'],
+    authDescription: 'Dhan uses a daily access token that you generate from your Dhan dashboard. It expires at midnight IST and needs to be refreshed each trading day.',
+    setupTimeEstimate: '~1 minute',
+    connectionGuide: [
+      {
+        title: 'Open DhanHQ',
+        description: 'Log into web.dhan.co on a separate tab.',
+        actionUrl: 'https://web.dhan.co/'
+      },
+      {
+        title: 'Find Client ID',
+        description: 'Your Client ID (8-12 digits) is located in the top-right corner under your profile name.'
+      },
+      {
+        title: 'Access Trading APIs',
+        description: 'Click your profile icon -> select "DhanHQ Trading APIs".'
+      },
+      {
+        title: 'Generate Token',
+        description: 'Click the "Generate Access Token" button.'
+      },
+      {
+        title: 'Copy & Paste',
+        description: 'Copy the long JWT token string and return to RiskRules. This token expires daily at midnight. You will need to click "Renew" in RiskRules each trading day.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: true,
       expiryTimeLocal: '23:59 IST',
@@ -75,23 +130,28 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
     fields: [
       {
         id: 'clientId',
-        label: 'Dhan Client ID (Phone / Code)',
-        placeholder: 'e.g. 1111734825 or 10-digit mobile',
+        label: 'Dhan Client ID',
+        placeholder: 'e.g. 1100234567',
         type: 'text',
         required: true,
         isSecret: false,
         regexValidation: '^[0-9]{8,12}$',
-        validationErrorMessage: 'Enter your valid Dhan numeric user Client ID.',
-        helperText: 'Your registered numeric Dhan Client Account ID.',
+        validationErrorMessage: 'Client ID should be 8–12 digits.',
+        whereToFind: 'Log into web.dhan.co → Your Client ID is displayed in the top-right of the dashboard under your profile name.',
+        exampleFormat: '1100234567',
+        docLink: 'https://dhanhq.co/docs/v2/',
       },
       {
         id: 'accessToken',
-        label: 'Daily SuperAPI Access Token',
+        label: 'Daily Access Token',
         placeholder: 'Paste your daily access token here...',
         type: 'password',
         required: true,
         isSecret: true,
-        helperText: 'Generate in 1-click from Dhan web web.dhan.co -> My Profile -> DhanHQ API.',
+        whereToFind: '1. Log into web.dhan.co\n2. Click your profile icon in the top-right\n3. Select "DhanHQ Trading APIs"\n4. Click "Generate Access Token"\n5. Copy the generated token and paste it here',
+        exampleFormat: 'eyJhbGciOiJIUzI1NiIs...',
+        securityNote: 'This token grants read access to your trade history. It expires daily at midnight IST. RiskRules never places orders with your token.',
+        docLink: 'https://dhanhq.co/docs/v2/',
       },
     ],
     capabilities: [
@@ -109,11 +169,34 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'angelone',
     name: 'Angel One SmartAPI',
-    tagline: 'Robust multi-asset API integration with native automated TOTP challenges.',
+    tagline: 'Multi-asset API with automatic daily TOTP-based session renewal.',
     logoText: 'AO',
     themeColor: '#3B82F6',
     region: 'INDIA',
     authModel: 'CLIENT_ID_SECRET_TOTP',
+    syncStatus: 'ACTIVE',
+    marketSegments: ['NSE', 'BSE', 'F&O'],
+    authDescription: 'Angel One uses TOTP-based authentication. You provide your MPIN and TOTP setup key once — RiskRules automatically refreshes your session daily without any manual action.',
+    setupTimeEstimate: '~3 minutes',
+    connectionGuide: [
+      {
+        title: 'Get App Key',
+        description: 'Go to smartapi.angelbroking.com, log in, go to "My Apps" -> "Create App", and copy your new API Key.',
+        actionUrl: 'https://smartapi.angelbroking.com/'
+      },
+      {
+        title: 'Enable TOTP',
+        description: 'Go to smartapi.angelbroking.com/enable-totp and verify your identity.'
+      },
+      {
+        title: 'Capture the Secret',
+        description: 'When the QR code appears, DO NOT just scan it. Look below the QR code for the "Setup Key" (e.g., JBSWY3D...). This is your TOTP Secret.'
+      },
+      {
+        title: 'Prepare MPIN',
+        description: 'Remember the 4-digit numeric MPIN you use to log into the Angel One mobile app. By providing the TOTP Secret and MPIN, RiskRules will automatically generate the 6-digit codes in the background to keep your session alive daily. You will never need to manually log in again.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: true,
       expiryTimeLocal: '06:00 IST',
@@ -123,12 +206,13 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
     fields: [
       {
         id: 'clientId',
-        label: 'Angel Client Code',
-        placeholder: 'e.g. A123456 or S987654',
+        label: 'Angel One Client Code',
+        placeholder: 'e.g. A123456',
         type: 'text',
         required: true,
         isSecret: false,
-        helperText: 'Your Angel One login User ID (shown on the SmartAPI dashboard).',
+        whereToFind: 'Open your Angel One app → Profile → Your Client Code is displayed at the top (e.g., A123456).',
+        exampleFormat: 'A123456',
       },
       {
         id: 'apiKey',
@@ -137,7 +221,9 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         type: 'text',
         required: true,
         isSecret: false,
-        helperText: 'Get it from smartapi.angelbroking.com → My Apps → Create App.',
+        whereToFind: '1. Go to smartapi.angelbroking.com\n2. Log in with your Angel One credentials\n3. Navigate to "My Apps"\n4. Create a new app or select your existing app\n5. Copy the "API Key" value',
+        exampleFormat: 'xAbCd1234...',
+        docLink: 'https://smartapi.angelbroking.com/docs',
       },
       {
         id: 'mpin',
@@ -147,8 +233,9 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         required: true,
         isSecret: true,
         regexValidation: '^[0-9]{4,8}$',
-        validationErrorMessage: 'Must be a 4–8 digit numeric PIN.',
-        helperText: 'The numeric PIN you use to log into the Angel One trading terminal.',
+        validationErrorMessage: 'MPIN must be 4–8 digits.',
+        whereToFind: 'This is the numeric PIN you use to log into the Angel One trading terminal or app. If you\'ve forgotten it, reset it from the Angel One app.',
+        securityNote: 'Stored encrypted on server. Used for automatic daily session refresh.',
       },
       {
         id: 'totpSecret',
@@ -157,7 +244,10 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         type: 'password',
         required: true,
         isSecret: true,
-        helperText: 'The Base32 key from smartapi.angelbroking.com → Enable TOTP. NOT the 6-digit OTP — the setup key. Stored securely for automatic daily re-auth.',
+        whereToFind: '1. Go to smartapi.angelbroking.com/enable-totp\n2. Complete the verification process\n3. A QR code will appear — below it is the "Setup Key"\n4. Copy that Setup Key (a string of uppercase letters and numbers like JBSWY3DPEHPK3PXP)\n5. This is your TOTP Secret — NOT the 6-digit code from your authenticator app',
+        exampleFormat: 'JBSWY3DPEHPK3PXP',
+        securityNote: 'This is the Base32 setup key, NOT the 6-digit code. It allows RiskRules to auto-generate daily login codes so you never need to manually refresh your session.',
+        docLink: 'https://smartapi.angelbroking.com/enable-totp',
       },
     ],
     capabilities: [
@@ -174,11 +264,36 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'upstox',
     name: 'Upstox Developer V2',
-    tagline: 'High-speed institutional OAuth 2.0 streaming pipeline for derivatives.',
+    tagline: 'OAuth 2.0 streaming pipeline for equities and derivatives.',
     logoText: 'UP',
     themeColor: '#7C3AED',
     region: 'INDIA',
     authModel: 'OAUTH2',
+    syncStatus: 'COMING_SOON',
+    comingSoonEta: 'Q1 2027',
+    comingSoonDescription: 'Our team is finalizing the OAuth 2.0 integration with Upstox\'s Developer V2 API. Full portfolio sync, live streaming, and multi-account support will be available.',
+    marketSegments: ['NSE', 'BSE', 'F&O', 'MCX'],
+    authDescription: 'Upstox uses standard OAuth 2.0. You provide your API Key and Secret, then authorize via the Upstox login page to generate an access token.',
+    setupTimeEstimate: '~3 minutes',
+    connectionGuide: [
+      {
+        title: 'Developer Portal',
+        description: 'Go to developer.upstox.com and log in.',
+        actionUrl: 'https://developer.upstox.com/'
+      },
+      {
+        title: 'Create App',
+        description: 'Create a new application in your dashboard.'
+      },
+      {
+        title: 'Copy Keys',
+        description: 'Copy your API Key (Client ID) and API Secret (Client Secret).'
+      },
+      {
+        title: 'Authorization',
+        description: 'After entering these in RiskRules, you will be redirected to the Upstox login page to securely grant access.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: false,
       maxLifetimeHours: 720,
@@ -187,12 +302,14 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
     fields: [
       {
         id: 'apiKey',
-        label: 'Upstox App API Key',
+        label: 'Upstox API Key',
         placeholder: 'Enter Upstox Client API Key...',
         type: 'text',
         required: true,
         isSecret: false,
-        helperText: 'Obtain from developer.upstox.com portal.',
+        whereToFind: '1. Go to developer.upstox.com\n2. Create a new app\n3. Copy the Client ID (this is your API Key)',
+        exampleFormat: 'xxxxxxxx-xxxx-xxxx',
+        docLink: 'https://upstox.com/developer/api-documentation',
       },
       {
         id: 'apiSecret',
@@ -201,7 +318,9 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         type: 'password',
         required: true,
         isSecret: true,
-        helperText: 'Used for automatic background PKCE OAuth token refresh exchanges.',
+        whereToFind: 'Found in your app settings at developer.upstox.com alongside your Client ID.',
+        securityNote: 'Used for OAuth token exchange. Stored encrypted on server.',
+        docLink: 'https://upstox.com/developer/api-documentation',
       },
     ],
     capabilities: [
@@ -218,11 +337,32 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'groww',
     name: 'Groww Alpha API',
-    tagline: 'Modern investing terminal integration with automated ledger sync.',
+    tagline: 'Modern investing platform integration with portfolio sync.',
     logoText: 'GR',
     themeColor: '#00D09C',
     region: 'INDIA',
     authModel: 'API_KEY_SECRET',
+    syncStatus: 'COMING_SOON',
+    comingSoonEta: 'Q1 2027',
+    comingSoonDescription: 'We\'re integrating with Groww\'s Alpha Trading API. Portfolio sync, mutual fund tracking, and historical data import will be supported.',
+    marketSegments: ['NSE', 'BSE', 'F&O'],
+    authDescription: 'Groww provides API access through their Trading API portal. Requires a paid subscription (₹499/month + taxes).',
+    setupTimeEstimate: '~2 minutes',
+    connectionGuide: [
+      {
+        title: 'API Portal',
+        description: 'Go to the Groww Trading API portal (groww.in/trade-api).',
+        actionUrl: 'https://groww.in/trade-api'
+      },
+      {
+        title: 'Subscribe',
+        description: 'Ensure you have an active Alpha API subscription.'
+      },
+      {
+        title: 'Generate Key',
+        description: 'Click generate to receive your Alpha API Key.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: true,
       maxLifetimeHours: 24,
@@ -231,11 +371,13 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
     fields: [
       {
         id: 'clientId',
-        label: 'Groww Customer Id / Email',
-        placeholder: 'trader@domain.com',
+        label: 'Groww Customer ID / Email',
+        placeholder: 'trader@email.com',
         type: 'text',
         required: true,
         isSecret: false,
+        whereToFind: 'Your registered Groww account email or customer ID from the Groww app → Profile.',
+        exampleFormat: 'trader@email.com',
       },
       {
         id: 'apiKey',
@@ -244,6 +386,9 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         type: 'password',
         required: true,
         isSecret: true,
+        whereToFind: '1. Subscribe to Groww Trading API (₹499/month + taxes)\n2. Go to the Groww Trading API portal\n3. Generate your API Key',
+        securityNote: 'Requires paid Groww API subscription.',
+        docLink: 'https://groww.in/trade-api/docs/',
       },
     ],
     capabilities: [
@@ -251,19 +396,40 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
       'PNL', 'HISTORICAL_DATA', 'MUTUAL_FUNDS'
     ],
     documentation: {
-      setupGuideUrl: 'https://groww.in/',
-      apiDocsUrl: 'https://groww.in/',
+      setupGuideUrl: 'https://groww.in/trade-api/docs/',
+      apiDocsUrl: 'https://groww.in/trade-api/docs/',
       officialPortalUrl: 'https://groww.in/',
     },
   },
   {
     providerId: '5paisa',
     name: '5paisa Developer API',
-    tagline: 'Discount brokerage automated algorithm integration suite.',
+    tagline: 'Discount brokerage with algorithmic trading integration.',
     logoText: '5P',
     themeColor: '#EF4444',
     region: 'INDIA',
     authModel: 'API_KEY_SECRET',
+    syncStatus: 'COMING_SOON',
+    comingSoonEta: 'Q2 2027',
+    comingSoonDescription: 'Integration with 5paisa\'s Xstream API is in progress. TOTP-based authentication and encrypted data feeds will be fully supported.',
+    marketSegments: ['NSE', 'BSE', 'F&O', 'MCX'],
+    authDescription: '5paisa uses a TOTP + Encryption Key flow. You provide your Client Code, App Key, and Encryption Key to authenticate.',
+    setupTimeEstimate: '~3 minutes',
+    connectionGuide: [
+      {
+        title: 'Xstream API',
+        description: 'Log into your 5paisa account and navigate to the Xstream API section.',
+        actionUrl: 'https://www.5paisa.com/developerapi'
+      },
+      {
+        title: 'Generate Keys',
+        description: 'Click Generate Keys.'
+      },
+      {
+        title: 'Copy Both Keys',
+        description: 'You will receive a User Key (App Key) and an Encryption Secret Key. Both are required to decrypt the data feed.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: true,
       maxLifetimeHours: 24,
@@ -277,14 +443,19 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         type: 'text',
         required: true,
         isSecret: false,
+        whereToFind: 'Your 5paisa login code from your account dashboard.',
+        exampleFormat: '52345678',
       },
       {
         id: 'apiKey',
-        label: 'User Key (App Key)',
+        label: 'App Key (User Key)',
         placeholder: 'Enter 5paisa App Key...',
         type: 'text',
         required: true,
         isSecret: false,
+        whereToFind: '5paisa → Xstream API section → Generate Keys → Copy the App Key.',
+        exampleFormat: 'xxxxxxxx',
+        docLink: 'https://www.5paisa.com/developerapi',
       },
       {
         id: 'apiSecret',
@@ -293,6 +464,9 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
         type: 'password',
         required: true,
         isSecret: true,
+        whereToFind: 'Found alongside your App Key in the 5paisa Xstream API section.',
+        securityNote: 'Used for request encryption. Stored securely on server.',
+        docLink: 'https://www.5paisa.com/developerapi',
       },
     ],
     capabilities: [
@@ -308,11 +482,32 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'bullforce',
     name: 'BullForce Quant Portal',
-    tagline: 'Global cryptocurrency and international liquidity institutional execution connector.',
+    tagline: 'Global cryptocurrency and international liquidity connector.',
     logoText: 'BF',
     themeColor: '#F59E0B',
     region: 'GLOBAL',
     authModel: 'JWT',
+    syncStatus: 'COMING_SOON',
+    comingSoonEta: 'Q2 2027',
+    comingSoonDescription: 'BullForce Quant Portal integration is being built for global crypto and international liquidity connectivity with JWT-based persistent sessions.',
+    marketSegments: ['Crypto', 'Global'],
+    authDescription: 'BullForce uses a long-lived JWT bearer token for authentication with automatic background refresh.',
+    setupTimeEstimate: '~2 minutes',
+    connectionGuide: [
+      {
+        title: 'Portal Dashboard',
+        description: 'Log into the BullForce Quant Portal.',
+        actionUrl: 'https://RiskRules.in/bullforce'
+      },
+      {
+        title: 'Service Accounts',
+        description: 'Navigate to Settings -> Service Accounts.'
+      },
+      {
+        title: 'Generate Token',
+        description: 'Generate a long-lived JWT Bearer token and paste it into RiskRules.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: false,
       maxLifetimeHours: 720,
@@ -321,20 +516,24 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
     fields: [
       {
         id: 'clientId',
-        label: 'Account Unique Tag / Alias',
+        label: 'Account Tag / Alias',
         placeholder: 'e.g. Master-Fund-1',
         type: 'text',
         required: true,
         isSecret: false,
+        whereToFind: 'Choose any name to identify this account (e.g., "Main Trading Fund").',
+        exampleFormat: 'Master-Fund-1',
       },
       {
         id: 'accessToken',
-        label: 'Institutional JWT Bearer Key',
+        label: 'JWT Bearer Token',
         placeholder: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         type: 'password',
         required: true,
         isSecret: true,
-        helperText: 'Persistent quantitative bearer signature with automated rolling background lease.',
+        whereToFind: 'Obtain from the BullForce platform dashboard.',
+        exampleFormat: 'eyJhbGciOi...',
+        securityNote: 'Long-lived bearer token. Stored encrypted on server.',
       },
     ],
     capabilities: [
@@ -351,11 +550,30 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
   {
     providerId: 'delta_exchange',
     name: 'Delta Exchange',
-    tagline: 'High-performance crypto options, futures, and spot derivatives exchange API.',
+    tagline: 'Crypto options, futures, and spot derivatives exchange.',
     logoText: 'DE',
     themeColor: '#10B981',
     region: 'GLOBAL',
     authModel: 'API_KEY_SECRET',
+    syncStatus: 'ACTIVE',
+    marketSegments: ['Crypto', 'F&O'],
+    authDescription: 'Delta Exchange uses HMAC-SHA256 request signing. You provide your API Key and Secret — authentication is computed per-request server-side. No daily token renewal needed.',
+    setupTimeEstimate: '~2 minutes',
+    connectionGuide: [
+      {
+        title: 'Open Settings',
+        description: 'Log into delta.exchange, click your profile icon, and go to Settings -> API Keys.',
+        actionUrl: 'https://delta.exchange'
+      },
+      {
+        title: 'Create Key',
+        description: 'Click "Create New API Key".'
+      },
+      {
+        title: 'Save Secret immediately',
+        description: 'Delta will show you the API Secret exactly once. Copy it immediately. If you lose it, you must create a new key. Your credentials are used to sign requests cryptographically. The secret is never transmitted in plain text over the network during sync.'
+      }
+    ],
     tokenLifecycle: {
       expiresDaily: false,
       maxLifetimeHours: 8760,
@@ -365,20 +583,24 @@ export const BROKER_REGISTRY: BrokerProviderDefinition[] = [
       {
         id: 'apiKey',
         label: 'Delta API Key',
-        placeholder: 'Enter 32+ character API key...',
+        placeholder: 'Enter your API key...',
         type: 'text',
         required: true,
         isSecret: false,
-        helperText: 'Generated from Delta Exchange -> Profile / Settings -> API Keys.',
+        whereToFind: '1. Go to delta.exchange\n2. Click your profile → Settings → API Keys\n3. Click "Create New API Key"\n4. Copy the API Key',
+        exampleFormat: 'xxxxxxxxxxxxxxxx',
+        docLink: 'https://docs.delta.exchange/#authentication',
       },
       {
         id: 'apiSecret',
-        label: 'Delta API Secret Key',
+        label: 'Delta API Secret',
         placeholder: '••••••••••••••••••••••••••••••••',
         type: 'password',
         required: true,
         isSecret: true,
-        helperText: 'Secret key provided when creating the Delta Exchange API key.',
+        whereToFind: 'Shown once when creating the API Key on Delta Exchange. If lost, you\'ll need to create a new API key pair.',
+        securityNote: 'Used for HMAC request signing server-side. Never transmitted directly — used to compute per-request signatures.',
+        docLink: 'https://docs.delta.exchange/',
       },
     ],
     capabilities: [

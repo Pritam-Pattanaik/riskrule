@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { authenticate, AuthRequest } from '../middleware/auth';
-import { syncDhanTrades } from '../lib/brokers/dhan';
+import { brokerAdapterRegistry } from '../lib/brokers/BrokerAdapterRegistry';
 import { lockService } from '../services/lockService';
 import { createNotification } from '../services/notificationService';
 import { flowDataWorker } from '../flow/workers/FlowDataWorker';
@@ -16,6 +16,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
       select: {
         id: true,
         broker: true,
+        accountAlias: true,
         clientId: true,
         isActive: true,
         lastSyncedAt: true,
@@ -44,7 +45,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 // For other brokers: standard flow (apiKey + optional metadata)
 router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<any> => {
   try {
-    const { broker, apiKey, apiSecret, clientId, mpin, totpSecret, metadata } = req.body;
+    const { broker, apiKey, apiSecret, clientId, mpin, totpSecret, metadata, accountAlias } = req.body;
 
     if (!broker || !apiKey) {
       return res.status(400).json({ error: 'Broker and API Key are required' });
@@ -84,6 +85,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
     });
 
     const dbData = {
+      accountAlias:  accountAlias  || null,
       apiKey,
       apiSecret:    apiSecret || null,
       clientId:     clientId  || null,
@@ -101,7 +103,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
       const updated = await prisma.brokerConnection.update({
         where: { id: existing.id },
         data: dbData,
-        select: { id: true, broker: true, clientId: true, isActive: true, lastSyncedAt: true, createdAt: true },
+        select: { id: true, broker: true, accountAlias: true, clientId: true, isActive: true, lastSyncedAt: true, createdAt: true },
       });
       if (broker === 'dhan') {
         flowDataWorker.reloadProvider().catch(err => console.error('[Brokers] Flow provider reload error:', err));
@@ -110,7 +112,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
     } else {
       const inserted = await prisma.brokerConnection.create({
         data: { userId: req.userId!, broker, ...dbData },
-        select: { id: true, broker: true, clientId: true, isActive: true, lastSyncedAt: true, createdAt: true },
+        select: { id: true, broker: true, accountAlias: true, clientId: true, isActive: true, lastSyncedAt: true, createdAt: true },
       });
       if (broker === 'dhan') {
         flowDataWorker.reloadProvider().catch(err => console.error('[Brokers] Flow provider reload error:', err));
@@ -170,7 +172,9 @@ import { ContextService } from '../lib/ai/ContextService';
 import { CoachMemoryWriter } from '../services/CoachMemoryWriter';
 
 // ─── POST /api/brokers/sync/:broker ──────────────────────────────────────────
-// :broker is always the broker NAME, e.g. 'angelone' or 'dhan'
+// :broker is always the broker providerId (e.g. 'dhan', 'angelone', 'delta_exchange').
+// The route itself has ZERO knowledge of any specific broker.
+// All broker-specific logic lives in server/src/lib/brokers/BrokerAdapterRegistry.ts
 router.post('/sync/:broker', authenticate, async (req: AuthRequest, res: Response): Promise<any> => {
   const broker  = String(req.params.broker);
   const lockKey = `${req.userId!}:${broker}`;
@@ -183,200 +187,100 @@ router.post('/sync/:broker', authenticate, async (req: AuthRequest, res: Respons
   try {
     const forceFullSync = req.query.full === 'true';
 
+    // ── Resolve Adapter ───────────────────────────────────────────────────
+    const adapter = brokerAdapterRegistry.getAdapter(broker);
+    if (!adapter) {
+      return res.status(400).json({ error: `Sync not yet implemented for '${broker}'. Supported: ${brokerAdapterRegistry.getSupportedProviders().join(', ')}` });
+    }
+
     const conn = await prisma.brokerConnection.findFirst({
       where: { userId: req.userId!, broker },
     });
     if (!conn) return res.status(404).json({ error: 'Broker connection not found' });
+    if (!conn.apiKey) return res.status(400).json({ error: 'API Key missing for broker' });
 
-    const { apiKey, clientId } = conn;
-    if (!apiKey) return res.status(400).json({ error: 'API Key missing for broker' });
+    // ── Load personal trading rules (used by discipline engine in adapters) ─
+    const userRules = await prisma.tradingRule.findUnique({ where: { userId: req.userId! } });
+    const personalRules = userRules ? {
+      windowStart:        userRules.windowStart,
+      windowEnd:          userRules.windowEnd,
+      maxTradesPerDay:    userRules.maxTradesPerDay,
+      maxDailyLoss:       userRules.maxDailyLoss ? parseFloat(String(userRules.maxDailyLoss)) : null,
+      maxLossPerTrade:    userRules.maxLossPerTrade ? parseFloat(String(userRules.maxLossPerTrade)) : null,
+      allowedInstruments: userRules.allowedInstruments,
+      allowedMarkets:     userRules.allowedMarkets,
+    } : null;
 
-    let tradesToInsert: any[] = [];
-    let tradesToUpdate: any[] = [];
-    let newLastSyncedAt: Date | null = null;
-    let fetchedDates: string[] = [];
+    // ── Dispatch to adapter ───────────────────────────────────────────────
+    const syncResult = await adapter.sync({
+      conn: {
+        id:           conn.id,
+        broker:       conn.broker,
+        clientId:     conn.clientId,
+        apiKey:       conn.apiKey,
+        apiSecret:    conn.apiSecret,
+        accessToken:  conn.accessToken,
+        refreshToken: conn.refreshToken,
+        metadata:     conn.metadata,
+        lastSyncedAt: conn.lastSyncedAt,
+      },
+      userId:        req.userId!,
+      forceFullSync,
+      personalRules,
+    });
 
-    // ── DHAN ──────────────────────────────────────────────────────────────
-    if (broker === 'dhan') {
-      const userRules = await prisma.tradingRule.findUnique({ where: { userId: req.userId! } });
-      const personalRules = userRules ? {
-        windowStart: userRules.windowStart, windowEnd: userRules.windowEnd,
-        maxTradesPerDay: userRules.maxTradesPerDay,
-        maxDailyLoss: userRules.maxDailyLoss ? parseFloat(String(userRules.maxDailyLoss)) : null,
-        maxLossPerTrade: userRules.maxLossPerTrade ? parseFloat(String(userRules.maxLossPerTrade)) : null,
-        allowedInstruments: userRules.allowedInstruments,
-        allowedMarkets: userRules.allowedMarkets,
-      } : null;
-
-      const lastSyncedAt = (!forceFullSync && conn.lastSyncedAt) ? new Date(conn.lastSyncedAt) : null;
-      let result;
-      try {
-        result = await syncDhanTrades(clientId || '', apiKey, req.userId!, [], lastSyncedAt, personalRules);
-      } catch (err: any) {
-        if (err.message?.includes('TOKEN_EXPIRED')) {
-          return res.status(401).json({ error: 'Dhan token expired. Update your access token in Settings.' });
-        }
-        throw err;
-      }
-
-      tradesToInsert = result.tradesToInsert;
-      tradesToUpdate = result.tradesToUpdate;
-      newLastSyncedAt = result.latestTradeTime;
-      fetchedDates = result.fetchedDates ?? [];
-
-    // ── ANGEL ONE ─────────────────────────────────────────────────────────
-    } else if (broker === 'angelone') {
-
-      let meta: Record<string, string> = {};
-      try { meta = conn.metadata ? JSON.parse(conn.metadata) : {}; } catch { /* ignore */ }
-
-      const { mpin, totpSecret } = meta;
-
-      const doSync = async (token: string) => {
-        const { syncAngelOneTrades } = await import('../lib/brokers/angelone');
-        const lastSyncedAt = (!forceFullSync && conn.lastSyncedAt) ? new Date(conn.lastSyncedAt) : null;
-        return syncAngelOneTrades(clientId || '', token, apiKey, req.userId!, [], lastSyncedAt);
-      };
-
-      const autoRelogin = async (): Promise<string> => {
-        if (!mpin || !totpSecret) {
-          throw new Error(
-            'MPIN or TOTP Secret missing from stored credentials. ' +
-            'Please reconnect Angel One and enter your MPIN and TOTP Secret.'
-          );
-        }
-        const { loginAngelOne } = await import('../lib/brokers/angelone');
-        const tokens = await loginAngelOne(clientId || '', mpin, totpSecret, apiKey);
-        await prisma.brokerConnection.update({
-          where: { id: conn.id },
-          data: { accessToken: tokens.jwtToken, refreshToken: tokens.refreshToken, isActive: true },
-        });
-        console.log(`[AngelOne] Auto-relogin OK for ${clientId}`);
-        return tokens.jwtToken;
-      };
-
-      let jwt = conn.accessToken;
-
-      if (!jwt) {
-        try {
-          jwt = await autoRelogin();
-        } catch (loginErr: any) {
-          console.error('[AngelOne] Initial login failed:', loginErr.message);
-          return res.status(400).json({ error: loginErr.message });
-        }
-      }
-
-      try {
-        const result = await doSync(jwt!);
-        tradesToInsert  = result.tradesToInsert;
-        tradesToUpdate  = result.tradesToUpdate;
-        newLastSyncedAt = result.latestTradeTime;
-      } catch (syncErr: any) {
-        if (syncErr.message === 'TOKEN_EXPIRED') {
-          console.log(`[AngelOne] Token expired for ${clientId} — auto-refreshing...`);
-          try {
-            const freshJwt = await autoRelogin();
-            const result = await doSync(freshJwt);
-            tradesToInsert  = result.tradesToInsert;
-            tradesToUpdate  = result.tradesToUpdate;
-            newLastSyncedAt = result.latestTradeTime;
-          } catch (reloginErr: any) {
-            console.error('[AngelOne] Auto-relogin failed:', reloginErr.message);
-            await createNotification({
-              userId: req.userId!,
-              title:  'Angel One Re-auth Failed',
-              description: `Could not auto-refresh your session: ${reloginErr.message}. Please reconnect Angel One.`,
-              category: 'Trading',
-              priority: 'Critical',
-              actionLabel: 'Reconnect',
-              actionUrl:   '/app/settings',
-            });
-            return res.status(400).json({ error: reloginErr.message });
-          }
-        } else {
-          throw syncErr;
-        }
-      }
-
-    // ── DELTA EXCHANGE ───────────────────────────────────────────────────
-    } else if (broker === 'delta_exchange') {
-      const { syncDeltaExchangeTrades } = await import('../lib/brokers/delta_exchange');
-      const apiSecret = conn.apiSecret;
-      if (!apiSecret) {
-        return res.status(400).json({ error: 'API Secret missing for Delta Exchange' });
-      }
-      const lastSyncedAt = (!forceFullSync && conn.lastSyncedAt) ? new Date(conn.lastSyncedAt) : null;
-      let result;
-      try {
-        result = await syncDeltaExchangeTrades(apiKey, apiSecret, req.userId!, 'https://api.delta.exchange', lastSyncedAt);
-      } catch (err: any) {
-        if (err.message?.includes('TOKEN_EXPIRED')) {
-          return res.status(401).json({ error: 'Delta Exchange API credentials invalid or expired.' });
-        }
-        throw err;
-      }
-      tradesToInsert  = result.tradesToInsert;
-      tradesToUpdate  = result.tradesToUpdate;
-      newLastSyncedAt = result.latestTradeTime;
-      fetchedDates    = result.fetchedDates ?? [];
-
-    } else {
-      return res.status(400).json({ error: `Sync not yet implemented for ${broker}` });
+    // If the adapter requires reauth (expired token it cannot auto-refresh), surface it.
+    if (syncResult.needsReauth) {
+      return res.status(401).json({ error: 'Session expired. Please update your access token in Settings.', needsReauth: true });
     }
+
+    // If the adapter silently refreshed tokens (e.g. Angel One TOTP re-auth), persist them.
+    if (syncResult.updatedTokens) {
+      await prisma.brokerConnection.update({
+        where: { id: conn.id },
+        data: {
+          ...(syncResult.updatedTokens.accessToken  ? { accessToken:  syncResult.updatedTokens.accessToken  } : {}),
+          ...(syncResult.updatedTokens.refreshToken ? { refreshToken: syncResult.updatedTokens.refreshToken } : {}),
+          isActive: true,
+        },
+      });
+    }
+
+    const { tradesToInsert, tradesToUpdate, fetchedDates = [] } = syncResult;
 
     // ── Atomic Persist Inside Transaction ─────────────────────────────────
     // Deletes and inserts occur in the SAME transaction.
     // If anything fails, changes roll back completely with ZERO data loss.
-    const lastSyncedAt = (!forceFullSync && conn.lastSyncedAt) ? new Date(conn.lastSyncedAt) : null;
-
     await prisma.$transaction(async (tx) => {
-      // 1. Delete prior synced trades for fetched dates (or all if full sync)
-      if (broker === 'dhan') {
-        if (fetchedDates.length > 0) {
-          // Date-scoped delete: only remove trades on the days we just fetched.
-          // Safe for both incremental and full syncs — no risk of wiping unrelated history.
-          for (const dateStr of fetchedDates) {
-            await tx.$executeRaw`
-              DELETE FROM trades
-              WHERE user_id = ${req.userId!}::uuid
-                AND broker = 'dhan'
-                AND source = 'broker_sync'
-                AND (date AT TIME ZONE 'Asia/Kolkata')::date = ${dateStr}::date
-            `;
-          }
-        } else if (forceFullSync) {
-          // Full sync explicitly requested but Dhan returned zero trades — safe to wipe.
-          await tx.trade.deleteMany({
-            where: { userId: req.userId!, broker: 'dhan', source: 'broker_sync' },
-          });
+      // 1. Date-scoped delete of previously synced trades for the fetched date range.
+      //    Uses fetchedDates from the adapter if available, otherwise falls back to
+      //    today's date for brokers that only return same-day data.
+      if (fetchedDates.length > 0) {
+        for (const dateStr of fetchedDates) {
+          await tx.$executeRaw`
+            DELETE FROM trades
+            WHERE user_id = ${req.userId!}::uuid
+              AND broker = ${broker}
+              AND source = 'broker_sync'
+              AND (date AT TIME ZONE 'Asia/Kolkata')::date = ${dateStr}::date
+          `;
         }
-        // else: incremental sync with no new dates (e.g. weekend / API no-data)
-        //       → skip delete entirely to prevent catastrophic data loss
-      } else if (broker === 'angelone') {
+      } else if (forceFullSync) {
+        // Full sync requested but adapter returned zero fetchedDates — wipe all synced trades.
+        await tx.trade.deleteMany({
+          where: { userId: req.userId!, broker, source: 'broker_sync' },
+        });
+      } else {
+        // Incremental sync with no date range (same-day trade book style, e.g. Angel One).
+        // Delete only today's synced trades to prevent stale duplicates.
         const todayStr = new Date().toISOString().split('T')[0];
         await tx.$executeRaw`
           DELETE FROM trades
           WHERE user_id = ${req.userId!}::uuid
-            AND broker = 'angelone'
+            AND broker = ${broker}
             AND source = 'broker_sync'
             AND (date AT TIME ZONE 'Asia/Kolkata')::date = ${todayStr}::date
         `;
-      } else if (broker === 'delta_exchange') {
-        if (fetchedDates.length > 0) {
-          for (const dateStr of fetchedDates) {
-            await tx.$executeRaw`
-              DELETE FROM trades
-              WHERE user_id = ${req.userId!}::uuid
-                AND broker = 'delta_exchange'
-                AND source = 'broker_sync'
-                AND (date AT TIME ZONE 'Asia/Kolkata')::date = ${dateStr}::date
-            `;
-          }
-        } else if (forceFullSync) {
-          await tx.trade.deleteMany({
-            where: { userId: req.userId!, broker: 'delta_exchange', source: 'broker_sync' },
-          });
-        }
       }
 
       // 2. Batch insert/upsert new trades
@@ -454,11 +358,11 @@ router.post('/sync/:broker', authenticate, async (req: AuthRequest, res: Respons
           where: { id: dbId },
           data: {
             exitPrice: rest.exitPrice,
-            quantity: rest.quantity,
-            pnl: rest.pnl,
-            charges: rest.charges,
-            netPnl: rest.netPnl,
-            status: rest.status,
+            quantity:  rest.quantity,
+            pnl:       rest.pnl,
+            charges:   rest.charges,
+            netPnl:    rest.netPnl,
+            status:    rest.status,
             updatedAt: new Date()
           },
         });

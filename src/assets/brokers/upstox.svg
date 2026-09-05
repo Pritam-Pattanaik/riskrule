@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="upstoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F3690" />
+      <stop offset="100%" stop-color="#8942A8" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="80" fill="url(#upstoxGrad)"/>
+  <path d="M120 130v80c0 44.18 35.82 80 80 80s80-35.82 80-80v-80" fill="none" stroke="#FFFFFF" stroke-width="45" stroke-linecap="round"/>
+</svg>
