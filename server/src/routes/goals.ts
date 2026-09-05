@@ -28,9 +28,17 @@ router.post('/', authenticate, async (req: any, res) => {
   }
 });
 
+// C-5 fix: Verify goal ownership before creating completion
 router.post('/:id/complete', authenticate, async (req: any, res) => {
   try {
     const { date, completed } = req.body;
+    // Verify the goal belongs to the authenticated user
+    const goal = await prisma.goal.findFirst({
+      where: { id: req.params.id, userId: req.userId }
+    });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
     const completion = await prisma.goalCompletion.create({
       data: { goalId: req.params.id, date: new Date(date), completed }
     });

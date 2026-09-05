@@ -12,7 +12,8 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<a
     });
     res.json(rules || null);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Trading rules error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -47,7 +48,8 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response): Promise<
 
     res.json(result);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Trading rules error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

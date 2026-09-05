@@ -5,8 +5,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function seedAdmin() {
-  const email = process.env.ADMIN_EMAIL || 'superadmin@RiskRules.in';
-  const password = process.env.ADMIN_PASSWORD || 'SuperAdmin123!';
+  // C-2 fix: No default credentials. ADMIN_EMAIL and ADMIN_PASSWORD must be set explicitly.
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) {
+    console.error('ERROR: ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required.');
+    console.error('Usage: ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=<strong-password> npx ts-node src/seed-admin.ts');
+    process.exit(1);
+  }
+  if (password.length < 12) {
+    console.error('ERROR: ADMIN_PASSWORD must be at least 12 characters long.');
+    process.exit(1);
+  }
   const fullName = 'System Super Admin';
 
   try {
