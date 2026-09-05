@@ -28,9 +28,15 @@ router.post('/', authenticate, async (req: any, res) => {
   }
 });
 
+// C-4 fix: Added userId ownership filter to prevent IDOR
 router.patch('/:id', authenticate, async (req: any, res) => {
   try {
     const { title, content, category, tags, isFavorite, isPinned, isArchived } = req.body;
+    // Verify ownership before updating
+    const existing = await prisma.note.findFirst({ where: { id: req.params.id, userId: req.userId } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
     const note = await prisma.note.update({
       where: { id: req.params.id },
       data: { title, content, category, tags, isFavorite, isPinned, isArchived, updatedAt: new Date() }
@@ -41,9 +47,13 @@ router.patch('/:id', authenticate, async (req: any, res) => {
   }
 });
 
+// C-4 fix: Added userId ownership filter to prevent IDOR
 router.delete('/:id', authenticate, async (req: any, res) => {
   try {
-    await prisma.note.delete({ where: { id: req.params.id } });
+    const result = await prisma.note.deleteMany({ where: { id: req.params.id, userId: req.userId } });
+    if (result.count === 0) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete note' });

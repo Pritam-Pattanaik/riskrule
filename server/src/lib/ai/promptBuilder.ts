@@ -142,7 +142,9 @@ ${sortedTrades.slice(0, 10).map(t => {
 RECENT JOURNAL ENTRIES:
 ${sortedJournals.slice(0, 5).map(j => {
   const d = typeof j.date === 'string' ? j.date.split('T')[0] : new Date(j.date).toISOString().split('T')[0];
-  return `[${d}] Bias: ${j.marketBias || 'None'} | Mood: ${j.mood || 'None'} | Reflection: ${j.reflection?.substring(0, 100) || 'None'}`;
+  // H-6 fix: Wrap user-supplied content in delimiters to mitigate prompt injection
+  const safeReflection = (j.reflection?.substring(0, 100) || 'None').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `[${d}] Bias: ${j.marketBias || 'None'} | Mood: ${j.mood || 'None'} | Reflection: <user_data>${safeReflection}</user_data>`;
 }).join('\n')}
 
 LIVE MARKET SNAPSHOT:

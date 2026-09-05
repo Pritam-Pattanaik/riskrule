@@ -18,7 +18,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
-  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  maxAge: 7 * 24 * 60 * 60 * 1000, // L-2 fix: 7 days (reduced from 30)
 };
 
 const signupSchema = z.object({
@@ -67,7 +67,7 @@ router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Re
       },
     });
 
-    const token = jwt.sign({ userId: newUser.id, v: newUser.tokenVersion }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: newUser.id, v: newUser.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, COOKIE_OPTIONS);
 
     res.status(201).json({
@@ -115,7 +115,7 @@ router.post('/login', lockService.authRateLimit(), async (req: Request, res: Res
       return;
     }
 
-    const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, COOKIE_OPTIONS);
 
     res.json({
@@ -151,17 +151,10 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise
       return;
     }
 
-    // ── Session Invalidation Check ──────────────────────────────────────
-    // If the JWT's token version is behind the user's current version,
-    // this session was issued before a password reset and must be rejected.
-    const jwtVersion = req.tokenVersion ?? 0;
-    if (jwtVersion < user.tokenVersion) {
-      res.clearCookie('token', COOKIE_OPTIONS);
-      res.status(401).json({ error: 'Session invalidated. Please log in again.' });
-      return;
-    }
+    // Token version check is now handled by the authenticate middleware (auth.ts L43-48).
+    // No duplicate check needed here.
 
-    const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, COOKIE_OPTIONS);
     res.json({
       token,
@@ -273,8 +266,8 @@ router.post('/forgot-password', lockService.authRateLimit(), async (req: Request
       },
     });
     if (!user) {
-      // Email not registered — inform the user explicitly
-      res.status(404).json({ error: 'No account found with this email address. Please check and try again.' });
+      // H-5 fix: Anti-enumeration — always return generic success
+      res.json(GENERIC_SUCCESS);
       return;
     }
 

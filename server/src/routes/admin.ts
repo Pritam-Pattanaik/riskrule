@@ -312,7 +312,13 @@ router.get('/users/:id/detail', authenticate, requireRoles(['SUPER_ADMIN']), asy
         trades: { orderBy: { date: 'desc' }, take: 50 },
         strategies: true,
         journalEntries: { orderBy: { date: 'desc' }, take: 20 },
-        brokerConnections: true,
+        // H-1 fix: Only select non-sensitive broker fields (exclude apiKey, apiSecret, accessToken, refreshToken, metadata)
+        brokerConnections: {
+          select: {
+            id: true, broker: true, clientId: true,
+            isActive: true, lastSyncedAt: true, createdAt: true,
+          }
+        },
         aiInsights: { orderBy: { createdAt: 'desc' }, take: 20 },
         coachMemories: true,
       }
@@ -323,7 +329,8 @@ router.get('/users/:id/detail', authenticate, requireRoles(['SUPER_ADMIN']), asy
       return;
     }
 
-    const { ...safeUser } = user;
+    // H-1 fix: Strip password hash and tokenVersion from response
+    const { password: _pwd, tokenVersion: _tv, ...safeUser } = user;
     res.json(safeUser);
   } catch (err: any) {
     console.error('Admin user detail error:', err);

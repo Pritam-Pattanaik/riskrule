@@ -152,7 +152,7 @@ router.post('/transcribe', authenticate, async (req: any, res) => {
     });
   } catch (error: any) {
     logger.error('[Voice STT] Transcription error', { error: error.message });
-    res.status(500).json({ error: error.message || 'Speech-to-text transcription failed' });
+    res.status(500).json({ error: 'Speech-to-text transcription failed' });
   }
 });
 

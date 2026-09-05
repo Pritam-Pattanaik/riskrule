@@ -118,7 +118,7 @@ router.post('/test', authenticate, async (req: any, res: Response) => {
     res.json({ success: true, notification });
   } catch (error: any) {
     console.error('Failed to dispatch test notification:', error);
-    res.status(500).json({ error: error.message || 'Failed to dispatch test notification' });
+    res.status(500).json({ error: 'Failed to dispatch test notification' });
   }
 });
 

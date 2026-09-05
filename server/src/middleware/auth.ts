@@ -2,22 +2,32 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db';
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_please_change';
+// C-3 fix: No fallback secret. Crash at startup if JWT_SECRET is missing or weak.
+const _jwtSecret = process.env.JWT_SECRET;
+if (!_jwtSecret || _jwtSecret.length < 32) {
+  throw new Error(
+    'FATAL: JWT_SECRET environment variable must be set to a cryptographically random value of at least 32 characters. ' +
+    'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"'
+  );
+}
+export const JWT_SECRET = _jwtSecret;
 
 export interface AuthRequest extends Request {
   userId?: string;
-  role?: string;
-  tokenVersion?: number;
+  userRole?: string;
 }
 
-export function authenticate(req: AuthRequest, res: Response, next: NextFunction): void {
+// Middleware to authenticate JWT
+export async function authenticate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   let token: string | undefined;
+
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
+    token = authHeader.slice(7);
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
-  } else if (req.query && req.query.token) {
+  } else if (req.query && req.query.token && req.path.includes('/stream')) {
+    // M-2 fix: Only accept query param tokens for SSE endpoints (EventSource can't send headers)
     token = req.query.token as string;
   }
 
@@ -27,12 +37,21 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; v?: number };
+    // L-1 fix: Explicitly specify HS256 to prevent algorithm confusion attacks
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { userId: string; v?: number };
+    
+    // Check token version for forced invalidation
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { id: true, role: true, tokenVersion: true } });
+    if (!user || (decoded.v !== undefined && decoded.v !== user.tokenVersion)) {
+      res.status(401).json({ error: 'Token invalidated' });
+      return;
+    }
+
     req.userId = decoded.userId;
-    req.tokenVersion = decoded.v ?? 0; // Old JWTs without v are treated as version 0
+    req.userRole = user.role;
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid or expired token' });
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
   }
 }
 
@@ -44,7 +63,7 @@ export function requireRoles(allowedRoles: string[]) {
         res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
         return;
       }
-      req.role = user.role;
+      req.userRole = user.role;
       next();
     } catch (err) {
       res.status(500).json({ error: 'Internal server error' });

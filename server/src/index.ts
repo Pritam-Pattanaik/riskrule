@@ -16,9 +16,9 @@ import csurf from 'csurf';
 dns.setDefaultResultOrder('ipv4first');
 
 // Allow self-signed / local TLS certs in development
-if (process.env.NODE_ENV !== 'production') {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+// H-4 fix: Removed global TLS certificate verification disable.
+// If needed for local dev with self-signed certs, use per-connection
+// TLS options instead of globally disabling certificate validation.
 
 import authRoutes from './routes/auth';
 import tradeRoutes from './routes/trades';
