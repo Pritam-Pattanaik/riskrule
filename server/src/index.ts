@@ -147,6 +147,16 @@ app.use('/api/news-engine', newsEngineRoutes);
 app.use('/api/v1/flow', flowRoutes);
 app.use('/api/voice', voiceRoutes);
 
+// Global Error Handler (catches CSRF errors and unhandled exceptions)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    res.status(403).json({ error: 'Invalid or missing CSRF token' });
+    return;
+  }
+  logger.error('[Unhandled Error]', { message: err.message, stack: err.stack });
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 // Start News Engine Pipeline (non-throwing — server boots regardless)
 startNewsEngine();
 marketWorker.start();
