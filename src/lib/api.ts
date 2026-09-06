@@ -27,13 +27,18 @@ function getToken(): string | null {
 
 let csrfToken: string | null = null;
 
+export function clearCsrfToken() {
+  csrfToken = null;
+}
+
 export async function getCsrfToken(): Promise<string> {
   if (csrfToken) return csrfToken;
   try {
     const res = await fetch(`${BASE_URL}/auth/csrf`, { credentials: 'include' });
+    if (!res.ok) throw new Error(`CSRF endpoint returned ${res.status}`);
     const data = await res.json();
-    csrfToken = data.csrfToken;
-    return csrfToken || '';
+    csrfToken = data.csrfToken || '';
+    return csrfToken;
   } catch (err) {
     console.error('Failed to fetch CSRF token', err);
     return '';
@@ -51,8 +56,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    'x-requested-with': 'XMLHttpRequest', // Legacy Anti-CSRF header
-    ...(csrf ? { 'CSRF-Token': csrf } : {}),
+    // csrf-csrf reads 'csrf-token' header
+    ...(csrf ? { 'csrf-token': csrf } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
@@ -62,6 +67,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     credentials: 'include',
     headers,
   });
+
+  // If CSRF token expired/invalid, clear it so next request fetches a fresh one
+  if (res.status === 403) {
+    clearCsrfToken();
+  }
 
   if (!res.ok) {
     const errData = await res.json().catch(() => ({ error: res.statusText }));
