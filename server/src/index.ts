@@ -1,24 +1,23 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: require('path').resolve(__dirname, '../../.env') });
+import path from 'path';
+
+// Load environment variables gracefully from available locations
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'server/.env') });
+
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
-import path from 'path';
 import dns from 'dns';
 import { logger } from './lib/logger';
 import helmet from 'helmet';
-import csurf from 'csurf';
+import { doubleCsrf } from 'csrf-csrf';
 
 // Force IPv4 resolution for Neon/Prisma stability
 dns.setDefaultResultOrder('ipv4first');
-
-// Allow self-signed / local TLS certs in development
-// H-4 fix: Removed global TLS certificate verification disable.
-// If needed for local dev with self-signed certs, use per-connection
-// TLS options instead of globally disabling certificate validation.
 
 import authRoutes from './routes/auth';
 import tradeRoutes from './routes/trades';
@@ -50,17 +49,7 @@ const app = express();
 // Initialize Sentry (wrapped in try-catch for resilience in serverless environments)
 if (process.env.SENTRY_DSN) {
   try {
-    Sentry.init({
-      dsn: process.env.SENTRY_DSN,
-      integrations: [
-        nodeProfilingIntegration(),
-      ],
-      // Tracing
-      tracesSampleRate: 1.0, //  Capture 100% of the transactions
-      // Set sampling rate for profiling - this is relative to tracesSampleRate
-      profilesSampleRate: 1.0,
-    });
-    // The request handler must be the first middleware on the app
+    Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
     Sentry.setupExpressErrorHandler(app);
   } catch (err) {
     console.warn('Sentry initialization failed (non-fatal):', err);
@@ -68,60 +57,69 @@ if (process.env.SENTRY_DSN) {
 }
 
 // Dynamic CORS configuration
-// In our strict same-origin architecture (Vite Proxy in Dev, Vercel Rewrites in Prod),
-// cross-origin requests are not needed. We only allow them if explicitly configured.
-app.use(cors({
-  origin: process.env.EXTERNAL_FRONTEND_URL || false,
-  credentials: true,
-}));
-
+app.use(cors({ origin: process.env.EXTERNAL_FRONTEND_URL || false, credentials: true }));
 app.use(express.json({ limit: '15mb' }));
 app.use(cookieParser());
 app.use(helmet());
 
-const csrfProtection = csurf({ 
-  cookie: { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', 
-    sameSite: 'lax' 
-  } 
+// ── CSRF Protection via csrf-csrf (double-submit cookie) ───────────────────────
+// Replaces deprecated `csurf` which crashed in Vercel serverless environments.
+const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'riskrule_csrf_fallback_2026_x99887766';
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
+  getSecret: () => CSRF_SECRET,
+  // In the double-submit pattern, the session identifier binds the token to the user.
+  // We use the auth cookie value (or an empty string for unauthenticated requests like login).
+  getSessionIdentifier: (req: express.Request) =>
+    (req.cookies?.['auth-token'] as string) || (req.cookies?.token as string) || '',
+  cookieName: 'csrf',
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  },
+  getCsrfTokenFromRequest: (req: express.Request) =>
+    (req.headers['csrf-token'] as string) ||
+    (req.headers['x-csrf-token'] as string) ||
+    (req.body?._csrf as string) || '',
 });
 
 // Logging middleware
 const morganFormat = process.env.NODE_ENV !== 'production' ? 'dev' : 'combined';
-app.use(
-  morgan(morganFormat, {
-    stream: {
-      write: (message: string) => logger.info(message.trim()),
-    },
-  })
-);
+app.use(morgan(morganFormat, { stream: { write: (msg: string) => logger.info(msg.trim()) } }));
 
-// Static public files & interactive API tester
+// Static files
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.get('/', (_req, res) => res.redirect('/api-tester.html'));
 
-// CSRF Protection — applied to all mutating API routes.
-// SSE streaming endpoints are excluded because EventSource does not support
-// custom headers and cannot send CSRF tokens. These GET-only endpoints rely
-// on the JWT httpOnly cookie for authentication (M4 fix).
-const SSE_PATHS = ['/api/market/stream', '/api/market/ai-summary/stream', '/api/v1/flow/stream'];
-app.use('/api', (req, res, next) => {
-  if (SSE_PATHS.some(p => req.path === p.replace('/api', ''))) {
-    return next(); // Skip CSRF for SSE endpoints
-  }
-  return csrfProtection(req, res, next);
-});
-
-// CSRF Token endpoint
+// CSRF Token endpoint — must be registered BEFORE the CSRF protection middleware
+// so it can set the cookie and generate the token on first visit.
 app.get('/api/auth/csrf', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
+  try {
+    const token = generateCsrfToken(req, res);
+    res.json({ csrfToken: token });
+  } catch (err: any) {
+    logger.error('[CSRF] Token generation failed', { error: err?.message });
+    res.status(500).json({ error: 'Failed to generate CSRF token' });
+  }
 });
 
-// Health check endpoint
+// Health check (no CSRF needed)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Apply CSRF protection to mutating API calls only.
+// SSE streaming endpoints are excluded (EventSource cannot send custom headers).
+const SSE_PATHS = ['/market/stream', '/market/ai-summary/stream', '/v1/flow/stream'];
+app.use('/api', (req, res, next) => {
+  const method = req.method.toUpperCase();
+  if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return next();
+  if (SSE_PATHS.some(p => req.path.startsWith(p))) return next();
+  return doubleCsrfProtection(req, res, next);
+});
+
+
 
 import { marketAIService } from './market/MarketAIService';
 
@@ -157,12 +155,18 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start News Engine Pipeline (non-throwing — server boots regardless)
-startNewsEngine();
-marketWorker.start();
-marketAIService.startBackgroundWorker();
-flowDataWorker.start(['NIFTY', 'BANKNIFTY', 'FINNIFTY']);
-signalWorker.start(['NIFTY', 'BANKNIFTY', 'FINNIFTY']);
+// Start News Engine Pipeline (only in persistent dev server or if explicitly enabled)
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_BACKGROUND_WORKERS === 'true') {
+  try {
+    startNewsEngine();
+    marketWorker.start();
+    marketAIService.startBackgroundWorker();
+    flowDataWorker.start(['NIFTY', 'BANKNIFTY', 'FINNIFTY']);
+    signalWorker.start(['NIFTY', 'BANKNIFTY', 'FINNIFTY']);
+  } catch (workerErr: any) {
+    logger.warn('[Workers] Failed to start background workers (non-fatal):', { error: workerErr?.message });
+  }
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => { stopNewsEngine(); marketWorker.stop(); flowDataWorker.stop(); signalWorker.stop(); process.exit(0); });
