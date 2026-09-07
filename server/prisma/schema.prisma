@@ -20,6 +20,18 @@ model User {
   updatedAt         DateTime? @default(now()) @map("updated_at")
   tokenVersion      Int       @default(0) @map("token_version")
 
+  // Dynamic Referral & Affiliate Program Fields
+  referralCode       String?   @unique @map("referral_code")
+  referredById       String?   @map("referred_by_id") @db.Uuid
+  plan               String    @default("FREE")
+  affiliateClicks    Int       @default(0) @map("affiliate_clicks")
+
+  referrer           User?     @relation("UserReferrals", fields: [referredById], references: [id])
+  referredUsers      User[]    @relation("UserReferrals")
+  affiliateEarnings  AffiliateEarning[] @relation("AffiliateRecipient")
+  referralRewards    AffiliateEarning[] @relation("ReferredUserSource")
+  affiliatePayouts   AffiliatePayout[]
+
   trades             Trade[]
   strategies         Strategy[]
   journalEntries     JournalEntry[]
@@ -454,3 +466,39 @@ model AlertHistory {
   @@index([userId, wasRead])
   @@map("alert_history")
 }
+
+model AffiliateEarning {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  affiliateId    String   @map("affiliate_id") @db.Uuid
+  referredUserId String   @map("referred_user_id") @db.Uuid
+  amount         Float    @default(500)
+  currency       String   @default("INR")
+  planType       String   @default("PRO") @map("plan_type")
+  description    String?  @default("Pro Upgrade Referral Bonus")
+  status         String   @default("PAID")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  affiliate      User     @relation("AffiliateRecipient", fields: [affiliateId], references: [id], onDelete: Cascade)
+  referredUser   User     @relation("ReferredUserSource", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@map("affiliate_earnings")
+}
+
+model AffiliatePayout {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  affiliateId    String   @map("affiliate_id") @db.Uuid
+  amount         Float
+  currency       String   @default("INR")
+  referralsCount Int      @default(1) @map("referrals_count")
+  payoutMethod   String   @default("Bank Transfer (••••4092)") @map("payout_method")
+  status         String   @default("Paid")
+  invoiceId      String   @map("invoice_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  affiliate      User     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@map("affiliate_payouts")
+}
+

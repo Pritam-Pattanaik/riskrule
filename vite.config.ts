@@ -8,7 +8,18 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
-        changeOrigin: true
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err, _req, res) => {
+            // Gracefully handle backend startup / restart without unhandled error dump
+            if ((err as any)?.code === 'ECONNREFUSED') {
+              if (res && !res.headersSent && typeof (res as any).writeHead === 'function') {
+                (res as any).writeHead(503, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Backend server is booting up, please retry shortly' }));
+              }
+            }
+          });
+        },
       }
     }
   },

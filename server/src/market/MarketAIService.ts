@@ -5,7 +5,7 @@
  * 1. Collect live MarketQuotes from MarketDataService
  * 2. Collect recent NewsArticles from YahooNewsService
  * 3. Build structured context string
- * 4. Call Groq openai/gpt-oss-120b
+ * 4. Call Groq openai/gpt-oss-20b
  * 5. Stream response to client via SSE
  *
  * Compliance: All responses include SEBI educational disclaimer.
@@ -28,7 +28,11 @@ function getGroq(): Groq {
   }
   return groqInstance;
 }
-const MODEL = 'openai/gpt-oss-120b';
+const MODEL = 'openai/gpt-oss-20b';
+
+// Circuit breaker for Groq rate limits (200K TPD budget)
+let marketAiCbUntil = 0;
+const MARKET_AI_CB_MS = 5 * 60 * 1000; // 5-minute cooldown
 
 // ─── Context Builder ─────────────────────────────────────────────────────────
 
@@ -171,6 +175,13 @@ export class MarketAIService {
       return null;
     }
 
+    // Circuit breaker: skip Groq call entirely when rate-limited
+    if (Date.now() < marketAiCbUntil) {
+      logger.debug('[MarketAI] Circuit breaker active — serving rule-based fallback');
+      const quotes = await marketDataService.getQuotes();
+      return quotes.length > 0 ? this.generateRuleBasedFallback(quotes) : null;
+    }
+
     this.isGenerating = true;
 
     const [quotes, news] = await Promise.all([
@@ -241,6 +252,13 @@ export class MarketAIService {
         clearTimeout(timeoutId);
         attempt++;
         logger.warn(`[MarketAI] Groq API attempt ${attempt} failed: ${err.message}`);
+        const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Rate limit');
+        if (is429) {
+          marketAiCbUntil = Date.now() + MARKET_AI_CB_MS;
+          logger.warn(`[MarketAI] Groq 429 rate limit — circuit breaker active for 5m. Serving rule-based fallback.`);
+          this.isGenerating = false;
+          return this.generateRuleBasedFallback(quotes);
+        }
         if (attempt >= maxRetries) {
           logger.error(`[MarketAI] Groq API failed after ${maxRetries} attempts`);
           this.isGenerating = false;

@@ -20,6 +20,8 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
   private accessToken: string | null = null;
   private isUnauthorized = false;
   private lastError: string | null = null;
+  private lastFailedToken: string | null = null;
+  private unauthorizedCooldownUntil = 0;
 
   constructor(clientId?: string, accessToken?: string) {
     this.clientId = clientId || process.env.DHAN_CLIENT_ID || null;
@@ -32,16 +34,23 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
     logger.info(`[DhanOptionsProvider] Initialized (has broker credentials: ${Boolean(this.accessToken)})`);
   }
 
-  async reloadCredentials(): Promise<boolean> {
+  async reloadCredentials(force = false): Promise<boolean> {
     try {
       const envClient = process.env.DHAN_CLIENT_ID;
       const envToken = process.env.DHAN_ACCESS_TOKEN;
 
       if (envClient && envToken) {
+        if (!force && envToken === this.lastFailedToken && Date.now() < this.unauthorizedCooldownUntil) {
+          return false;
+        }
         this.clientId = envClient;
         this.accessToken = envToken;
-        this.isUnauthorized = false;
-        this.lastError = null;
+        if (envToken !== this.lastFailedToken) {
+          this.isUnauthorized = false;
+          this.lastError = null;
+          this.lastFailedToken = null;
+          this.unauthorizedCooldownUntil = 0;
+        }
         return true;
       }
 
@@ -65,10 +74,17 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
       }
 
       if (clientId && token) {
+        if (!force && token === this.lastFailedToken && Date.now() < this.unauthorizedCooldownUntil) {
+          return false;
+        }
         this.clientId = clientId;
         this.accessToken = token;
-        this.isUnauthorized = false;
-        this.lastError = null;
+        if (token !== this.lastFailedToken) {
+          this.isUnauthorized = false;
+          this.lastError = null;
+          this.lastFailedToken = null;
+          this.unauthorizedCooldownUntil = 0;
+        }
         return true;
       }
 
@@ -166,6 +182,11 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
       await this.connect();
     }
 
+    // Skip polling if in unauthorized cooldown
+    if (Date.now() < this.unauthorizedCooldownUntil) {
+      return;
+    }
+
     if (!this.hasValidCredentials()) {
       const reloaded = await this.reloadCredentials();
       if (!reloaded) return;
@@ -203,13 +224,15 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
         if (res.status === 401) {
           const errText = await res.text().catch(() => '');
           this.isUnauthorized = true;
+          this.lastFailedToken = this.accessToken;
+          this.unauthorizedCooldownUntil = Date.now() + 10 * 60 * 1000; // 10 minute cooldown
           if (errText.includes('806') || errText.toLowerCase().includes('data api')) {
             this.lastError = 'Dhan Data APIs not enabled on this account. Enable Data APIs on web.dhan.co (My Profile → DhanHQ API → Consent for Data APIs) or generate a new token.';
           } else {
             this.lastError = 'Dhan SuperAPI session token has expired. Daily re-authentication is required in Settings.';
           }
-          logger.warn(`[DhanOptionsProvider] ${this.lastError}`);
-          continue;
+          logger.warn(`[DhanOptionsProvider] ${this.lastError} (Polling paused for 10m until updated)`);
+          break; // Stop querying remaining symbols for this poll cycle
         }
 
         if (res.status === 429) {

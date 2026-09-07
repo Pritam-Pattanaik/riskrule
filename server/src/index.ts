@@ -1,10 +1,17 @@
-import dotenv from 'dotenv';
 import path from 'path';
+import dotenv from 'dotenv';
 
 // Load environment variables gracefully from available locations
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(process.cwd(), 'server/.env') });
+dotenv.config();
+
+// Allow self-signed / local TLS certs in development
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 import * as Sentry from '@sentry/node';
 import express from 'express';
@@ -39,6 +46,7 @@ import notificationRoutes from './routes/notifications';
 import newsEngineRoutes from './routes/news-engine';
 import flowRoutes from './routes/flow.routes';
 import voiceRoutes from './routes/voice';
+import affiliateRoutes from './routes/affiliate';
 import { startNewsEngine, stopNewsEngine } from './news-engine';
 import { marketWorker } from './services/MarketWorker';
 import { flowDataWorker } from './flow/workers/FlowDataWorker';
@@ -111,7 +119,7 @@ app.get('/api/health', (_req, res) => {
 
 // Apply CSRF protection to mutating API calls only.
 // SSE streaming endpoints are excluded (EventSource cannot send custom headers).
-const SSE_PATHS = ['/market/stream', '/market/ai-summary/stream', '/v1/flow/stream'];
+const SSE_PATHS = ['/market/stream', '/market/ai-summary/stream', '/v1/flow/stream', '/affiliate/click'];
 app.use('/api', (req, res, next) => {
   const method = req.method.toUpperCase();
   if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return next();
@@ -141,6 +149,7 @@ app.use('/api/reflections', reflectionsRoutes);
 app.use('/api/goals', goalsRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/affiliate', affiliateRoutes);
 app.use('/api/news-engine', newsEngineRoutes);
 app.use('/api/v1/flow', flowRoutes);
 app.use('/api/voice', voiceRoutes);

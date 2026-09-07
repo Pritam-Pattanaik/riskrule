@@ -11,6 +11,7 @@ import { logger } from '../lib/logger';
 import { cache } from '../lib/redis';
 import { isValidEmailFormat, isDisposableEmail } from '../lib/disposableEmail';
 import { isValidPhoneNumber, normalizePhoneNumber } from '../lib/phoneValidation';
+import { generateReferralCode } from './affiliate';
 
 const router = Router();
 
@@ -37,17 +38,18 @@ const signupSchema = z.object({
     }),
   password: z.string().min(8, 'Password must be at least 8 characters').regex(/[A-Z]/, 'Password must contain at least one uppercase letter').regex(/[0-9]/, 'Password must contain at least one number'),
   fullName: z.string().optional(),
+  referralCode: z.string().optional(),
 });
 
-// POST /api/auth/signup
-router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Response): Promise<void> => {
+// POST /api/auth/signup & POST /api/auth/register (alias)
+const handleSignup = async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = signupSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.issues[0].message });
       return;
     }
-    const { email, password, fullName, phoneNumber } = parsed.data;
+    const { email, password, fullName, phoneNumber, referralCode } = parsed.data;
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
@@ -57,13 +59,36 @@ router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Re
       return;
     }
 
+    // Check if user was referred by another trader
+    let referrerId: string | null = null;
+    const incomingRef = (referralCode || (req.query.ref as string) || (req.body.ref as string) || '').trim().toUpperCase();
+    if (incomingRef) {
+      const referrer = await (prisma as any).user.findUnique({
+        where: { referralCode: incomingRef },
+      });
+      if (referrer) {
+        referrerId = referrer.id;
+      }
+    }
+
+    // Generate a fixed, unique referral code for this new user
+    let userRefCode = generateReferralCode(fullName, normalizedEmail);
+    let existingCode = await (prisma as any).user.findUnique({ where: { referralCode: userRefCode } });
+    while (existingCode) {
+      userRefCode = generateReferralCode(fullName, normalizedEmail);
+      existingCode = await (prisma as any).user.findUnique({ where: { referralCode: userRefCode } });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = await prisma.user.create({
+    const newUser = await (prisma as any).user.create({
       data: {
         email: normalizedEmail,
         password: hashedPassword,
         fullName: fullName || null,
         phoneNumber: normalizedPhone,
+        referralCode: userRefCode,
+        referredById: referrerId,
+        plan: 'FREE',
       },
     });
 
@@ -80,13 +105,19 @@ router.post('/signup', lockService.authRateLimit(), async (req: Request, res: Re
         avatarUrl: newUser.avatarUrl,
         timezone: newUser.timezone,
         role: newUser.role,
+        referralCode: newUser.referralCode,
+        plan: newUser.plan || 'FREE',
       },
     });
   } catch (err: any) {
     console.error('Signup error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
+
+router.post('/signup', lockService.authRateLimit(), handleSignup);
+router.post('/register', lockService.authRateLimit(), handleSignup);
+
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -145,14 +176,25 @@ router.post('/logout', (_req: Request, res: Response): void => {
 // GET /api/auth/me
 router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+    let user = await (prisma as any).user.findUnique({ where: { id: req.userId! } });
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    // Token version check is now handled by the authenticate middleware (auth.ts L43-48).
-    // No duplicate check needed here.
+    // Ensure user has a fixed permanent referral code
+    if (!user.referralCode) {
+      let userRefCode = generateReferralCode(user.fullName, user.email);
+      let existingCode = await (prisma as any).user.findUnique({ where: { referralCode: userRefCode } });
+      while (existingCode) {
+        userRefCode = generateReferralCode(user.fullName, user.email);
+        existingCode = await (prisma as any).user.findUnique({ where: { referralCode: userRefCode } });
+      }
+      user = await (prisma as any).user.update({
+        where: { id: user.id },
+        data: { referralCode: userRefCode },
+      });
+    }
 
     const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, COOKIE_OPTIONS);
@@ -166,6 +208,8 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise
         avatarUrl: user.avatarUrl,
         timezone: user.timezone,
         role: user.role,
+        referralCode: user.referralCode,
+        plan: user.plan || 'FREE',
       },
     });
   } catch (err: any) {
@@ -350,7 +394,7 @@ router.post('/reset-password', lockService.authRateLimit(), async (req: Request,
     // ── Validate Expiry ─────────────────────────────────────────────────
     if (new Date() > resetRecord.expiresAt) {
       // Clean up expired token
-      await prisma.passwordResetToken.delete({ where: { id: resetRecord.id } }).catch(() => {});
+      await prisma.passwordResetToken.delete({ where: { id: resetRecord.id } }).catch(() => { });
       res.status(400).json({ error: 'Reset token has expired. Please request a new one.' });
       return;
     }

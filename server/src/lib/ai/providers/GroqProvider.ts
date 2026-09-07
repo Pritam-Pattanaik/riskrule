@@ -4,8 +4,8 @@ import { logger } from '../../logger';
 
 export class GroqProvider implements AIProvider {
   private groq: Groq;
-  private primaryModel = 'openai/gpt-oss-120b';
-  private fallbackModel = 'openai/gpt-oss-20b';
+  private primaryModel = 'openai/gpt-oss-20b';
+  private fallbackModel = 'qwen/qwen3.6-27b';
 
   constructor() {
     const apiKey = process.env.GROQ_API_KEY;

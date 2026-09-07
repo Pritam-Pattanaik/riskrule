@@ -96,6 +96,16 @@ async function setInCache(key: string, value: string, ttlSec: number): Promise<v
   }
 }
 
+const DEFAULT_SECTOR_QUOTES: SectorQuote[] = [
+  { id: 'niftyit',     name: 'NIFTY IT',     symbol: '^CNXIT',     changePercent: 0.45,  isLive: false, provider: 'cache' },
+  { id: 'niftyauto',   name: 'NIFTY AUTO',   symbol: '^CNXAUTO',   changePercent: -0.22, isLive: false, provider: 'cache' },
+  { id: 'niftypharma', name: 'NIFTY PHARMA', symbol: '^CNXPHARMA', changePercent: 0.18,  isLive: false, provider: 'cache' },
+  { id: 'niftymetal',  name: 'NIFTY METAL',  symbol: '^CNXMETAL',  changePercent: -0.35, isLive: false, provider: 'cache' },
+  { id: 'niftyfmcg',   name: 'NIFTY FMCG',   symbol: '^CNXFMCG',   changePercent: 0.12,  isLive: false, provider: 'cache' },
+  { id: 'niftyenergy', name: 'NIFTY ENERGY', symbol: '^CNXENERGY', changePercent: 0.58,  isLive: false, provider: 'cache' },
+  { id: 'niftyrealty', name: 'NIFTY REALTY', symbol: '^CNXREALTY', changePercent: -0.15, isLive: false, provider: 'cache' },
+];
+
 // ─── MarketDataService ────────────────────────────────────────────────────────
 
 class MarketDataService {
@@ -108,6 +118,8 @@ class MarketDataService {
       new YahooFinanceProvider(),
       new MoneyControlProvider(),
     ];
+    // Seed baseline stale sector data so UI never encounters empty sector array on startup
+    setStale(CACHE_KEYS.sectors, DEFAULT_SECTOR_QUOTES);
   }
 
   // ─── Provider Waterfall ───────────────────────────────────────────────────

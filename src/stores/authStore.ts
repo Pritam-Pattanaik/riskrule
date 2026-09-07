@@ -9,6 +9,8 @@ interface Profile {
   avatarUrl: string | null;
   timezone: string | null;
   role: 'USER' | 'SUB_ADMIN' | 'ADMIN' | 'SUPER_ADMIN';
+  referralCode?: string | null;
+  plan?: string;
 }
 
 interface AuthState {
@@ -19,7 +21,7 @@ interface AuthState {
   loading: boolean;
   initialize: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string, phoneNumber: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string, phoneNumber: string, referralCode?: string) => Promise<{ error: string | null }>;
   signOut: () => void;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: string | null }>;
   deleteAccount: () => Promise<{ error: string | null }>;
@@ -65,9 +67,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signUp: async (email, password, fullName, phoneNumber) => {
+  signUp: async (email, password, fullName, phoneNumber, referralCode) => {
     try {
-      const data = await api.post<{ token: string; user: Profile }>('/auth/signup', { email, password, fullName, phoneNumber });
+      const data = await api.post<{ token: string; user: Profile }>('/auth/signup', { email, password, fullName, phoneNumber, referralCode });
       localStorage.setItem('token', data.token);
       set({ token: data.token, session: { token: data.token }, user: data.user, profile: data.user });
       return { error: null };

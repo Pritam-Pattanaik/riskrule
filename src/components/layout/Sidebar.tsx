@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, LayoutDashboard, BarChart3, BookOpen, Brain,
   Target, Settings, Shield, Users, Link2, ScrollText, Globe, Zap,
-  ChevronLeft, ChevronRight, X, Search, Bell
+  ChevronLeft, ChevronRight, X, Search, Bell, Handshake
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -21,6 +21,7 @@ type NavItem = {
   path: string; 
   icon: React.ElementType; 
   hasNotification?: boolean;
+  badge?: string;
 };
 
 type NavGroup = {
@@ -76,6 +77,12 @@ export default function Sidebar() {
         label: 'AI',
         items: [
           { name: 'Lunar AI',   path: '/app/ai-coach',    icon: Brain, hasNotification: true },
+        ]
+      },
+      {
+        label: 'GROW',
+        items: [
+          { name: 'Earn with RiskRules', path: '/app/affiliate', icon: Handshake, badge: 'NEW' },
         ]
       },
       {
@@ -302,12 +309,18 @@ export default function Sidebar() {
                         animate={{ opacity: 1, width: 'auto' }}
                         exit={{ opacity: 0, width: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="truncate text-[13px]"
+                        className="truncate text-[13px] flex-1 text-left"
                       >
                         {item.name}
                       </motion.span>
                     )}
                   </AnimatePresence>
+
+                  {item.badge && desktopSidebarExpanded && (
+                    <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-[#6366F1] text-white shadow-xs shrink-0">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
 
@@ -322,9 +335,14 @@ export default function Sidebar() {
                     <Tooltip.Content 
                       side="right" 
                       sideOffset={14} 
-                      className="bg-surface-elevated border border-border px-3 py-1.5 rounded-md shadow-floating text-xs font-medium text-primary z-50 animate-in fade-in zoom-in-95"
+                      className="bg-surface-elevated border border-border px-3 py-1.5 rounded-md shadow-floating text-xs font-medium text-primary z-50 animate-in fade-in zoom-in-95 flex items-center gap-1.5"
                     >
-                      {item.name}
+                      <span>{item.name}</span>
+                      {item.badge && (
+                        <span className="px-1 py-0.5 rounded text-[8px] font-bold bg-[#6366F1] text-white uppercase leading-none">
+                          {item.badge}
+                        </span>
+                      )}
                     </Tooltip.Content>
                   </Tooltip.Portal>
                 </Tooltip.Root>
