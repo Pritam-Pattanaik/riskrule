@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { api } from '../lib/api';
 
+/** Canonical app origin — uses VITE_APP_URL if set, otherwise falls back to current browser origin */
+const getAppOrigin = () =>
+  (import.meta.env.VITE_APP_URL || window.location.origin).replace(/\/$/, '');
+
 export interface ReferredUser {
   id: string;
   name: string;
@@ -75,7 +79,7 @@ interface AffiliateState {
 
 export const useAffiliateStore = create<AffiliateState>((set, get) => ({
   referralCode: 'RISKRULE',
-  referralLink: `${window.location.origin}/r/RISKRULE`,
+  referralLink: `${getAppOrigin()}/r/RISKRULE`,
   commissionPercent: 20,
   monthlyRewardPerPro: 400,
   fixedRewardAmount: 400,
@@ -111,7 +115,7 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       const data = await api.get<any>('/affiliate/stats');
       set({
         referralCode: data.referralCode || 'RISKRULE',
-        referralLink: data.referralLink || `${window.location.origin}/r/${data.referralCode}`,
+        referralLink: `${getAppOrigin()}/r/${data.referralCode || 'RISKRULE'}`,
         commissionPercent: data.commissionPercent || 20,
         monthlyRewardPerPro: data.monthlyRewardPerPro || 400,
         fixedRewardAmount: data.monthlyRewardPerPro || data.fixedRewardAmount || 400,
@@ -137,7 +141,7 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       if (data.referralCode) {
         set({
           referralCode: data.referralCode,
-          referralLink: `${window.location.origin}/r/${data.referralCode}`,
+          referralLink: `${getAppOrigin()}/r/${data.referralCode}`,
         });
         return { success: true };
       }
