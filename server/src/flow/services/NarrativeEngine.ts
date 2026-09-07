@@ -21,7 +21,12 @@ import { logger } from '../../lib/logger';
 import { redis } from '../../lib/redis';
 import { FlowIntelligence } from './SignalEngine';
 
-const MODEL = 'openai/gpt-oss-120b';
+const PRIMARY_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
+const FALLBACK_MODEL = 'qwen/qwen3.6-27b';
+
+// Circuit breaker to prevent 429 rate-limit flood on Groq free tier
+let circuitBreakerUntil = 0;
+let lastRateLimitWarning = 0;
 
 // ── Narrative output schema ───────────────────────────────────────────────────
 
@@ -92,6 +97,16 @@ export class NarrativeEngine {
       return this.buildFallbackNarrative(intelligence);
     }
 
+    // ── Circuit Breaker check for Groq rate limits (429) ────────────────────
+    if (Date.now() < circuitBreakerUntil) {
+      if (Date.now() - lastRateLimitWarning > 60_000) {
+        const remainingSec = Math.max(1, Math.round((circuitBreakerUntil - Date.now()) / 1000));
+        logger.warn(`[NarrativeEngine] Groq rate-limit circuit breaker active (${remainingSec}s remaining) — serving deterministic fallback narrative`);
+        lastRateLimitWarning = Date.now();
+      }
+      return this.buildFallbackNarrative(intelligence);
+    }
+
     const cacheKey = narrativeCacheKey(
       intelligence.symbol,
       intelligence.overallBias,
@@ -145,18 +160,37 @@ export class NarrativeEngine {
     try {
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-      const completion = await groq.chat.completions.create({
-        model:    MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user',   content: JSON.stringify(flowSummary) },
-        ],
-        temperature:     0.1,
-        max_tokens:      400,
-        response_format: { type: 'json_object' },
-      });
+      let completion: any;
+      try {
+        completion = await groq.chat.completions.create({
+          model:    PRIMARY_MODEL,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user',   content: JSON.stringify(flowSummary) },
+          ],
+          temperature:     0.1,
+          max_tokens:      350,
+          response_format: { type: 'json_object' },
+        });
+      } catch (primaryErr: any) {
+        // If primary model failed (e.g. rate limit / model unavailable), try lightweight fallback model
+        if (primaryErr?.status === 429 || primaryErr?.message?.includes('429')) {
+          throw primaryErr; // let outer catch trigger circuit breaker
+        }
+        logger.warn(`[NarrativeEngine] Primary model (${PRIMARY_MODEL}) failed: ${primaryErr.message}. Trying ${FALLBACK_MODEL}`);
+        completion = await groq.chat.completions.create({
+          model:    FALLBACK_MODEL,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user',   content: JSON.stringify(flowSummary) },
+          ],
+          temperature:     0.1,
+          max_tokens:      350,
+          response_format: { type: 'json_object' },
+        });
+      }
 
-      const raw = completion.choices[0]?.message?.content;
+      const raw = completion?.choices?.[0]?.message?.content;
       if (!raw) throw new Error('Empty LLM response');
 
       const parsed = JSON.parse(raw);
@@ -190,7 +224,14 @@ export class NarrativeEngine {
       return result;
 
     } catch (error: any) {
-      logger.error(`[NarrativeEngine] LLM call failed: ${error.message}`);
+      const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Rate limit');
+      if (is429) {
+        // Cooldown for 5 minutes so we don't spam Groq API every 10 seconds
+        circuitBreakerUntil = Date.now() + 5 * 60 * 1000;
+        logger.warn(`[NarrativeEngine] Groq 429 rate limit exceeded. Circuit breaker active for 5m. Serving deterministic signal narrative.`);
+      } else {
+        logger.error(`[NarrativeEngine] LLM call failed: ${error.message}`);
+      }
       // Always return something — fall back to structured narrative
       return this.buildFallbackNarrative(intelligence);
     }

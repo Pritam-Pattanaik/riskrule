@@ -48,11 +48,11 @@ export const AI_MODELS = {
   SCORING_PROMPT_VERSION: 'scoring-v1.0',
 
   /** 
-   * Default/Fallback Provider: Groq (openai/gpt-oss-120b)
+   * Default/Fallback Provider: Groq (openai/gpt-oss-20b)
    * This is used as the default for both Triage and Scoring if ANTHROPIC_API_KEY is not set.
    * Switching to Claude later requires only adding ANTHROPIC_API_KEY to the environment.
    */
-  FALLBACK_MODEL: 'openai/gpt-oss-120b',
+  FALLBACK_MODEL: 'openai/gpt-oss-20b',
 
   /** Max tokens for triage response — keep small to control cost */
   TRIAGE_MAX_TOKENS: 150,

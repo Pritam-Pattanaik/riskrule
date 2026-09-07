@@ -29,6 +29,8 @@ const AICoach = React.lazy(() => import('./pages/AICoach'));
 const Strategies = React.lazy(() => import('./pages/Strategies'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const Flow = React.lazy(() => import('./pages/Flow'));
+const Affiliate = React.lazy(() => import('./pages/Affiliate'));
+const ReferralRedirect = React.lazy(() => import('./pages/ReferralRedirect'));
 const Login = React.lazy(() => import('./pages/auth/Login'));
 const Signup = React.lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'));
@@ -103,6 +105,7 @@ function MainLayout() {
                   <Route path="/strategies" element={<Strategies />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/flow" element={<Flow />} />
+                  <Route path="/affiliate" element={<Affiliate />} />
                   <Route path="/system-health" element={<SystemHealth />} />
                   <Route path="/admin/*" element={<Navigate to="/app/admin" replace />} />
                   <Route path="*" element={<Navigate to="/app" replace />} />
@@ -153,9 +156,17 @@ export default function App() {
 
         {/* Auth Pages (Standalone Layout) */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signin" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/register" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Referral Direct Links (e.g. /r/CODE) */}
+        <Route path="/r/:code" element={<ReferralRedirect />} />
+
+        {/* Public or convenience redirect for affiliate */}
+        <Route path="/affiliate" element={<Navigate to="/app/affiliate" replace />} />
 
         {/* Protected Dashboard App */}
         <Route path="/app/*" element={
@@ -182,6 +193,9 @@ export default function App() {
           <Route path="settings" element={<AdminSystemSettings />} />
           <Route path="*" element={<Navigate to="/app/admin" replace />} />
         </Route>
+
+        {/* Global Catch-all fallback to prevent blank/black screen on unmatched routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
     <Toaster position="bottom-right" richColors expand={false} />

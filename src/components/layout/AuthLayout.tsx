@@ -22,10 +22,10 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="flex min-h-screen w-full bg-canvas text-primary font-sans selection:bg-iris/25">
+    <div className="flex h-screen w-full bg-canvas text-primary font-sans selection:bg-iris/25 overflow-hidden">
 
       {/* ── Left Panel — Institutional Showcase (Desktop Only) ── */}
-      <div className="hidden lg:flex w-[48%] max-w-[620px] flex-col justify-between relative overflow-hidden bg-surface-1 border-r border-border p-12 lg:p-14">
+      <div className="hidden lg:flex w-[48%] max-w-[620px] h-full flex-col justify-between relative overflow-hidden bg-surface-1 border-r border-border p-12 lg:p-14">
         {/* Zero-CPU Ambient CSS Glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-accent/15 rounded-full blur-[140px] pointer-events-none -z-10" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-iris/15 rounded-full blur-[120px] pointer-events-none -z-10" />
@@ -43,17 +43,13 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
 
         {/* Middle Core Value Prop & Audited Quote */}
         <div className="relative z-10 my-auto py-10 space-y-8">
-          <div className="space-y-4 max-w-md">
+          <div className="space-y-4 max-w-md text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-border text-xs font-mono-stat font-bold text-success">
               <Zap size={13} className="text-success" />
               <span>SUB-SECOND BROKER INTEGRATION READY</span>
             </div>
-            <h1 className="font-display text-4xl lg:text-5xl font-extrabold text-primary tracking-tight leading-[1.08]">
-              Discipline over dopamine.
-            </h1>
-            <p className="text-base text-secondary leading-relaxed font-normal">
-              Join quantitative speculators and funded prop firm traders utilizing mathematically verified R:R expectancy and real-time behavioral guardrails.
-            </p>
+            <h1 className="font-display text-4xl lg:text-5xl font-extrabold text-primary tracking-tight leading-[1.08]">Discipline over dopamine.</h1>
+            <p className="text-base text-secondary leading-relaxed font-normal">Join quantitative speculators and funded prop firm traders utilizing mathematically verified R:R expectancy and real-time behavioral guardrails.</p>
           </div>
 
           {/* Institutional Testimonial Card */}
@@ -91,7 +87,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       </div>
 
       {/* ── Right Panel — Interactive Auth Form ── */}
-      <div className="flex-1 flex flex-col relative bg-canvas items-center justify-center p-6 sm:p-12 min-h-screen">
+      <div className="flex-1 flex flex-col relative bg-canvas items-center justify-center p-6 sm:p-12 h-full overflow-y-auto">
         
         {/* Mobile Header Logo */}
         <div className="lg:hidden absolute top-6 left-6 flex items-center justify-between w-[calc(100%-3rem)]">

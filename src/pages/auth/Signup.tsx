@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Eye, EyeOff, Mail, Lock, User, Phone, Check, X, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { Input } from '../../components/ui/Input';
@@ -39,6 +39,7 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(0);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Email validation & disposable check
   const emailTrimmed = email.trim();
@@ -72,24 +73,41 @@ export default function Signup() {
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlRef = searchParams.get('ref') || searchParams.get('r');
+  const [referralCode, setReferralCode] = useState<string>(() => {
+    return urlRef || localStorage.getItem('riskrule_ref') || '';
+  });
+
+  useEffect(() => {
+    if (urlRef) {
+      localStorage.setItem('riskrule_ref', urlRef.toUpperCase());
+      setReferralCode(urlRef.toUpperCase());
+    }
+  }, [urlRef]);
+
+  const role = searchParams.get('role');
+  const isApplicant = role?.toLowerCase() === 'applicant';
+
   const { signUp } = useAuthStore();
   const shouldReduceMotion = useReducedMotion();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailValid || !phoneValid || !passwordValid || !passwordsMatch || !fullName.trim()) {
+    if (!emailValid || !phoneValid || !passwordValid || !passwordsMatch || !fullName.trim() || !termsAccepted) {
       setShake(s => s + 1);
       return;
     }
     
     setLoading(true);
     setError(null);
-    const { error: err } = await signUp(emailTrimmed, password, fullName.trim(), phoneTrimmed);
+    const { error: err } = await signUp(emailTrimmed, password, fullName.trim(), phoneTrimmed, referralCode || undefined);
     if (err) {
       setError(getFriendlyErrorMessage(err));
       setShake(s => s + 1);
       setLoading(false);
     } else {
+      localStorage.removeItem('riskrule_ref');
       navigate('/app');
     }
   };
@@ -103,8 +121,8 @@ export default function Signup() {
 
   return (
     <AuthLayout
-      title="Create account"
-      subtitle="Initialize your algorithmic workstation and read-only vault."
+      title={isApplicant ? "Applicant Registration" : "Create account"}
+      subtitle={isApplicant ? "Complete your candidate profile to initialize your workstation terminal." : "Initialize your algorithmic workstation and read-only vault."}
     >
       <motion.div animate={shouldReduceMotion ? { x: 0 } : { x: shake > 0 ? [-8, 8, -6, 6, -4, 4, 0] : 0 }} transition={{ duration: 0.35 }}>
         
@@ -124,17 +142,42 @@ export default function Signup() {
         </AnimatePresence>
 
         <form onSubmit={handleSignup} className="space-y-4" noValidate>
-          <Input
-            id="signup-name"
-            type="text"
-            label="Trader Full Name"
-            required
-            placeholder="John Doe"
-            value={fullName}
-            onChange={e => setFullName(e.target.value)}
-            leftIcon={User}
-            aria-label="Full Name"
-          />
+          {referralCode && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-semibold">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>
+                Partner referral active: <strong className="font-mono text-white tracking-wider">{referralCode}</strong>
+              </span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              id="signup-name"
+              type="text"
+              label="Trader Full Name"
+              required
+              placeholder="John Doe"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              leftIcon={User}
+              aria-label="Full Name"
+            />
+
+            <Input
+              id="signup-phone"
+              type="tel"
+              label="Primary Mobile Number"
+              required
+              autoComplete="tel"
+              placeholder="+91 98765 43210"
+              value={phoneNumber}
+              onChange={e => setPhoneNumber(e.target.value)}
+              leftIcon={Phone}
+              aria-label="Mobile phone number"
+              error={phoneErrorMessage}
+            />
+          </div>
 
           <Input
             id="signup-email"
@@ -149,45 +192,45 @@ export default function Signup() {
             error={emailErrorMessage}
           />
 
-          <Input
-            id="signup-phone"
-            type="tel"
-            label="Primary Mobile Phone Number"
-            required
-            autoComplete="tel"
-            placeholder="+91 98765 43210"
-            value={phoneNumber}
-            onChange={e => setPhoneNumber(e.target.value)}
-            leftIcon={Phone}
-            aria-label="Mobile phone number"
-            error={phoneErrorMessage}
-          />
-
           <div>
-            <label htmlFor="signup-password" className="block text-[12.5px] font-semibold text-secondary mb-1.5">Workstation Password</label>
-            <Input
-              id="signup-password"
-              type={showPassword ? 'text' : 'password'}
-              required
-              autoComplete="new-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              leftIcon={Lock}
-              aria-label="Password"
-              rightElement={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="text-tertiary hover:text-primary transition-colors p-1.5 focus-ring rounded-md"
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              }
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                id="signup-password"
+                type={showPassword ? 'text' : 'password'}
+                label="Workstation Password"
+                required
+                autoComplete="new-password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                leftIcon={Lock}
+                aria-label="Password"
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="text-tertiary hover:text-primary transition-colors p-1.5 focus-ring rounded-md"
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                }
+              />
+
+              <Input
+                id="signup-confirm"
+                type={showPassword ? 'text' : 'password'}
+                label="Confirm Workstation Password"
+                required
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                leftIcon={Lock}
+                aria-label="Confirm Password"
+                error={confirmPassword.length > 0 && !passwordsMatch ? 'Passwords do not match.' : undefined}
+              />
+            </div>
             
-            {/* ── Zero-CLS Reserved Password Security Checklist Box ── */}
-            <div className="mt-2.5 p-3.5 rounded-xl bg-surface-0 border border-border shadow-xs">
+            <div className="mt-3 p-3.5 rounded-xl bg-surface-0 border border-border shadow-xs">
               <div className="flex items-center justify-between text-[11px] font-mono-stat font-bold text-secondary uppercase mb-2 pb-1.5 border-b border-border/50">
                 <span>ENCRYPTION RULES CHECKLIST</span>
                 <span className={passwordValid ? "text-success" : "text-tertiary"}>
@@ -204,24 +247,32 @@ export default function Signup() {
             </div>
           </div>
 
-          <Input
-            id="signup-confirm"
-            type={showPassword ? 'text' : 'password'}
-            label="Confirm Workstation Password"
-            required
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            leftIcon={Lock}
-            aria-label="Confirm Password"
-            error={confirmPassword.length > 0 && !passwordsMatch ? 'Passwords do not match.' : undefined}
-          />
+          <div className="flex items-start gap-3 pt-1">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="w-4 h-4 rounded border-border bg-surface-0 text-primary focus:ring-primary focus:ring-offset-canvas focus:ring-offset-2 transition-colors cursor-pointer"
+              />
+            </div>
+            <div className="text-[12.5px] leading-tight mt-[1px]">
+              <label htmlFor="terms" className="font-medium text-secondary cursor-pointer select-none">
+                I agree to the{' '}
+                <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-iris hover:text-primary transition-colors underline underline-offset-2">
+                  Terms and Conditions
+                </Link>
+                {' '}and confirm I am a professional market participant.
+              </label>
+            </div>
+          </div>
 
-          <div className="pt-4">
+          <div className="pt-2">
             <Button
               type="submit"
               isLoading={loading}
-              disabled={loading || !emailValid || !phoneValid || !passwordValid || !passwordsMatch || !fullName.trim()}
+              disabled={loading || !emailValid || !phoneValid || !passwordValid || !passwordsMatch || !fullName.trim() || !termsAccepted}
               className="w-full min-h-[48px] text-[15px] font-bold shadow-md rounded-xl justify-center"
             >
               {!loading && (

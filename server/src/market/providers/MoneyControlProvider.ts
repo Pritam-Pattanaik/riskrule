@@ -18,11 +18,19 @@ const HEALTH_RECOVERY_MS = 5 * 60_000;
 
 // MoneyControl symbol mapping (MC uses its own IDs, not Yahoo symbols)
 const MC_SYMBOL_MAP: Record<string, string> = {
-  '^NSEI':      'NSE:NIFTY_50',
-  '^NSEBANK':   'NSE:NIFTY_BANK',
-  '^BSESN':     'BSE:SENSEX',
-  '^INDIAVIX':  'NSE:INDIA_VIX',
-  'USDINR=X':   'CURRENCY:USDINR',
+  '^NSEI':       'NSE:NIFTY_50',
+  '^NSEBANK':    'NSE:NIFTY_BANK',
+  '^CNXFINANCE': 'NSE:NIFTY_FIN_SERVICE',
+  '^BSESN':      'BSE:SENSEX',
+  '^INDIAVIX':   'NSE:INDIA_VIX',
+  '^CNXIT':      'NSE:NIFTY_IT',
+  '^CNXAUTO':    'NSE:NIFTY_AUTO',
+  '^CNXPHARMA':  'NSE:NIFTY_PHARMA',
+  '^CNXMETAL':   'NSE:NIFTY_METAL',
+  '^CNXFMCG':    'NSE:NIFTY_FMCG',
+  '^CNXENERGY':  'NSE:NIFTY_ENERGY',
+  '^CNXREALTY':  'NSE:NIFTY_REALTY',
+  'USDINR=X':    'CURRENCY:USDINR',
 };
 
 // MC price feed base (public, JSON, no auth required)
