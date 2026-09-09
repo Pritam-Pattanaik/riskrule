@@ -321,6 +321,26 @@ router.get('/users/:id/detail', authenticate, requireRoles(['SUPER_ADMIN']), asy
         },
         aiInsights: { orderBy: { createdAt: 'desc' }, take: 20 },
         coachMemories: true,
+        referredUsers: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            plan: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        referrer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            referralCode: true,
+          },
+        },
+        affiliateEarnings: { orderBy: { createdAt: 'desc' }, take: 50 },
+        affiliatePayouts: { orderBy: { createdAt: 'desc' }, take: 50 },
       }
     });
 
@@ -375,19 +395,22 @@ router.delete('/users/:id', authenticate, requireRoles(['SUPER_ADMIN']), async (
   }
 });
 
-// GET /api/admin/trades
-router.get('/trades', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+// GET /api/admin/trades/by-user - Groups trades on the basis of user
+router.get('/trades/by-user', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10)); // users per page
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    if (req.query.userId) where.userId = req.query.userId as string;
-    if (req.query.market) where.market = req.query.market as string;
-    if (req.query.instrumentType) where.instrumentType = req.query.instrumentType as string;
-    if (req.query.symbol) where.symbol = { contains: req.query.symbol as string, mode: 'insensitive' };
-    if (req.query.status) where.status = req.query.status as string;
+    const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+    if (req.query.userId && req.query.userId !== 'ALL' && isValidUuid(req.query.userId as string)) {
+      where.userId = req.query.userId as string;
+    }
+    if (req.query.market && req.query.market !== 'ALL') where.market = req.query.market as string;
+    if (req.query.instrumentType && req.query.instrumentType !== 'ALL') where.instrumentType = req.query.instrumentType as string;
+    if (req.query.status && req.query.status !== 'ALL') where.status = req.query.status as string;
 
     if (req.query.startDate || req.query.endDate) {
       where.date = {};
@@ -401,10 +424,167 @@ router.get('/trades', authenticate, requireRoles(['SUPER_ADMIN']), async (req: A
       if (req.query.maxPnl) where.netPnl.lte = parseFloat(req.query.maxPnl as string);
     }
 
+    if (req.query.search) {
+      const searchStr = (req.query.search as string).trim();
+      if (searchStr) {
+        where.OR = [
+          { symbol: { contains: searchStr, mode: 'insensitive' } },
+          { user: { fullName: { contains: searchStr, mode: 'insensitive' } } },
+          { user: { email: { contains: searchStr, mode: 'insensitive' } } },
+        ];
+      }
+    }
+
+    // 1. Group trades by userId to identify traders matching the criteria
+    const userGroupsAgg = await prisma.trade.groupBy({
+      by: ['userId'],
+      where,
+      _count: { id: true },
+      _sum: { netPnl: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    const totalUsers = userGroupsAgg.length;
+    const paginatedGroups = userGroupsAgg.slice(skip, skip + limit);
+    const targetUserIds = paginatedGroups.map(g => g.userId);
+
+    // 2. Fetch User profiles for these target users
+    const users = targetUserIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: targetUserIds } },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        createdAt: true,
+      },
+    }) : [];
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    // 3. Fetch recent trades for these target users
+    const trades = targetUserIds.length > 0 ? await prisma.trade.findMany({
+      where: {
+        ...where,
+        userId: { in: targetUserIds },
+      },
+      include: {
+        user: { select: { id: true, email: true, fullName: true, role: true } },
+      },
+      orderBy: { date: 'desc' },
+      take: 200,
+    }) : [];
+
+    // Map trades to userId
+    const tradesByUser: Record<string, typeof trades> = {};
+    for (const t of trades) {
+      if (!tradesByUser[t.userId]) tradesByUser[t.userId] = [];
+      tradesByUser[t.userId].push(t);
+    }
+
+    const userGroups = paginatedGroups.map(g => {
+      const u = userMap.get(g.userId);
+      const userTrades = tradesByUser[g.userId] || [];
+      const winCount = userTrades.filter(t => t.status === 'WIN' || Number(t.netPnl ?? t.pnl ?? 0) > 0).length;
+      const lossCount = userTrades.filter(t => t.status === 'LOSS' || Number(t.netPnl ?? t.pnl ?? 0) < 0).length;
+      const totalCount = g._count.id;
+      const winRate = (winCount + lossCount) > 0 ? Math.round((winCount / (winCount + lossCount)) * 1000) / 10 : 0;
+
+      return {
+        user: {
+          id: g.userId,
+          email: u?.email || 'Unknown',
+          fullName: u?.fullName || 'Anonymous Trader',
+          role: u?.role || 'USER',
+          createdAt: u?.createdAt,
+        },
+        stats: {
+          totalTrades: totalCount,
+          winCount,
+          lossCount,
+          winRate,
+          totalPnl: Number(g._sum.netPnl || 0),
+          lastTradeDate: userTrades[0]?.date || null,
+        },
+        trades: userTrades,
+      };
+    });
+
+    // Overall platform statistics with the active filters
+    const aggResult = await prisma.trade.aggregate({
+      where,
+      _count: { id: true },
+      _sum: { netPnl: true },
+      _avg: { netPnl: true },
+    });
+    const totalFilteredTrades = aggResult._count.id || 0;
+    const winCount = await prisma.trade.count({ where: { ...where, status: 'WIN' } });
+    const winRate = totalFilteredTrades > 0 ? Math.round((winCount / totalFilteredTrades) * 10000) / 100 : 0;
+
+    res.json({
+      userGroups,
+      totalUsers,
+      page,
+      limit,
+      totalPages: Math.ceil(totalUsers / limit),
+      stats: {
+        totalUsers,
+        totalTrades: totalFilteredTrades,
+        winRate,
+        avgPnl: aggResult._avg.netPnl ? Number(aggResult._avg.netPnl) : 0,
+        totalPnl: aggResult._sum.netPnl ? Number(aggResult._sum.netPnl) : 0,
+      },
+    });
+  } catch (err: any) {
+    console.error('Admin trades by user error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/trades
+router.get('/trades', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+    if (req.query.userId && req.query.userId !== 'ALL' && isValidUuid(req.query.userId as string)) {
+      where.userId = req.query.userId as string;
+    }
+    if (req.query.market && req.query.market !== 'ALL') where.market = req.query.market as string;
+    if (req.query.instrumentType && req.query.instrumentType !== 'ALL') where.instrumentType = req.query.instrumentType as string;
+    if (req.query.symbol) where.symbol = { contains: req.query.symbol as string, mode: 'insensitive' };
+    if (req.query.status && req.query.status !== 'ALL') where.status = req.query.status as string;
+
+    if (req.query.startDate || req.query.endDate) {
+      where.date = {};
+      if (req.query.startDate) where.date.gte = new Date(req.query.startDate as string);
+      if (req.query.endDate) where.date.lte = new Date(req.query.endDate as string);
+    }
+
+    if (req.query.minPnl || req.query.maxPnl) {
+      where.netPnl = {};
+      if (req.query.minPnl) where.netPnl.gte = parseFloat(req.query.minPnl as string);
+      if (req.query.maxPnl) where.netPnl.lte = parseFloat(req.query.maxPnl as string);
+    }
+
+    if (req.query.search) {
+      const searchStr = (req.query.search as string).trim();
+      if (searchStr) {
+        where.OR = [
+          { symbol: { contains: searchStr, mode: 'insensitive' } },
+          { user: { fullName: { contains: searchStr, mode: 'insensitive' } } },
+          { user: { email: { contains: searchStr, mode: 'insensitive' } } },
+        ];
+      }
+    }
+
     const [trades, total] = await Promise.all([
       prisma.trade.findMany({
         where,
-        include: { user: { select: { email: true, fullName: true } } },
+        include: { user: { select: { id: true, email: true, fullName: true, role: true } } },
         orderBy: { date: 'desc' },
         skip,
         take: limit,
@@ -877,6 +1057,431 @@ router.delete('/strategies/:id', authenticate, requireRoles(['SUPER_ADMIN']), as
     res.json({ success: true });
   } catch (err: any) {
     console.error('Admin delete strategy error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ==========================================
+// SUPER ADMIN: AFFILIATE & REFERRALS MANAGEMENT
+// ==========================================
+
+// GET /api/admin/affiliates/stats
+router.get('/affiliates/stats', authenticate, requireRoles(['SUPER_ADMIN']), async (_req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // 1. Total affiliates (users with referral code or non-zero affiliate clicks or referred someone)
+    const totalAffiliates = await (prisma as any).user.count({
+      where: {
+        OR: [
+          { referralCode: { not: null } },
+          { affiliateClicks: { gt: 0 } },
+          { referredUsers: { some: {} } },
+        ]
+      }
+    });
+
+    // 2. Total clicks across all affiliates
+    const clicksAgg = await (prisma as any).user.aggregate({
+      _sum: { affiliateClicks: true }
+    });
+    const totalClicks = clicksAgg._sum.affiliateClicks || 0;
+
+    // 3. Total referred signups
+    const totalSignups = await (prisma as any).user.count({
+      where: { referredById: { not: null } }
+    });
+
+    // 4. Total conversions to PRO plan
+    const totalConversions = await (prisma as any).user.count({
+      where: { referredById: { not: null }, plan: 'PRO' }
+    });
+
+    const conversionRate = totalSignups > 0 ? Math.round((totalConversions / totalSignups) * 1000) / 10 : 0;
+
+    // 5. Total commissions credited
+    let totalCommissions = 0;
+    try {
+      const earnAgg = await (prisma as any).affiliateEarning.aggregate({
+        _sum: { amount: true }
+      });
+      totalCommissions = earnAgg._sum.amount || 0;
+    } catch {
+      totalCommissions = totalConversions * 400;
+    }
+    if (totalCommissions === 0 && totalConversions > 0) {
+      totalCommissions = totalConversions * 400;
+    }
+
+    // 6. Payout metrics
+    let paidPayouts = 0;
+    let pendingPayouts = 0;
+    try {
+      const paidAgg = await (prisma as any).affiliatePayout.aggregate({
+        where: { status: 'Paid' },
+        _sum: { amount: true }
+      });
+      paidPayouts = paidAgg._sum.amount || 0;
+
+      const pendingAgg = await (prisma as any).affiliatePayout.aggregate({
+        where: { status: { in: ['Processing', 'Pending'] } },
+        _sum: { amount: true }
+      });
+      pendingPayouts = pendingAgg._sum.amount || 0;
+    } catch (e) {
+      // ignore
+    }
+
+    res.json({
+      totalAffiliates,
+      totalClicks,
+      totalSignups,
+      totalConversions,
+      conversionRate,
+      totalCommissions,
+      paidPayouts,
+      pendingPayouts,
+      commissionPercent: 20,
+      monthlyRewardPerPro: 400,
+    });
+  } catch (err: any) {
+    console.error('Admin affiliates stats error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/affiliates/list
+router.get('/affiliates/list', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+    const skip = (page - 1) * limit;
+    const search = ((req.query.search as string) || '').trim();
+
+    const where: any = {
+      OR: [
+        { referralCode: { not: null } },
+        { affiliateClicks: { gt: 0 } },
+        { referredUsers: { some: {} } },
+      ]
+    };
+
+    if (search) {
+      where.AND = [
+        {
+          OR: [
+            { fullName: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { referralCode: { contains: search, mode: 'insensitive' } },
+          ]
+        }
+      ];
+    }
+
+    const [affiliates, total] = await Promise.all([
+      (prisma as any).user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          plan: true,
+          referralCode: true,
+          affiliateClicks: true,
+          flowPreferences: true,
+          createdAt: true,
+          referredUsers: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              plan: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+          affiliateEarnings: {
+            select: { amount: true, status: true },
+          },
+          affiliatePayouts: {
+            select: { id: true, amount: true, status: true, invoiceId: true, payoutMethod: true, createdAt: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).user.count({ where }),
+    ]);
+
+    const formattedAffiliates = affiliates.map((u: any) => {
+      const signupsCount = u.referredUsers?.length || 0;
+      const conversionsCount = u.referredUsers?.filter((r: any) => r.plan === 'PRO').length || 0;
+      const conversionRate = signupsCount > 0 ? Math.round((conversionsCount / signupsCount) * 1000) / 10 : 0;
+
+      const totalEarningsReal = u.affiliateEarnings?.reduce((sum: number, e: any) => sum + (e.amount || 0), 0) || 0;
+      const totalEarnings = totalEarningsReal > 0 ? totalEarningsReal : conversionsCount * 400;
+
+      const totalPaid = u.affiliatePayouts
+        ?.filter((p: any) => p.status === 'Paid')
+        ?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
+
+      const pendingPayouts = u.affiliatePayouts?.filter((p: any) => p.status === 'Processing' || p.status === 'Pending').length || 0;
+      const availableBalance = Math.max(0, totalEarnings - totalPaid);
+
+      const bankDetails = (u.flowPreferences as any)?.bankDetails || null;
+
+      return {
+        id: u.id,
+        email: u.email,
+        fullName: u.fullName || 'Anonymous Trader',
+        role: u.role,
+        plan: u.plan,
+        referralCode: u.referralCode || 'NOT_SET',
+        clicks: u.affiliateClicks || 0,
+        signupsCount,
+        conversionsCount,
+        conversionRate,
+        totalEarnings,
+        totalPaid,
+        availableBalance,
+        pendingPayouts,
+        bankDetails,
+        createdAt: u.createdAt,
+        recentReferrals: (u.referredUsers || []).slice(0, 5),
+      };
+    });
+
+    res.json({
+      affiliates: formattedAffiliates,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err: any) {
+    console.error('Admin affiliates list error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/affiliates/payouts
+router.get('/affiliates/payouts', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+    const status = (req.query.status as string) || 'ALL';
+
+    const where: any = {};
+    if (status !== 'ALL') {
+      where.status = status;
+    }
+
+    const [payouts, total] = await Promise.all([
+      (prisma as any).affiliatePayout.findMany({
+        where,
+        include: {
+          affiliate: {
+            select: { id: true, fullName: true, email: true, referralCode: true, flowPreferences: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).affiliatePayout.count({ where }),
+    ]);
+
+    const formattedPayouts = payouts.map((p: any) => {
+      const bankDetails = (p.affiliate?.flowPreferences as any)?.bankDetails || null;
+      return {
+        ...p,
+        bankDetails,
+      };
+    });
+
+    res.json({ payouts: formattedPayouts, total, page, limit, totalPages: Math.ceil(total / limit) });
+  } catch (err: any) {
+    console.error('Admin affiliate payouts error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /api/admin/affiliates/payouts/:id/status
+router.patch('/affiliates/payouts/:id/status', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status, notes } = req.body;
+
+    if (!['Paid', 'Processing', 'Rejected'].includes(status)) {
+      res.status(400).json({ error: 'Invalid status' });
+      return;
+    }
+
+    const existing = await (prisma as any).affiliatePayout.findUnique({
+      where: { id },
+      include: { affiliate: { select: { id: true, email: true, fullName: true } } }
+    });
+
+    if (!existing) {
+      res.status(404).json({ error: 'Payout not found' });
+      return;
+    }
+
+    const updated = await (prisma as any).affiliatePayout.update({
+      where: { id },
+      data: { status },
+    });
+
+    // Notify user in real-time
+    try {
+      await (prisma as any).notification.create({
+        data: {
+          userId: existing.affiliateId,
+          type: 'AFFILIATE_PAYOUT_UPDATE',
+          title: status === 'Paid' ? 'Payout Sent Successfully! 💸' : `Payout Update: ${status}`,
+          message: status === 'Paid'
+            ? `Your payout request of ₹${existing.amount} (${existing.invoiceId}) has been processed and paid.`
+            : `Your payout request of ₹${existing.amount} has been updated to: ${status}. ${notes ? `Note: ${notes}` : ''}`,
+          isRead: false,
+        }
+      });
+    } catch (nErr) {
+      console.warn('Failed to send payout notification:', nErr);
+    }
+
+    // Audit log
+    await (prisma as any).auditLog.create({
+      data: {
+        adminId: req.userId!,
+        action: 'UPDATE_AFFILIATE_PAYOUT',
+        targetType: 'affiliate_payout',
+        targetId: id,
+        details: JSON.stringify({
+          invoiceId: existing.invoiceId,
+          affiliateEmail: existing.affiliate?.email,
+          previousStatus: existing.status,
+          newStatus: status,
+          amount: existing.amount,
+          notes,
+        }),
+      }
+    });
+
+    res.json({ success: true, payout: updated });
+  } catch (err: any) {
+    console.error('Update affiliate payout status error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/admin/affiliates/direct-payout
+router.post('/affiliates/direct-payout', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { affiliateId, amount, method = 'Direct Bank Transfer', notes } = req.body;
+
+    if (!affiliateId || !amount || amount <= 0) {
+      res.status(400).json({ error: 'Valid affiliateId and amount are required' });
+      return;
+    }
+
+    const affiliate = await (prisma as any).user.findUnique({
+      where: { id: affiliateId },
+      select: { id: true, fullName: true, email: true, referralCode: true },
+    });
+
+    if (!affiliate) {
+      res.status(404).json({ error: 'Affiliate not found' });
+      return;
+    }
+
+    const invoiceId = `INV-ADM-${affiliate.referralCode || 'RR'}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const payout = await (prisma as any).affiliatePayout.create({
+      data: {
+        affiliateId,
+        amount: parseFloat(amount),
+        currency: 'INR',
+        referralsCount: 1,
+        payoutMethod: method,
+        status: 'Paid',
+        invoiceId,
+      }
+    });
+
+    try {
+      await (prisma as any).notification.create({
+        data: {
+          userId: affiliateId,
+          type: 'AFFILIATE_PAYOUT_RECEIVED',
+          title: 'Payout Processed by Admin! 💸',
+          message: `A direct payout of ₹${amount} has been issued to you by the platform administrator (${invoiceId}).`,
+          isRead: false,
+        }
+      });
+    } catch (nErr) {
+      console.warn('Failed to send notification:', nErr);
+    }
+
+    await (prisma as any).auditLog.create({
+      data: {
+        adminId: req.userId!,
+        action: 'DIRECT_AFFILIATE_PAYOUT',
+        targetType: 'affiliate_payout',
+        targetId: payout.id,
+        details: JSON.stringify({
+          affiliateEmail: affiliate.email,
+          amount,
+          method,
+          invoiceId,
+          notes,
+        }),
+      }
+    });
+
+    res.json({ success: true, payout });
+  } catch (err: any) {
+    console.error('Direct affiliate payout error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/affiliates/referrals
+router.get('/affiliates/referrals', authenticate, requireRoles(['SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const [referredUsers, total] = await Promise.all([
+      (prisma as any).user.findMany({
+        where: { referredById: { not: null } },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          plan: true,
+          createdAt: true,
+          referrer: {
+            select: { id: true, fullName: true, email: true, referralCode: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).user.count({ where: { referredById: { not: null } } }),
+    ]);
+
+    res.json({
+      referrals: referredUsers,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (err: any) {
+    console.error('Admin affiliate referrals error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

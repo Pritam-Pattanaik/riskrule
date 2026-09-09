@@ -148,7 +148,11 @@ export default function AdminAIMonitor() {
                         <Cell key={idx} fill={entry.color} />
                       ))}
                     </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: 'rgb(var(--color-surface))', border: '1px solid rgb(var(--color-border))', borderRadius: 'var(--radius-lg)', color: 'rgb(var(--color-text-primary))' }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'rgb(var(--color-surface))', border: '1px solid rgb(var(--color-border))', borderRadius: 'var(--radius-lg)', color: 'rgb(var(--color-text-primary))' }}
+                    itemStyle={{ color: 'rgb(var(--color-text-primary))' }}
+                    labelStyle={{ color: 'rgb(var(--color-text-secondary))' }}
+                  />
                   <Legend wrapperStyle={{ color: 'rgb(var(--color-text-secondary))', fontSize: '12px' }} />
                   </PieChart>
                 </ResponsiveContainer>

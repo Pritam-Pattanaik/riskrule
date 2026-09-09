@@ -674,3 +674,18 @@
   transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ── Recharts Tooltip Theme & Color Safety ── */
+.recharts-default-tooltip {
+  color: rgb(var(--color-text-primary)) !important;
+  background-color: rgb(var(--color-surface-elevated)) !important;
+  border-color: rgba(var(--color-border-rgb), var(--border-alpha-strong)) !important;
+}
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value,
+.recharts-tooltip-item-separator,
+.recharts-tooltip-label {
+  color: rgb(var(--color-text-primary)) !important;
+}
+
+

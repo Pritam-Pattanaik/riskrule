@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '../ui/Card';
+import { useAffiliateStore } from '../../stores/affiliateStore';
 
 interface ProviderPayoutOverviewProps {
   proUsersCount: number;
@@ -38,6 +39,8 @@ export default function ProviderPayoutOverview({
   nextPayoutDate = '15th Next Month',
   onScrollToLedger,
 }: ProviderPayoutOverviewProps) {
+  const { bankDetails, saveBankDetails, requestPayout } = useAffiliateStore();
+
   // Payout method state
   const [payoutMethod, setPayoutMethod] = useState<{
     type: 'BANK' | 'UPI';
@@ -46,11 +49,11 @@ export default function ProviderPayoutOverview({
     holderName: string;
     upiId: string;
   }>({
-    type: 'BANK',
-    accountNumber: '••••••••4092',
-    ifsc: 'HDFC0001842',
-    holderName: 'Registered Partner',
-    upiId: 'trader@okhdfcbank',
+    type: bankDetails?.type || 'BANK',
+    accountNumber: bankDetails?.accountNumber ? `••••••••${bankDetails.accountNumber.slice(-4)}` : '••••••••4092',
+    ifsc: bankDetails?.ifsc || 'HDFC0001842',
+    holderName: bankDetails?.accountHolder || 'Registered Partner',
+    upiId: bankDetails?.upiId || 'trader@okhdfcbank',
   });
 
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
@@ -58,11 +61,29 @@ export default function ProviderPayoutOverview({
   const [isRequesting, setIsRequesting] = useState(false);
 
   // Form states for modal
-  const [selectedType, setSelectedType] = useState<'BANK' | 'UPI'>(payoutMethod.type);
-  const [tempAccount, setTempAccount] = useState('50100492814092');
-  const [tempIfsc, setTempIfsc] = useState('HDFC0001842');
-  const [tempHolder, setTempHolder] = useState('Registered Partner');
-  const [tempUpi, setTempUpi] = useState('trader@okhdfcbank');
+  const [selectedType, setSelectedType] = useState<'BANK' | 'UPI'>(bankDetails?.type || 'BANK');
+  const [tempAccount, setTempAccount] = useState(bankDetails?.accountNumber || '50100492814092');
+  const [tempIfsc, setTempIfsc] = useState(bankDetails?.ifsc || 'HDFC0001842');
+  const [tempHolder, setTempHolder] = useState(bankDetails?.accountHolder || 'Registered Partner');
+  const [tempUpi, setTempUpi] = useState(bankDetails?.upiId || 'trader@okhdfcbank');
+
+  // Sync from store when bankDetails loads
+  useEffect(() => {
+    if (bankDetails) {
+      setPayoutMethod({
+        type: bankDetails.type || 'BANK',
+        accountNumber: bankDetails.accountNumber ? `••••••••${bankDetails.accountNumber.slice(-4)}` : '••••••••4092',
+        ifsc: bankDetails.ifsc || 'HDFC0001842',
+        holderName: bankDetails.accountHolder || 'Registered Partner',
+        upiId: bankDetails.upiId || 'trader@okhdfcbank',
+      });
+      setSelectedType(bankDetails.type || 'BANK');
+      if (bankDetails.accountNumber) setTempAccount(bankDetails.accountNumber);
+      if (bankDetails.ifsc) setTempIfsc(bankDetails.ifsc);
+      if (bankDetails.accountHolder) setTempHolder(bankDetails.accountHolder);
+      if (bankDetails.upiId) setTempUpi(bankDetails.upiId);
+    }
+  }, [bankDetails]);
 
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
 
@@ -74,7 +95,7 @@ export default function ProviderPayoutOverview({
   // Use real available balance, or fallback to the upcoming cycle payout for demo
   const displayAvailableBalance = availableBalance > 0 ? availableBalance : upcomingCyclePayout;
 
-  const handleSavePayoutMethod = (e: React.FormEvent) => {
+  const handleSavePayoutMethod = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedType === 'BANK') {
       if (!tempAccount || tempAccount.length < 8) {
@@ -92,7 +113,17 @@ export default function ProviderPayoutOverview({
         holderName: tempHolder || 'Registered Partner',
         upiId: tempUpi,
       });
-      toast.success('Bank account details updated successfully!', {
+
+      await saveBankDetails({
+        type: 'BANK',
+        accountHolder: tempHolder || 'Registered Partner',
+        accountNumber: tempAccount,
+        ifsc: tempIfsc.toUpperCase(),
+        bankName: 'Direct Bank Transfer',
+        upiId: tempUpi,
+      });
+
+      toast.success('Bank account details saved to server!', {
         description: `Future 20% recurring payouts will transfer to ${tempIfsc.toUpperCase()} (••••${tempAccount.slice(-4)})`,
         icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
       });
@@ -112,7 +143,17 @@ export default function ProviderPayoutOverview({
         holderName: tempHolder,
         upiId: tempUpi,
       });
-      toast.success('UPI ID updated successfully!', {
+
+      await saveBankDetails({
+        type: 'UPI',
+        accountHolder: tempHolder,
+        accountNumber: tempAccount,
+        ifsc: tempIfsc.toUpperCase(),
+        bankName: 'UPI Instant Transfer',
+        upiId: tempUpi,
+      });
+
+      toast.success('UPI ID saved to server!', {
         description: `Instant payout transfers directed to ${tempUpi}`,
         icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
       });
@@ -132,11 +173,20 @@ export default function ProviderPayoutOverview({
     }
 
     setIsRequesting(true);
-    // Dynamic import to avoid circular dependency issues at the top level
-    const { useAffiliateStore } = await import('../../stores/affiliateStore');
-    const { requestPayout } = useAffiliateStore.getState();
+    const activeBank = {
+      type: selectedType,
+      accountHolder: tempHolder || 'Registered Partner',
+      accountNumber: tempAccount,
+      ifsc: tempIfsc.toUpperCase(),
+      bankName: 'Direct Bank Transfer',
+      upiId: tempUpi,
+    };
 
-    const res = await requestPayout(amount, payoutMethod.type === 'BANK' ? `Bank (${payoutMethod.accountNumber})` : `UPI (${payoutMethod.upiId})`);
+    const res = await requestPayout(
+      amount,
+      payoutMethod.type === 'BANK' ? `Bank (${payoutMethod.accountNumber})` : `UPI (${payoutMethod.upiId})`,
+      activeBank,
+    );
     
     setIsRequesting(false);
     

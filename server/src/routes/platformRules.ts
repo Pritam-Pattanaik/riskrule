@@ -667,7 +667,7 @@ router.get('/', async (_req, res: Response): Promise<any> => {
 });
 
 // POST /api/platform-rules - Create new rule in DB (Admin/Superadmin)
-router.post('/', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/', authenticate, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { category, categoryLabel, situation, title, description, badge, isBeginnerRecommended } = req.body;
     if (!title || !description || !category) {
@@ -693,7 +693,7 @@ router.post('/', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req
 });
 
 // PATCH /api/platform-rules/:id - Update rule in DB (Admin/Superadmin)
-router.patch('/:id', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/:id', authenticate, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const id = req.params.id as string;
     const { category, categoryLabel, situation, title, description, badge, isBeginnerRecommended } = req.body;
@@ -719,7 +719,7 @@ router.patch('/:id', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async 
 });
 
 // DELETE /api/platform-rules/:id - Delete rule in DB (Admin/Superadmin)
-router.delete('/:id', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
+router.delete('/:id', authenticate, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const id = req.params.id as string;
     await prisma.platformRule.delete({
@@ -732,7 +732,7 @@ router.delete('/:id', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async
 });
 
 // POST /api/platform-rules/reset - Reset to factory defaults in DB (Admin/Superadmin)
-router.post('/reset', authenticate, requireRoles(['ADMIN', 'SUPERADMIN']), async (_req: AuthRequest, res: Response): Promise<any> => {
+router.post('/reset', authenticate, requireRoles(['ADMIN', 'SUPER_ADMIN']), async (_req: AuthRequest, res: Response): Promise<any> => {
   try {
     await prisma.platformRule.deleteMany();
     await prisma.platformRule.createMany({

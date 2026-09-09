@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Users, Key, Link2, Flag, Activity, BarChart3, Newspaper, Globe2,
   Server, FileText, Bell, ScrollText, Lock, Database, PlayCircle, Network,
-  AlertTriangle, Gauge, Settings, ChevronLeft, ChevronRight, X, Search, Brain, Target
+  AlertTriangle, Gauge, Settings, ChevronLeft, ChevronRight, X, Search, Brain, Target, Award
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -23,6 +23,7 @@ const adminGroups: NavGroup[] = [
       { name: 'Users', path: '/app/admin/users', icon: Users },
       { name: 'Trades', path: '/app/admin/trades', icon: BarChart3 },
       { name: 'Strategies', path: '/app/admin/strategies', icon: Target },
+      { name: 'Affiliates', path: '/app/admin/affiliates', icon: Award },
       { name: 'Rules Library', path: '/app/admin/rules', icon: Shield },
       { name: 'Brokers', path: '/app/admin/brokers', icon: Link2 },
     ]
