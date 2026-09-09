@@ -46,6 +46,16 @@ export interface AffiliateMetricsData {
   earningsGrowth: number;
 }
 
+export interface BankDetails {
+  type: 'BANK' | 'UPI';
+  accountHolder: string;
+  accountNumber: string;
+  ifsc: string;
+  bankName: string;
+  upiId: string;
+  updatedAt?: string;
+}
+
 export interface AffiliateStatusData {
   active: boolean;
   memberSince: string;
@@ -62,6 +72,7 @@ interface AffiliateState {
   monthlyRewardPerPro: number;
   fixedRewardAmount: number;
   userPlan: string;
+  bankDetails: BankDetails;
   metrics: AffiliateMetricsData;
   status: AffiliateStatusData;
   referredUsers: ReferredUser[];
@@ -72,9 +83,10 @@ interface AffiliateState {
 
   fetchStats: () => Promise<void>;
   updateCustomCode: (code: string) => Promise<{ success: boolean; error?: string }>;
+  saveBankDetails: (details: BankDetails) => Promise<{ success: boolean; error?: string }>;
   upgradeToPro: () => Promise<{ success: boolean; rewardCredited?: boolean; message?: string }>;
   simulateReferral: (traderName?: string, upgradeToPro?: boolean) => Promise<{ success: boolean; message?: string }>;
-  requestPayout: (amount: number, method: string) => Promise<{ success: boolean; message?: string }>;
+  requestPayout: (amount: number, method: string, bankDetails?: BankDetails) => Promise<{ success: boolean; message?: string }>;
 }
 
 export const useAffiliateStore = create<AffiliateState>((set, get) => ({
@@ -84,6 +96,14 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
   monthlyRewardPerPro: 400,
   fixedRewardAmount: 400,
   userPlan: 'FREE',
+  bankDetails: {
+    type: 'BANK',
+    accountHolder: 'Registered Partner',
+    accountNumber: '50100492814092',
+    ifsc: 'HDFC0001842',
+    bankName: 'HDFC Bank',
+    upiId: 'trader@okhdfcbank',
+  },
   metrics: {
     clicks: 0,
     signups: 0,
@@ -120,6 +140,7 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
         monthlyRewardPerPro: data.monthlyRewardPerPro || 400,
         fixedRewardAmount: data.monthlyRewardPerPro || data.fixedRewardAmount || 400,
         userPlan: data.userPlan || 'FREE',
+        bankDetails: data.bankDetails || get().bankDetails,
         metrics: data.metrics || get().metrics,
         status: data.status || get().status,
         referredUsers: data.referredUsers || [],
@@ -130,6 +151,19 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
     } catch (err: any) {
       console.warn('Failed to load affiliate stats from server:', err);
       set({ loading: false, error: err.message || 'Failed to load stats' });
+    }
+  },
+
+  saveBankDetails: async (details: BankDetails) => {
+    try {
+      const data = await api.put<{ success: boolean; bankDetails: BankDetails }>('/affiliate/bank-details', details);
+      if (data.success && data.bankDetails) {
+        set({ bankDetails: data.bankDetails });
+        return { success: true };
+      }
+      return { success: false, error: 'Failed to update bank coordinates' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to update bank coordinates' };
     }
   },
 
@@ -178,11 +212,12 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
     }
   },
 
-  requestPayout: async (amount: number, method: string) => {
+  requestPayout: async (amount: number, method: string, bankDetails?: BankDetails) => {
     try {
       const data = await api.post<{ success: boolean; message: string }>('/affiliate/payout', {
         amount,
         method,
+        bankDetails: bankDetails || get().bankDetails,
       });
       await get().fetchStats();
       return { success: true, message: data.message };

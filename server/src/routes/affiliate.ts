@@ -51,6 +51,7 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response): Prom
         referralCode: true,
         plan: true,
         affiliateClicks: true,
+        flowPreferences: true,
         createdAt: true,
       },
     });
@@ -159,6 +160,15 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response): Prom
 
     const appUrl = process.env.APP_URL || `http://localhost:${process.env.VITE_PORT || 5173}`;
 
+    const bankDetails = (user.flowPreferences as any)?.bankDetails || {
+      type: 'BANK',
+      accountHolder: user.fullName || 'Registered Partner',
+      accountNumber: '50100492814092',
+      ifsc: 'HDFC0001842',
+      bankName: 'HDFC Bank',
+      upiId: 'trader@okhdfcbank',
+    };
+
     res.json({
       referralCode: user.referralCode,
       referralLink: `${appUrl}/r/${user.referralCode}`,
@@ -166,6 +176,7 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response): Prom
       monthlyRewardPerPro: MONTHLY_REWARD_PER_PRO,
       fixedRewardAmount: MONTHLY_REWARD_PER_PRO,
       userPlan: user.plan,
+      bankDetails,
       metrics: {
         clicks: totalClicks,
         signups: signupsCount,
@@ -434,6 +445,55 @@ router.put('/custom-code', authenticate, async (req: AuthRequest, res: Response)
   }
 });
 
+// PUT /api/affiliate/bank-details — Save/update partner bank and payout coordinates
+router.put('/bank-details', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { type = 'BANK', accountHolder, accountNumber, ifsc, bankName, upiId } = req.body;
+
+    const user = await (prisma as any).user.findUnique({
+      where: { id: userId },
+      select: { flowPreferences: true, fullName: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const currentPrefs = typeof user.flowPreferences === 'object' && user.flowPreferences ? user.flowPreferences : {};
+    const updatedBankDetails = {
+      type: type === 'UPI' ? 'UPI' : 'BANK',
+      accountHolder: (accountHolder || user.fullName || 'Registered Partner').trim(),
+      accountNumber: (accountNumber || '').trim(),
+      ifsc: (ifsc || '').trim().toUpperCase(),
+      bankName: (bankName || 'Bank Transfer').trim(),
+      upiId: (upiId || '').trim(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await (prisma as any).user.update({
+      where: { id: userId },
+      data: {
+        flowPreferences: {
+          ...currentPrefs,
+          bankDetails: updatedBankDetails,
+        },
+      },
+    });
+
+    res.json({ success: true, bankDetails: updatedBankDetails });
+  } catch (err: any) {
+    logger.error('Update bank details error:', err);
+    res.status(500).json({ error: 'Failed to update bank details' });
+  }
+});
+
 // POST /api/affiliate/payout — Request a custom payout withdrawal
 router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -443,7 +503,7 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    const { amount, method } = req.body;
+    const { amount, method, bankDetails } = req.body;
     
     if (!amount || amount <= 0) {
       res.status(400).json({ error: 'Invalid payout amount' });
@@ -453,12 +513,33 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
     // 1. Calculate the user's real available balance
     const user = await (prisma as any).user.findUnique({
       where: { id: userId },
-      select: { referralCode: true }
+      select: { referralCode: true, fullName: true, flowPreferences: true }
     });
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
+    }
+
+    // Save bankDetails to flowPreferences if passed
+    if (bankDetails && typeof bankDetails === 'object') {
+      try {
+        const currentPrefs = typeof user.flowPreferences === 'object' && user.flowPreferences ? user.flowPreferences : {};
+        await (prisma as any).user.update({
+          where: { id: userId },
+          data: {
+            flowPreferences: {
+              ...currentPrefs,
+              bankDetails: {
+                ...bankDetails,
+                updatedAt: new Date().toISOString(),
+              },
+            },
+          },
+        });
+      } catch (saveErr) {
+        logger.warn('Failed to save bankDetails to flowPreferences:', saveErr);
+      }
     }
 
     // Get earnings
@@ -489,6 +570,17 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
       return;
     }
 
+    // Build rich payoutMethod string with full bank coordinates
+    let formattedMethod = method || 'Bank Transfer';
+    const activeBank = bankDetails || (user.flowPreferences as any)?.bankDetails;
+    if (activeBank) {
+      if (activeBank.type === 'UPI' && activeBank.upiId) {
+        formattedMethod = `UPI: ${activeBank.upiId} (Holder: ${activeBank.accountHolder || user.fullName || 'Partner'})`;
+      } else if (activeBank.accountNumber) {
+        formattedMethod = `${activeBank.bankName || 'Bank'} | A/C: ${activeBank.accountNumber} | IFSC: ${activeBank.ifsc} | Name: ${activeBank.accountHolder || user.fullName || 'Partner'}`;
+      }
+    }
+
     // 2. Create the payout record
     const invoiceId = `INV-PO-${user.referralCode}-${Math.floor(1000 + Math.random() * 9000)}`;
     
@@ -498,7 +590,7 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
         amount,
         currency: 'INR',
         referralsCount: conversionsCount || 1,
-        payoutMethod: method || 'Bank Transfer',
+        payoutMethod: formattedMethod,
         status: 'Processing',
         invoiceId,
       }

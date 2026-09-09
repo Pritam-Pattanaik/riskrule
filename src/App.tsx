@@ -57,6 +57,7 @@ const AdminBrokers = React.lazy(() => import('./pages/admin/AdminBrokers'));
 const AdminAIMonitor = React.lazy(() => import('./pages/admin/AdminAIMonitor'));
 const AdminAuditLogs = React.lazy(() => import('./pages/admin/AdminAuditLogs'));
 const AdminSystemSettings = React.lazy(() => import('./pages/admin/AdminSystemSettings'));
+const AdminAffiliates = React.lazy(() => import('./pages/admin/AdminAffiliates'));
 const SystemHealth = React.lazy(() => import('./pages/SystemHealth'));
 
 function MainLayout() {
@@ -188,6 +189,8 @@ export default function App() {
           <Route path="strategies" element={<AdminStrategies />} />
           <Route path="rules" element={<AdminTradingRules />} />
           <Route path="brokers" element={<AdminBrokers />} />
+          <Route path="affiliates" element={<AdminAffiliates />} />
+          <Route path="affiliate" element={<AdminAffiliates />} />
           <Route path="ai" element={<AdminAIMonitor />} />
           <Route path="audit" element={<AdminAuditLogs />} />
           <Route path="settings" element={<AdminSystemSettings />} />

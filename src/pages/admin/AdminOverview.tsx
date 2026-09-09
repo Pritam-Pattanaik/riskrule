@@ -182,6 +182,8 @@ export default function AdminOverview() {
                 <YAxis tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-lg)', color: '#fff' }}
+                  itemStyle={{ color: '#fff' }}
+                  labelStyle={{ color: '#9ca3af' }}
                 />
                 <Line type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} dot={{ fill: '#6366f1', r: 4 }} activeDot={{ r: 6 }} />
               </LineChart>
@@ -200,6 +202,8 @@ export default function AdminOverview() {
                 <YAxis tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-lg)', color: '#fff' }}
+                  itemStyle={{ color: '#fff' }}
+                  labelStyle={{ color: '#9ca3af' }}
                 />
                 <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
               </BarChart>
