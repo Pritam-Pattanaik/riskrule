@@ -51,7 +51,7 @@ export default function BentoGridSection() {
           <div className="w-full p-4 rounded-xl bg-surface-1 border border-border flex items-center justify-between text-xs sm:text-sm font-mono-stat">
             <span className="flex items-center gap-2 text-danger font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
-              DAILY LOSS LIMIT HIT (-$2,000)
+              DAILY LOSS LIMIT HIT (-₹2,000)
             </span>
             <span className="px-3 py-1 rounded-lg bg-surface-0 text-primary font-extrabold border border-border">
               STATUS: TRADING LOCKED (24H)

@@ -13,7 +13,7 @@ interface AuthLayoutProps {
 const VERIFIED_PROOF = {
   quote: "RiskRule's automated daily loss guardrail saved my funded account twice last month during volatile CPI announcements. It is essential software.",
   author: "Vikram Mehta",
-  role: "Funded Futures Speculator ($400k Allocation)",
+  role: "Funded Futures Speculator (₹400k Allocation)",
   metric: "0 Daily Loss Breaches in 180 Days"
 };
 

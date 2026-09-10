@@ -19,8 +19,8 @@ export default function PropTradersPage() {
       logo: 'APEX',
       badge: 'RITHMIC & TRADOVATE',
       dailyLossRule: 'No Daily Loss Cap (Trailing Threshold Only)',
-      maxTrailingDrawdown: '$3,000 (3.0%)',
-      profitTarget: '$6,000 (6.0%)',
+      maxTrailingDrawdown: '₹3,000 (3.0%)',
+      profitTarget: '₹6,000 (6.0%)',
       lockoutSupport: 'Real-time Trailing Auto-Lockout Active',
       rating: '4.9 / 5.0'
     },
@@ -28,9 +28,9 @@ export default function PropTradersPage() {
       name: 'FTMO',
       logo: 'FTMO',
       badge: 'MT4, MT5 & DXTRADE',
-      dailyLossRule: '$5,000 (5.0% Daily Loss Limit)',
-      maxTrailingDrawdown: '$10,000 (10.0% Max Loss)',
-      profitTarget: '$10,000 (10.0% Step 1)',
+      dailyLossRule: '₹5,000 (5.0% Daily Loss Limit)',
+      maxTrailingDrawdown: '₹10,000 (10.0% Max Loss)',
+      profitTarget: '₹10,000 (10.0% Step 1)',
       lockoutSupport: 'Daily Server Midnight Loss Lockout Active',
       rating: '4.9 / 5.0'
     },
@@ -38,9 +38,9 @@ export default function PropTradersPage() {
       name: 'Topstep',
       logo: 'TOPSTEP',
       badge: 'TRADOVATE & NINJATRADER',
-      dailyLossRule: '$2,000 (2.0% Daily Loss Limit)',
-      maxTrailingDrawdown: '$3,000 End of Day Drawdown',
-      profitTarget: '$6,000 (6.0%)',
+      dailyLossRule: '₹2,000 (2.0% Daily Loss Limit)',
+      maxTrailingDrawdown: '₹3,000 End of Day Drawdown',
+      profitTarget: '₹6,000 (6.0%)',
       lockoutSupport: 'EOD Trailing Auto-Lockout Active',
       rating: '4.8 / 5.0'
     },
@@ -48,9 +48,9 @@ export default function PropTradersPage() {
       name: 'FundedNext',
       logo: 'FUNDEDNEXT',
       badge: 'MT5 & C-TRADER',
-      dailyLossRule: '$5,000 (5.0% Daily Loss Limit)',
-      maxTrailingDrawdown: '$10,000 (10.0% Overall)',
-      profitTarget: '$8,000 (8.0%)',
+      dailyLossRule: '₹5,000 (5.0% Daily Loss Limit)',
+      maxTrailingDrawdown: '₹10,000 (10.0% Overall)',
+      profitTarget: '₹8,000 (8.0%)',
       lockoutSupport: 'Balance & Equity Sync Active',
       rating: '4.8 / 5.0'
     },
@@ -66,15 +66,15 @@ export default function PropTradersPage() {
   const verifiedTraderCases = [
     {
       name: 'Vikram Mehta',
-      firm: 'Apex $300k PA Account',
-      payout: '₹14.2 Lakhs ($17,200)',
+      firm: 'Apex ₹300k PA Account',
+      payout: '₹14.2 Lakhs (₹17,200)',
       trades: '184 Trades',
       winRate: '71.2%',
       quote: 'The trailing threshold on Apex was my kryptonite for 2 years. RiskRule locked my terminal every day before I hit the threshold. Now I have 4 funded accounts.'
     },
     {
       name: 'Sneha Ramanujan',
-      firm: 'FTMO $200k Challenge',
+      firm: 'FTMO ₹200k Challenge',
       payout: 'Passed Phase 1 & 2 in 18 Days',
       trades: '42 Trades',
       winRate: '68.5%',
@@ -82,8 +82,8 @@ export default function PropTradersPage() {
     },
     {
       name: 'Marcus Vance',
-      firm: 'Topstep $150k Express',
-      payout: '₹9.8 Lakhs ($11,800)',
+      firm: 'Topstep ₹150k Express',
+      payout: '₹9.8 Lakhs (₹11,800)',
       trades: '96 Trades',
       winRate: '74.0%',
       quote: 'If you trade prop firms without an algorithmic daily loss lockout, you are gambling. RiskRule is an essential piece of professional risk equipment.'
@@ -204,7 +204,7 @@ export default function PropTradersPage() {
                           : "bg-surface-0 border-border text-secondary hover:text-primary hover:bg-surface-2"
                       )}
                     >
-                      ${(cap / 1000).toFixed(0)}k
+                      ₹{(cap / 1000).toFixed(0)}k
                     </button>
                   ))}
                 </div>
@@ -234,15 +234,15 @@ export default function PropTradersPage() {
               <div className="p-4 rounded-2xl bg-surface-0 border border-border space-y-2 text-xs font-mono-stat">
                 <div className="flex justify-between text-secondary">
                   <span>Selected Allocation:</span>
-                  <span className="font-bold text-primary">${selectedCapital.toLocaleString()}</span>
+                  <span className="font-bold text-primary">₹{selectedCapital.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-secondary">
                   <span>Target Profit ({selectedFirm}):</span>
-                  <span className="font-bold text-success">+${Number(targetProfit).toLocaleString()}</span>
+                  <span className="font-bold text-success">+₹{Number(targetProfit).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-secondary border-t border-border pt-2">
                   <span>Max Daily Drawdown Barrier:</span>
-                  <span className="font-bold text-danger">-${Number(maxDailyLoss).toLocaleString()}</span>
+                  <span className="font-bold text-danger">-₹{Number(maxDailyLoss).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -257,7 +257,7 @@ export default function PropTradersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-surface-1 border border-border">
                   <span className="text-[11px] font-mono-stat text-tertiary uppercase">Max Safe Risk / Trade</span>
-                  <p className="text-2xl font-bold font-mono-stat text-primary mt-1">${recommendedRiskPerTrade}</p>
+                  <p className="text-2xl font-bold font-mono-stat text-primary mt-1">₹{recommendedRiskPerTrade}</p>
                   <span className="text-[10px] text-tertiary">0.75% of capital</span>
                 </div>
 
@@ -271,11 +271,11 @@ export default function PropTradersPage() {
               <div className="p-4 rounded-xl bg-surface-1 border border-danger/30 space-y-2">
                 <div className="flex justify-between items-center text-xs font-mono-stat">
                   <span className="text-secondary font-medium">Automatic Lockout Trigger:</span>
-                  <span className="font-bold text-danger">-${maxDailyLoss} (Within 24H)</span>
+                  <span className="font-bold text-danger">-₹{maxDailyLoss} (Within 24H)</span>
                 </div>
                 <div className="flex justify-between items-center text-xs font-mono-stat">
                   <span className="text-secondary font-medium">Total Account Max Loss Buffer:</span>
-                  <span className="font-bold text-primary">${totalMaxDrawdown}</span>
+                  <span className="font-bold text-primary">₹{totalMaxDrawdown}</span>
                 </div>
               </div>
 

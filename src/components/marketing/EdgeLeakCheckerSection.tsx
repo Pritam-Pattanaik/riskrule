@@ -136,7 +136,7 @@ export default function EdgeLeakCheckerSection() {
 
                       <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono-stat">
                         <span className="text-danger font-bold">
-                          Avg Loss: ~${leak.annualLeakCost.toLocaleString()}/yr
+                          Avg Loss: ~₹{leak.annualLeakCost.toLocaleString()}/yr
                         </span>
                         <span className="text-tertiary">|</span>
                         <span className="text-iris font-medium">
@@ -157,7 +157,7 @@ export default function EdgeLeakCheckerSection() {
                   Estimated Annual Capital Leaked
                 </span>
                 <p className="text-3xl sm:text-4xl font-mono-stat font-extrabold text-danger mt-1 tracking-tight">
-                  ${totalLeakedCapital.toLocaleString()} / year
+                  ₹{totalLeakedCapital.toLocaleString()} / year
                 </p>
                 <p className="text-xs text-secondary mt-1">
                   Based on empirical retail trader performance metrics.
