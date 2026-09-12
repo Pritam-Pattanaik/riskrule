@@ -6,9 +6,9 @@ import { Reveal, NumberCounter } from '../ui/Motion';
 export default function SocialProofSection() {
   const verifiedTraders = [
     {
-      quote: "RiskRule's daily drawdown lockout saved my $200k Apex account twice last month during volatile CPI announcements. It literally paid for a decade of subscription cost in one afternoon.",
+      quote: "RiskRule's daily drawdown lockout saved my ₹200k Apex account twice last month during volatile CPI announcements. It literally paid for a decade of subscription cost in one afternoon.",
       author: "Vikram Mehta",
-      role: "Funded Futures Speculator ($400k Allocation)",
+      role: "Funded Futures Speculator (₹400k Allocation)",
       tag: "Verified FTMO & Apex Trader",
       metrics: "+₹8.4 Lakh Net Profit (Q3)",
     },

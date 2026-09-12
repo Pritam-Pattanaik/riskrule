@@ -350,7 +350,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "E:\\riskrule\\server\\prisma\\generated\\pipeline",
+      "value": "C:\\Users\\HP\\OneDrive\\Desktop\\RISK RULE\\riskrule\\server\\prisma\\generated\\pipeline",
       "fromEnvVar": null
     },
     "config": {
@@ -364,7 +364,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "E:\\riskrule\\server\\prisma\\pipeline.prisma",
+    "sourceFilePath": "C:\\Users\\HP\\OneDrive\\Desktop\\RISK RULE\\riskrule\\server\\prisma\\pipeline.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

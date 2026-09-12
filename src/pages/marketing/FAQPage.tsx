@@ -33,7 +33,7 @@ export default function FAQPage() {
     {
       category: 'prop',
       q: 'How does the automated daily drawdown lockout work with evaluation prop firms?',
-      a: 'You input your specific prop challenge threshold (e.g. $2,000 maximum daily loss on Apex or 5% on FTMO). When your account equity reaches the warning buffer, RiskRule intervenes by locking further order routing from your connected tools and initiating an automated 24-hour cooling off period, preserving your challenge status.'
+      a: 'You input your specific prop challenge threshold (e.g. ₹2,000 maximum daily loss on Apex or 5% on FTMO). When your account equity reaches the warning buffer, RiskRule intervenes by locking further order routing from your connected tools and initiating an automated 24-hour cooling off period, preserving your challenge status.'
     },
     {
       category: 'prop',

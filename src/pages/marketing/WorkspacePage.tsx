@@ -30,11 +30,11 @@ export default function WorkspacePage() {
   const breakevenWinRate = (1 / (1 + targetRatio) * 100).toFixed(1);
 
   const equityData = [
-    { day: 'Day 1', date: 'Oct 02', pnl: '+₹12,400', val: '$102,400', rr: '2.1R', note: 'Disciplined NQ breakout entry' },
-    { day: 'Day 15', date: 'Oct 16', pnl: '+₹28,600', val: '$104,200', rr: '1.8R', note: 'Scaled out at targeted resistance' },
-    { day: 'Day 30', date: 'Oct 31', pnl: '+₹42,100', val: '$105,800', rr: '3.0R', note: 'A+ Gold reversal setup' },
-    { day: 'Day 45', date: 'Nov 14', pnl: '+₹61,350', val: '$107,900', rr: '2.4R', note: 'AI Coach alerted & blocked revenge loss' },
-    { day: 'Day 60', date: 'Nov 28', pnl: '+₹84,250', val: '$110,400', rr: '2.8R', note: 'Strict risk rules maintained · All targets met' },
+    { day: 'Day 1', date: 'Oct 02', pnl: '+₹12,400', val: '₹102,400', rr: '2.1R', note: 'Disciplined NQ breakout entry' },
+    { day: 'Day 15', date: 'Oct 16', pnl: '+₹28,600', val: '₹104,200', rr: '1.8R', note: 'Scaled out at targeted resistance' },
+    { day: 'Day 30', date: 'Oct 31', pnl: '+₹42,100', val: '₹105,800', rr: '3.0R', note: 'A+ Gold reversal setup' },
+    { day: 'Day 45', date: 'Nov 14', pnl: '+₹61,350', val: '₹107,900', rr: '2.4R', note: 'AI Coach alerted & blocked revenge loss' },
+    { day: 'Day 60', date: 'Nov 28', pnl: '+₹84,250', val: '₹110,400', rr: '2.8R', note: 'Strict risk rules maintained · All targets met' },
   ];
 
   const recentTrades = [
@@ -390,7 +390,7 @@ export default function WorkspacePage() {
                         "Your current session exhibits a <strong className="text-success font-bold">96% discipline score</strong>. No oversized positions, revenge setups, or pre-news FOMC orders have been detected in the last 4 hours."
                       </p>
                       <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-mono-stat text-tertiary">
-                        <span>Max Daily Drawdown Buffer Remaining: <strong className="text-primary">$3,800.00</strong></span>
+                        <span>Max Daily Drawdown Buffer Remaining: <strong className="text-primary">₹3,800.00</strong></span>
                         <span>•</span>
                         <span>Tilt Level: <strong className="text-success">0% (Zen)</strong></span>
                       </div>
@@ -436,7 +436,7 @@ export default function WorkspacePage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono-stat">
                   <span className="text-secondary font-medium">Account Size / Challenge Capital</span>
-                  <span className="text-primary font-bold">${accountSize.toLocaleString()}</span>
+                  <span className="text-primary font-bold">₹{accountSize.toLocaleString()}</span>
                 </div>
                 <input
                   type="range"
@@ -448,9 +448,9 @@ export default function WorkspacePage() {
                   className="w-full accent-iris cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-tertiary font-mono-stat">
-                  <span>$10,000 (Micro)</span>
-                  <span>$100,000 (Funded)</span>
-                  <span>$300,000 (Institutional)</span>
+                  <span>₹10,000 (Micro)</span>
+                  <span>₹100,000 (Funded)</span>
+                  <span>₹300,000 (Institutional)</span>
                 </div>
               </div>
 
@@ -458,7 +458,7 @@ export default function WorkspacePage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono-stat">
                   <span className="text-secondary font-medium">Max Risk % per Single Trade</span>
-                  <span className="text-primary font-bold">{riskPercent}% (${maxRiskAmount.toLocaleString()})</span>
+                  <span className="text-primary font-bold">{riskPercent}% (₹{maxRiskAmount.toLocaleString()})</span>
                 </div>
                 <input
                   type="range"
@@ -497,7 +497,7 @@ export default function WorkspacePage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-mono-stat">
                   <span className="text-secondary font-medium">Target Reward Ratio (R:R)</span>
-                  <span className="text-success font-bold">{targetRatio}R (Profit: ${targetProfit.toLocaleString()})</span>
+                  <span className="text-success font-bold">{targetRatio}R (Profit: ₹{targetProfit.toLocaleString()})</span>
                 </div>
                 <input
                   type="range"
@@ -522,13 +522,13 @@ export default function WorkspacePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-surface-1 border border-border">
                   <span className="text-[11px] font-mono-stat text-tertiary uppercase">Max Loss per Trade</span>
-                  <p className="text-2xl font-bold font-mono-stat text-danger mt-1">-${maxRiskAmount.toLocaleString()}</p>
+                  <p className="text-2xl font-bold font-mono-stat text-danger mt-1">-₹{maxRiskAmount.toLocaleString()}</p>
                   <span className="text-[10px] text-tertiary">Exactly {riskPercent}% equity</span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-surface-1 border border-border">
                   <span className="text-[11px] font-mono-stat text-tertiary uppercase">Target Profit (Win)</span>
-                  <p className="text-2xl font-bold font-mono-stat text-success mt-1">+${targetProfit.toLocaleString()}</p>
+                  <p className="text-2xl font-bold font-mono-stat text-success mt-1">+₹{targetProfit.toLocaleString()}</p>
                   <span className="text-[10px] text-tertiary">{targetRatio}R multiple</span>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export default function WorkspacePage() {
                 </div>
                 <div className="flex justify-between items-center text-xs font-mono-stat border-t border-border pt-2">
                   <span className="text-secondary font-medium">Max Daily Loss Threshold (5%):</span>
-                  <span className="text-xs font-bold font-mono-stat text-danger">${maxDrawdownBuffer}</span>
+                  <span className="text-xs font-bold font-mono-stat text-danger">₹{maxDrawdownBuffer}</span>
                 </div>
               </div>
 

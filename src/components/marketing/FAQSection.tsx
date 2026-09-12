@@ -14,7 +14,7 @@ export default function FAQSection() {
     },
     {
       q: "How does the automated daily drawdown lockout work with evaluation prop firms?",
-      a: "You enter your evaluation's specific daily drawdown barrier into your RiskRule risk preferences (for example, a maximum $2,000 drawdown threshold in a 24-hour cycle). When account equity reaches this limit, our real-time engine intervenes by blocking further order transmission from our connected tools and initiating an automated cooling-off period, preserving your challenge status."
+      a: "You enter your evaluation's specific daily drawdown barrier into your RiskRule risk preferences (for example, a maximum ₹2,000 drawdown threshold in a 24-hour cycle). When account equity reaches this limit, our real-time engine intervenes by blocking further order transmission from our connected tools and initiating an automated cooling-off period, preserving your challenge status."
     },
     {
       q: "Does RiskRule cause any execution delays or impact terminal performance?",

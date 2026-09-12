@@ -284,7 +284,7 @@ export default function Pricing() {
             <div className="lg:col-span-6 space-y-6">
               <div className="flex justify-between items-center border-b border-border pb-3">
                 <span className="font-display font-bold text-base text-primary">Your Total Trading Capital</span>
-                <span className="text-lg font-mono-stat font-extrabold text-primary">${calculatorCapital.toLocaleString()}</span>
+                <span className="text-lg font-mono-stat font-extrabold text-primary">₹{calculatorCapital.toLocaleString()}</span>
               </div>
 
               <div className="space-y-3">
@@ -298,10 +298,10 @@ export default function Pricing() {
                   className="w-full accent-success cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-tertiary font-mono-stat">
-                  <span>$10,000</span>
-                  <span>$100,000</span>
-                  <span>$250,000</span>
-                  <span>$500,000</span>
+                  <span>₹10,000</span>
+                  <span>₹100,000</span>
+                  <span>₹250,000</span>
+                  <span>₹500,000</span>
                 </div>
               </div>
 
@@ -320,7 +320,7 @@ export default function Pricing() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-surface-1 border border-border">
                   <span className="text-[11px] font-mono-stat text-tertiary uppercase">Prevented Tilt Losses</span>
-                  <p className="text-2xl font-bold font-mono-stat text-success mt-1">+${Number(estimatedAnnualBlowoutLoss).toLocaleString()}</p>
+                  <p className="text-2xl font-bold font-mono-stat text-success mt-1">+₹{Number(estimatedAnnualBlowoutLoss).toLocaleString()}</p>
                 </div>
                 <div className="p-4 rounded-xl bg-surface-1 border border-border">
                   <span className="text-[11px] font-mono-stat text-tertiary uppercase">Annual Software Cost</span>
@@ -330,7 +330,7 @@ export default function Pricing() {
 
               <div className="p-3 rounded-xl bg-success/10 border border-success/20 text-xs font-mono-stat text-success flex items-center justify-between font-bold">
                 <span>Net Estimated Capital Protected:</span>
-                <span className="text-sm">+${(Number(estimatedAnnualBlowoutLoss) - 150).toLocaleString()}</span>
+                <span className="text-sm">+₹{(Number(estimatedAnnualBlowoutLoss) - 150).toLocaleString()}</span>
               </div>
             </div>
 

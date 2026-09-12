@@ -16,11 +16,11 @@ export default function InteractiveDashboard() {
   const shouldReduceMotion = useReducedMotion();
 
   const equityData = [
-    { day: 'Day 1', date: 'Oct 02', pnl: '+₹12,400', val: '$102,400', rr: '2.1R', note: 'Disciplined NQ breakout entry' },
-    { day: 'Day 15', date: 'Oct 16', pnl: '+₹28,600', val: '$104,200', rr: '1.8R', note: 'Scaled out at targeted resistance' },
-    { day: 'Day 30', date: 'Oct 31', pnl: '+₹42,100', val: '$105,800', rr: '3.0R', note: 'A+ Gold reversal setup' },
-    { day: 'Day 45', date: 'Nov 14', pnl: '+₹61,350', val: '$107,900', rr: '2.4R', note: 'AI Coach alerted & blocked revenge loss' },
-    { day: 'Day 60', date: 'Nov 28', pnl: '+₹84,250', val: '$110,400', rr: '2.8R', note: 'Strict risk rules maintained · All targets met' },
+    { day: 'Day 1', date: 'Oct 02', pnl: '+₹12,400', val: '₹102,400', rr: '2.1R', note: 'Disciplined NQ breakout entry' },
+    { day: 'Day 15', date: 'Oct 16', pnl: '+₹28,600', val: '₹104,200', rr: '1.8R', note: 'Scaled out at targeted resistance' },
+    { day: 'Day 30', date: 'Oct 31', pnl: '+₹42,100', val: '₹105,800', rr: '3.0R', note: 'A+ Gold reversal setup' },
+    { day: 'Day 45', date: 'Nov 14', pnl: '+₹61,350', val: '₹107,900', rr: '2.4R', note: 'AI Coach alerted & blocked revenge loss' },
+    { day: 'Day 60', date: 'Nov 28', pnl: '+₹84,250', val: '₹110,400', rr: '2.8R', note: 'Strict risk rules maintained · All targets met' },
   ];
 
   const recentTrades = [

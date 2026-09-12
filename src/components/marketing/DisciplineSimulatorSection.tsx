@@ -177,7 +177,7 @@ export default function DisciplineSimulatorSection() {
                     "text-3xl sm:text-4xl font-mono-stat font-extrabold tracking-tight mt-1",
                     calculatedPnL >= 0 ? "text-success" : "text-danger"
                   )}>
-                    {calculatedPnL >= 0 ? `+$${calculatedPnL.toLocaleString()}` : `-$${Math.abs(calculatedPnL).toLocaleString()}`}
+                    {calculatedPnL >= 0 ? `+₹${calculatedPnL.toLocaleString()}` : `-₹${Math.abs(calculatedPnL).toLocaleString()}`}
                   </p>
                 </div>
 
@@ -239,7 +239,7 @@ export default function DisciplineSimulatorSection() {
                 </div>
                 <div className="p-3 rounded-xl bg-surface-1 border border-border">
                   <span className="text-[10px] text-tertiary uppercase block">Drawdown Protected</span>
-                  <span className="text-base font-bold text-success mt-0.5 block">+${capitalSaved.toLocaleString()}</span>
+                  <span className="text-base font-bold text-success mt-0.5 block">+₹{capitalSaved.toLocaleString()}</span>
                 </div>
               </div>
 
