@@ -4,7 +4,8 @@ import {
   Shield, AlertTriangle, LogOut, Trash2, RefreshCw, BookOpen,
   Check, Key, Link2, User, Target, ChevronDown, Lock, Download,
   Zap, Bell, Sparkles, Server, Cpu, Clock, Plus, Search, Star,
-  ListChecks, FileText, CheckCircle2, Info, X, Compass, Lightbulb, Eye
+  ListChecks, FileText, CheckCircle2, Info, X, Compass, Lightbulb, Eye,
+  CreditCard, Crown, Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useAuthStore } from '../stores/authStore';
@@ -14,6 +15,9 @@ import { useTradeStore } from '../stores/tradeStore';
 import { api } from '../lib/api';
 import { notify } from '../lib/notify';
 import { cn } from '../lib/cn';
+import { usePaymentStore } from '../stores/paymentStore';
+import { useRazorpayCheckout } from '../hooks/useRazorpayCheckout';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedTabs } from '../components/ui/Motion';
 import { BrokerHealthCard } from '../components/settings/brokers/BrokerHealthCard';
@@ -923,7 +927,12 @@ export default function Settings() {
 
       {/* TAB 3: PROFILE & WORKSPACE PREFERENCES */}
       {activeTab === 'profile' && (
-        <div className="card p-7 space-y-6 animate-fadeIn">
+        <div className="space-y-6 animate-fadeIn">
+
+          {/* ── Subscription Management Card ── */}
+          <SubscriptionCard />
+
+        <div className="card p-7 space-y-6">
           <div className="flex items-center gap-5 pb-6 border-b border-border">
             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-iris to-accent flex items-center justify-center text-white text-xl font-black shadow-iris select-none">
               {profile?.avatarUrl ? (
@@ -1021,6 +1030,7 @@ export default function Settings() {
             </div>
           </div>
         </div>
+        </div>
       )}
 
       {/* TAB 4: SECURITY & DATA VAULT */}
@@ -1082,3 +1092,129 @@ export default function Settings() {
   );
 }
 
+// ─── Subscription Management Card (used in Profile tab) ─────────────────────
+function SubscriptionCard() {
+  const { currentPlan, subscription, loading, fetchStatus, cancelSubscription } = usePaymentStore();
+  const [isCancelling, setIsCancelling] = React.useState(false);
+  const navigate = React.useCallback(() => {}, []);
+
+  const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
+    onSuccess: (plan) => {
+      toast.success(`Upgraded to ${plan}! 🚀`, { description: 'Your plan is now active.' });
+      useAuthStore.getState().initialize();
+      fetchStatus();
+    },
+    onFailure: (error) => {
+      if (error !== 'Payment cancelled') {
+        toast.error('Payment Failed', { description: error });
+      }
+    },
+  });
+
+  React.useEffect(() => { fetchStatus(); }, [fetchStatus]);
+
+  const handleCancel = async () => {
+    if (!window.confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free plan.')) return;
+    setIsCancelling(true);
+    const result = await cancelSubscription();
+    setIsCancelling(false);
+    if (result.success) {
+      toast.success('Subscription cancelled', { description: 'You have been moved to the Free plan.' });
+      useAuthStore.getState().initialize();
+    } else {
+      toast.error(result.error || 'Failed to cancel subscription');
+    }
+  };
+
+  const planBadge = currentPlan === 'FREE'
+    ? { label: 'FREE', bg: 'bg-surface-2 text-secondary border-border' }
+    : currentPlan === 'PRO'
+    ? { label: 'PRO', bg: 'bg-iris/15 text-iris border-iris/30' }
+    : { label: 'ELITE', bg: 'bg-gold/15 text-amber-400 border-amber-400/30' };
+
+  return (
+    <div className="card p-7 space-y-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-iris/15 text-iris flex items-center justify-center shrink-0">
+            <CreditCard size={20} />
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-base text-primary">Subscription & Billing</h4>
+            <p className="text-xs text-tertiary">Manage your current plan and billing preferences</p>
+          </div>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-[11px] font-mono-stat font-extrabold uppercase tracking-wider border ${planBadge.bg}`}>
+          {planBadge.label}
+        </span>
+      </div>
+
+      {currentPlan === 'FREE' ? (
+        <div className="p-5 rounded-2xl bg-surface-0 border border-border space-y-4">
+          <div className="flex items-start gap-3">
+            <Crown size={18} className="text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-primary">Upgrade to unlock all features</p>
+              <p className="text-xs text-secondary mt-1 leading-relaxed">
+                Get unlimited trade syncs, AI Behavioral Coach, automated lockouts, voice guidance, and more.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => openCheckout('PRO', 'annual')}
+              disabled={isCheckoutLoading}
+              className="flex-1 h-10 rounded-xl bg-gradient-to-r from-accent to-iris text-white text-xs font-bold flex items-center justify-center gap-2 hover:opacity-95 transition-all cursor-pointer disabled:opacity-60 shadow-md shadow-iris/20"
+            >
+              {isCheckoutLoading ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+              Upgrade to PRO
+            </button>
+            <button
+              onClick={() => openCheckout('ELITE', 'annual')}
+              disabled={isCheckoutLoading}
+              className="flex-1 h-10 rounded-xl bg-surface-2 border border-border text-primary text-xs font-bold flex items-center justify-center gap-2 hover:bg-surface-elevated transition-all cursor-pointer disabled:opacity-60"
+            >
+              Launch ELITE
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-5 rounded-2xl bg-surface-0 border border-border space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <span className="text-[10px] font-mono-stat text-tertiary uppercase">Current Plan</span>
+              <p className="text-sm font-bold text-primary mt-1">{currentPlan}</p>
+            </div>
+            <div>
+              <span className="text-[10px] font-mono-stat text-tertiary uppercase">Billing Cycle</span>
+              <p className="text-sm font-bold text-primary mt-1 capitalize">{subscription?.billingCycle || '—'}</p>
+            </div>
+            <div>
+              <span className="text-[10px] font-mono-stat text-tertiary uppercase">Status</span>
+              <p className={`text-sm font-bold mt-1 capitalize ${subscription?.status === 'active' ? 'text-success' : 'text-secondary'}`}>
+                {subscription?.status || 'Active'}
+              </p>
+            </div>
+            <div>
+              <span className="text-[10px] font-mono-stat text-tertiary uppercase">Renews On</span>
+              <p className="text-sm font-bold text-primary mt-1">
+                {subscription?.currentPeriodEnd
+                  ? new Date(subscription.currentPeriodEnd).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : '—'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2 border-t border-border/50">
+            <button
+              onClick={handleCancel}
+              disabled={isCancelling}
+              className="h-9 px-4 rounded-xl bg-surface-2 border border-border text-xs font-semibold text-secondary hover:text-primary hover:bg-surface-elevated transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

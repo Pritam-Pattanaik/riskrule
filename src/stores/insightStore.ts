@@ -27,6 +27,7 @@ interface InsightState {
   currentMode: string;
   loading: boolean;
   error: string | null;
+  isQuotaExhausted: boolean;
 
   setMode: (mode: string) => void;
   fetchConversations: () => Promise<void>;
@@ -61,6 +62,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
   currentMode: 'general',
   loading: false,
   error: null,
+  isQuotaExhausted: false,
 
   setMode: (mode: string) => set({ currentMode: mode }),
 
@@ -304,7 +306,8 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       messages: [...state.messages, tempUserMsg],
       isTyping: true,
       streamingMessage: '',
-      error: null
+      error: null,
+      isQuotaExhausted: false,
     }));
 
     const controller = new AbortController();
@@ -363,8 +366,12 @@ export const useInsightStore = create<InsightState>((set, get) => ({
           };
         });
       } else {
-        set({ error: error.message || 'Chat request failed', isTyping: false });
-        import('../lib/notify').then(m => m.notify.error(error.message || 'Failed to generate response'));
+        const errMsg = error.message || 'Chat request failed';
+        const isQuota = errMsg.toLowerCase().includes('limit reached');
+        set({ error: errMsg, isTyping: false, isQuotaExhausted: isQuota });
+        if (!isQuota) {
+          import('../lib/notify').then(m => m.notify.error(errMsg));
+        }
       }
     } finally {
       abortControllers.delete(conversationId);

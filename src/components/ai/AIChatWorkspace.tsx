@@ -67,6 +67,7 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
     isTyping,
     loading,
     conversations,
+    isQuotaExhausted,
     sendMessage,
     stopGeneration,
     regenerateResponse,
@@ -310,6 +311,7 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
             disabled={loading && messages.length === 0}
             onMicToggle={toggleRecording}
             isListening={isListening}
+            isQuotaExhausted={isQuotaExhausted}
           />
         </div>
       </div>

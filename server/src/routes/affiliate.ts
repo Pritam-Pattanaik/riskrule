@@ -15,6 +15,70 @@ export function computeCommission(planPrice: number = PRO_MONTHLY_PRICE, percent
   return Math.round((planPrice * percent) / 100);
 }
 
+// ─── Reusable Affiliate Reward Function ─────────────────────────────────────
+// Called from both the upgrade-to-pro endpoint and the Razorpay payment webhook.
+// Credits 20% recurring commission to the referrer if the upgraded user was referred.
+export async function creditAffiliateReward(userId: string, planType: string = 'PRO'): Promise<boolean> {
+  try {
+    const user = await (prisma as any).user.findUnique({
+      where: { id: userId },
+      select: { id: true, fullName: true, referredById: true },
+    });
+
+    if (!user || !user.referredById) return false;
+
+    const referrerRewardAmount = MONTHLY_REWARD_PER_PRO;
+
+    // Check if reward was already credited for this user+plan combo (idempotency)
+    const existingReward = await (prisma as any).affiliateEarning.findFirst({
+      where: {
+        affiliateId: user.referredById,
+        referredUserId: userId,
+        planType,
+      },
+    });
+    if (existingReward) {
+      logger.info(`[Affiliate] Reward already credited for user ${userId} plan ${planType} — skipping`);
+      return false;
+    }
+
+    await (prisma as any).affiliateEarning.create({
+      data: {
+        affiliateId: user.referredById,
+        referredUserId: userId,
+        amount: referrerRewardAmount,
+        currency: 'INR',
+        planType,
+        description: `20% recurring commission for ${user.fullName || 'referred trader'} upgrading to ${planType}`,
+        status: 'PAID',
+      },
+    });
+
+    // Notify the referrer
+    try {
+      await (prisma as any).notification.create({
+        data: {
+          userId: user.referredById,
+          title: '20% Affiliate Commission Credited! 🎉',
+          description: `You earned a 20% recurring commission of ₹${referrerRewardAmount} because ${user.fullName || 'a trader you referred'} upgraded to RiskRule ${planType}!`,
+          category: 'Trading',
+          priority: 'Success',
+          isRead: false,
+        },
+      });
+    } catch (notifErr) {
+      logger.warn('[Affiliate] Failed to send reward notification:', notifErr);
+    }
+
+    logger.info(`[Affiliate] Credited ₹${referrerRewardAmount} to referrer ${user.referredById} for user ${userId} upgrading to ${planType}`);
+    return true;
+  } catch (err) {
+    logger.error('[Affiliate] creditAffiliateReward error:', err);
+    return false;
+  }
+}
+
+
 // Helper to generate a unique, clean referral code
 export function generateReferralCode(fullName?: string | null, email?: string | null): string {
   let prefix = 'RISK';

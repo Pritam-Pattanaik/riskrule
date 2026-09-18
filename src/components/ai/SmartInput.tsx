@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, StopCircle, Command, Mic, MicOff } from 'lucide-react';
+import { Send, StopCircle, Command, Mic, MicOff, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { notify } from '../../lib/notify';
 import { useVoiceStore } from '../../stores/voiceStore';
 import { VoiceOrb } from './VoiceOrb';
 
@@ -40,9 +41,10 @@ interface Props {
   disabled?: boolean;
   onMicToggle?: () => void;
   isListening?: boolean;
+  isQuotaExhausted?: boolean;
 }
 
-export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, disabled, onMicToggle, isListening }: Props) {
+export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, disabled, onMicToggle, isListening, isQuotaExhausted }: Props) {
   const [input, setInput] = useState('');
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashFilter, setSlashFilter] = useState('');
@@ -210,6 +212,16 @@ export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, di
           </div>
 
           <div className="flex items-center gap-1.5">
+            {isQuotaExhausted && (
+              <button
+                onClick={() => notify.error("Please upgrade to use AI efficiently.")}
+                className="flex items-center justify-center w-7 h-7 rounded-full bg-loss text-white shadow-lg shadow-loss/20 hover:scale-105 transition-transform"
+                title="Quota Exhausted"
+              >
+                <AlertCircle className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Microphone button */}
             {onMicToggle && (
               <button

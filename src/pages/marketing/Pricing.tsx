@@ -1,17 +1,52 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Check, X, ChevronDown, ChevronUp, Sparkles, Shield, Zap, 
-  HelpCircle, ArrowRight, Sliders, CheckCircle2, Lock
+  HelpCircle, ArrowRight, Sliders, CheckCircle2, Lock, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal, StaggerContainer, StaggerItem, HoverLift, NumberCounter } from '../../components/ui/Motion';
 import { cn } from '../../lib/cn';
 import TrustTicker from '../../components/marketing/TrustTicker';
+import { useAuthStore } from '../../stores/authStore';
+import { useRazorpayCheckout } from '../../hooks/useRazorpayCheckout';
+import { toast } from 'sonner';
 
 export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [calculatorCapital, setCalculatorCapital] = useState<number>(100000);
+  const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
+
+  const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
+    onSuccess: (plan) => {
+      toast.success(`Welcome to RiskRule ${plan}! 🚀`, {
+        description: 'Your plan has been activated. Redirecting to dashboard...',
+      });
+      // Refresh user state and redirect
+      useAuthStore.getState().initialize();
+      setTimeout(() => navigate('/dashboard'), 2000);
+    },
+    onFailure: (error) => {
+      if (error !== 'Payment cancelled') {
+        toast.error('Payment Failed', { description: error });
+      }
+    },
+  });
+
+  const handlePlanCTA = (planName: string) => {
+    if (planName === 'Starter') {
+      navigate('/signup');
+      return;
+    }
+    if (!user) {
+      // Not logged in — redirect to signup, then they can upgrade
+      navigate('/signup');
+      return;
+    }
+    const planType = planName as 'PRO' | 'ELITE';
+    openCheckout(planType, billingCycle);
+  };
 
   // Capital Preservation Math
   const estimatedAnnualBlowoutLoss = (calculatorCapital * 0.12).toFixed(0); // 12% avg saved
@@ -243,17 +278,21 @@ export default function Pricing() {
                     </ul>
                   </div>
 
-                  <Link
-                    to="/signup"
+                  <button
+                    onClick={() => handlePlanCTA(plan.name)}
+                    disabled={isCheckoutLoading}
                     className={cn(
-                      "w-full min-h-[46px] inline-flex items-center justify-center rounded-xl text-xs font-bold text-center transition-all focus-ring shadow-sm",
+                      "w-full min-h-[46px] inline-flex items-center justify-center rounded-xl text-xs font-bold text-center transition-all focus-ring shadow-sm cursor-pointer disabled:opacity-60",
                       plan.highlight
                         ? "bg-gradient-to-r from-accent to-iris text-white hover:opacity-95 shadow-md shadow-iris/20"
                         : "bg-surface-2 border border-border text-primary hover:bg-surface-elevated"
                     )}
                   >
+                    {isCheckoutLoading && plan.name !== 'Starter' ? (
+                      <Loader2 size={16} className="animate-spin mr-2" />
+                    ) : null}
                     {plan.cta}
-                  </Link>
+                  </button>
                 </HoverLift>
               </StaggerItem>
             );

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useAffiliateStore } from '../stores/affiliateStore';
+import { useRazorpayCheckout } from '../hooks/useRazorpayCheckout';
 import AffiliateHero from '../components/affiliate/AffiliateHero';
 import AffiliateMetrics from '../components/affiliate/AffiliateMetrics';
 import ReferralShareCard from '../components/affiliate/ReferralShareCard';
@@ -97,22 +98,25 @@ export default function Affiliate() {
     }
   };
 
-  // Real-time upgrade of self to Pro
-  const handleUpgradeSelfToPro = async () => {
-    if (isUpgrading) return;
-    setIsUpgrading(true);
-    const res = await upgradeToPro();
-    setIsUpgrading(false);
-
-    if (res.success) {
-      toast.success('Your account is now on RiskRules Pro! 👑', {
-        description: res.rewardCredited
-          ? `Attribution verified: 20% recurring commission (₹${monthlyRewardPerPro}) was credited to the partner who referred you!`
-          : 'Welcome to RiskRules Pro workstation features.',
+  // Razorpay checkout for Pro upgrade
+  const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
+    onSuccess: (plan) => {
+      toast.success(`Your account is now on RiskRule ${plan}! 👑`, {
+        description: 'Welcome to RiskRule Pro workstation features.',
       });
-    } else {
-      toast.error(res.message || 'Upgrade failed');
-    }
+      useAuthStore.getState().initialize();
+      fetchStats();
+    },
+    onFailure: (error) => {
+      if (error !== 'Payment cancelled') {
+        toast.error('Payment Failed', { description: error });
+      }
+    },
+  });
+
+  // Real-time upgrade of self via Razorpay payment
+  const handleUpgradeSelf = (plan: 'PRO' | 'ELITE') => {
+    openCheckout(plan, 'monthly');
   };
 
   return (
@@ -153,14 +157,25 @@ export default function Affiliate() {
             <span>{isSimulating ? 'Simulating...' : `⚡ Test Live Pro Referral (+₹${monthlyRewardPerPro})`}</span>
           </motion.button>
 
-          {userPlan !== 'PRO' && (
+          {userPlan === 'FREE' && (
             <button
-              onClick={handleUpgradeSelfToPro}
-              disabled={isUpgrading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-secondary hover:text-primary bg-surface-2 hover:bg-surface-3 border border-border transition-colors cursor-pointer"
+              onClick={() => handleUpgradeSelf('PRO')}
+              disabled={isCheckoutLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-secondary hover:text-primary bg-surface-2 hover:bg-surface-3 border border-border transition-colors cursor-pointer disabled:opacity-50"
             >
               <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isUpgrading ? 'Upgrading...' : 'Upgrade to Pro'}</span>
+              <span>{isCheckoutLoading ? 'Processing...' : 'Upgrade to Pro'}</span>
+            </button>
+          )}
+
+          {userPlan !== 'ELITE' && (
+            <button
+              onClick={() => handleUpgradeSelf('ELITE')}
+              disabled={isCheckoutLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-400 bg-gold/10 hover:bg-gold/20 border border-amber-400/30 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span>{isCheckoutLoading ? 'Processing...' : 'Upgrade to Elite'}</span>
             </button>
           )}
 

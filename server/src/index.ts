@@ -47,6 +47,7 @@ import newsEngineRoutes from './routes/news-engine';
 import flowRoutes from './routes/flow.routes';
 import voiceRoutes from './routes/voice';
 import affiliateRoutes from './routes/affiliate';
+import paymentRoutes from './routes/payment';
 import { startNewsEngine, stopNewsEngine } from './news-engine';
 import { marketWorker } from './services/MarketWorker';
 import { flowDataWorker } from './flow/workers/FlowDataWorker';
@@ -119,7 +120,7 @@ app.get('/api/health', (_req, res) => {
 
 // Apply CSRF protection to mutating API calls only.
 // SSE streaming endpoints are excluded (EventSource cannot send custom headers).
-const SSE_PATHS = ['/market/stream', '/market/ai-summary/stream', '/v1/flow/stream', '/affiliate/click'];
+const SSE_PATHS = ['/market/stream', '/market/ai-summary/stream', '/v1/flow/stream', '/affiliate/click', '/payment/webhook'];
 app.use('/api', (req, res, next) => {
   const method = req.method.toUpperCase();
   if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return next();
@@ -150,6 +151,7 @@ app.use('/api/goals', goalsRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/affiliate', affiliateRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api/news-engine', newsEngineRoutes);
 app.use('/api/v1/flow', flowRoutes);
 app.use('/api/voice', voiceRoutes);

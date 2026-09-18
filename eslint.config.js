@@ -26,7 +26,7 @@ export default defineConfig([
         'warn',
         { allowConstantExport: true },
       ],
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-restricted-imports': [
         'warn',
