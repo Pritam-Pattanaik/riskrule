@@ -9,6 +9,7 @@ export const JWT_SECRET = _jwtSecret.length >= 32 ? _jwtSecret : `${_jwtSecret}_
 export interface AuthRequest extends Request {
   userId?: string;
   userRole?: string;
+  userPlan?: string;
 }
 
 // Middleware to authenticate JWT
@@ -35,7 +36,7 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { userId: string; v?: number };
     
     // Check token version for forced invalidation
-    const user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { id: true, role: true, tokenVersion: true } });
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { id: true, role: true, plan: true, tokenVersion: true } });
     if (!user || (decoded.v !== undefined && decoded.v !== user.tokenVersion)) {
       res.status(401).json({ error: 'Token invalidated' });
       return;
@@ -43,6 +44,7 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 
     req.userId = decoded.userId;
     req.userRole = user.role;
+    req.userPlan = user.plan;
     next();
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' });

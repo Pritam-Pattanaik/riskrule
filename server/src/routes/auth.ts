@@ -159,6 +159,7 @@ router.post('/login', lockService.authRateLimit(), async (req: Request, res: Res
         avatarUrl: user.avatarUrl,
         timezone: user.timezone,
         role: user.role,
+        plan: user.plan || 'FREE',
       },
     });
   } catch (err: any) {

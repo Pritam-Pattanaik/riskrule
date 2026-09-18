@@ -6,16 +6,18 @@ import { logger } from '../lib/logger';
 // ─── Rate Limiter Configuration ─────────────────────────────────────────────
 const WINDOW_SECONDS = 60;
 const MAX_REQUESTS_PER_WINDOW = 10;
-const DAILY_LIMIT = 300;
 
 /**
  * User-scoped rate limiter for AI Coach endpoints.
  * Enforces:
  * 1. Rolling window: 10 requests / 60 seconds per userId.
- * 2. Daily cap: 300 requests / 24 hours per userId.
+ * 2. Daily cap: dynamically set based on user plan (1 for FREE, 3 for PRO).
  */
 export async function aiRateLimiter(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const userId = req.userId;
+  const userPlan = req.userPlan || 'FREE';
+  const dailyLimit = userPlan === 'ELITE' ? 5 : (userPlan === 'PRO' ? 3 : 1);
+
   if (!userId) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
@@ -29,10 +31,10 @@ export async function aiRateLimiter(req: AuthRequest, res: Response, next: NextF
     const dailyCountStr = await cache.get(dailyKey);
     const dailyCount = dailyCountStr ? parseInt(dailyCountStr, 10) : 0;
 
-    if (dailyCount >= DAILY_LIMIT) {
+    if (dailyCount >= dailyLimit) {
       logger.warn(`[AIRateLimit] Daily cap reached for user ${userId}`);
       res.status(429).json({
-        error: 'Daily AI Coach message limit reached (300/day). Your quota will reset at midnight UTC.',
+        error: `Daily AI Coach message limit reached (${dailyLimit}/day). Upgrade your plan for more inputs. Your quota resets at midnight UTC.`,
         retryAfterSeconds: 86400,
         dailyRemaining: 0,
       });
@@ -48,7 +50,7 @@ export async function aiRateLimiter(req: AuthRequest, res: Response, next: NextF
       res.status(429).json({
         error: 'Too many messages sent. Please wait a moment before sending another message.',
         retryAfterSeconds: 15,
-        dailyRemaining: Math.max(0, DAILY_LIMIT - dailyCount),
+        dailyRemaining: Math.max(0, dailyLimit - dailyCount),
       });
       return;
     }
@@ -66,7 +68,7 @@ export async function aiRateLimiter(req: AuthRequest, res: Response, next: NextF
     // Attach remaining quota headers
     res.setHeader('X-RateLimit-Limit-Minute', MAX_REQUESTS_PER_WINDOW.toString());
     res.setHeader('X-RateLimit-Remaining-Minute', Math.max(0, MAX_REQUESTS_PER_WINDOW - (minuteCount + 1)).toString());
-    res.setHeader('X-RateLimit-Daily-Remaining', Math.max(0, DAILY_LIMIT - (dailyCount + 1)).toString());
+    res.setHeader('X-RateLimit-Daily-Remaining', Math.max(0, dailyLimit - (dailyCount + 1)).toString());
 
     next();
   } catch (err: any) {

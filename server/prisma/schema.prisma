@@ -24,6 +24,7 @@ model User {
   referralCode       String?   @unique @map("referral_code")
   referredById       String?   @map("referred_by_id") @db.Uuid
   plan               String    @default("FREE")
+  razorpayCustomerId String?   @map("razorpay_customer_id")
   affiliateClicks    Int       @default(0) @map("affiliate_clicks")
 
   referrer           User?     @relation("UserReferrals", fields: [referredById], references: [id])
@@ -51,6 +52,8 @@ model User {
   optionAlerts       OptionAlert[]
   alertHistory       AlertHistory[]
   passwordResetTokens PasswordResetToken[]
+  subscriptions      Subscription[]
+  payments           Payment[]
   @@map("users")
 }
 
@@ -500,5 +503,45 @@ model AffiliatePayout {
 
   @@index([affiliateId])
   @@map("affiliate_payouts")
+}
+
+model Subscription {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                 String    @map("user_id") @db.Uuid
+  razorpaySubscriptionId String    @unique @map("razorpay_subscription_id")
+  razorpayPlanId         String    @map("razorpay_plan_id")
+  planType               String    @map("plan_type")
+  billingCycle           String    @map("billing_cycle")
+  status                 String    @default("created")
+  currentPeriodStart     DateTime? @map("current_period_start")
+  currentPeriodEnd       DateTime? @map("current_period_end")
+  cancelledAt            DateTime? @map("cancelled_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  razorpayPaymentId   String?   @unique @map("razorpay_payment_id")
+  razorpayOrderId     String?   @map("razorpay_order_id")
+  razorpaySignature   String?   @map("razorpay_signature")
+  amount              Int
+  currency            String    @default("INR")
+  planType            String    @map("plan_type")
+  billingCycle        String    @map("billing_cycle")
+  status              String    @default("created")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("payments")
 }
 

@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import {
   Volume2, VolumeX, Sparkles, Play, Square, Check, RefreshCw,
-  Sliders, Globe, Radio, Bell, Bot, Mic, ShieldAlert, Cpu, Zap, Moon, Activity
+  Sliders, Globe, Radio, Bell, Bot, Mic, ShieldAlert, Cpu, Zap, Moon, Activity, Lock
 } from 'lucide-react';
 import { useVoiceStore, VoiceInfo, TARGET_LANGUAGES } from '../../stores/voiceStore';
 import { VoiceOrb } from '../ai/VoiceOrb';
 import { cn } from '../../lib/cn';
 import { notify } from '../../lib/notify';
+import { useAuthStore } from '../../stores/authStore';
+import { useRazorpayCheckout } from '../../hooks/useRazorpayCheckout';
+import { toast } from 'sonner';
 
 export function VoiceSettingsTab() {
+  const { profile } = useAuthStore();
+  const isElite = profile?.plan === 'ELITE';
+
   const {
     voiceModeEnabled,
     setVoiceMode,
@@ -37,8 +43,46 @@ export function VoiceSettingsTab() {
   const [customTestText, setCustomTestText] = useState('RiskRule Voice AI is online. All trading risk parameters are within safe limits.');
 
   useEffect(() => {
-    loadVoices();
-  }, [loadVoices]);
+    if (isElite) {
+      loadVoices();
+    }
+  }, [loadVoices, isElite]);
+
+  const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
+    onSuccess: (plan) => {
+      toast.success(`Welcome to RiskRule ${plan}! 🚀`, {
+        description: 'Elite Voice features are now unlocked.',
+      });
+      useAuthStore.getState().initialize();
+    },
+    onFailure: (error) => {
+      if (error !== 'Payment cancelled') {
+        toast.error('Payment Failed', { description: error });
+      }
+    },
+  });
+
+  if (!isElite) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-6 bg-surface-0 rounded-3xl border border-border shadow-sm">
+        <div className="w-20 h-20 bg-accent/10 text-accent rounded-full flex items-center justify-center border border-accent/20 mb-2 shadow-[0_0_24px_rgba(16,185,129,0.2)]">
+          <Lock size={36} />
+        </div>
+        <div className="space-y-2 max-w-md mx-auto">
+          <h2 className="font-display text-2xl font-bold text-primary">Elite Tier Required</h2>
+          <p className="text-sm text-tertiary leading-relaxed">
+            The Voice & Audio AI features, including the JARVIS-style Lunar AI narration and real-time market voice alerts, are exclusively available to ELITE tier subscribers.
+          </p>
+        </div>
+        <button 
+          onClick={() => openCheckout('ELITE', 'annual')}
+          disabled={isCheckoutLoading}
+          className="px-8 py-3 rounded-2xl bg-accent text-white font-bold text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:bg-accent/90 transition-all disabled:opacity-60">
+          {isCheckoutLoading ? 'Processing...' : 'Upgrade to ELITE'}
+        </button>
+      </div>
+    );
+  }
 
   const filteredVoices = availableVoices.filter(v => {
     if (genderFilter === 'all') return true;

@@ -1,14 +1,46 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Shield, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Shield, Sparkles, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { Reveal } from '../ui/Motion';
 import { MagneticButton } from '../ui/MagneticButton';
 import { cn } from '../../lib/cn';
+import { useAuthStore } from '../../stores/authStore';
+import { useRazorpayCheckout } from '../../hooks/useRazorpayCheckout';
+import { toast } from 'sonner';
 
 export default function PricingSection() {
   const [annualBilling, setAnnualBilling] = useState(true);
   const [revengeCost, setRevengeCost] = useState(5000);
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+
+  const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
+    onSuccess: (plan) => {
+      toast.success(`Welcome to RiskRule ${plan}! 🚀`, {
+        description: 'Your plan has been activated. Redirecting to dashboard...',
+      });
+      useAuthStore.getState().initialize();
+      setTimeout(() => navigate('/dashboard'), 2000);
+    },
+    onFailure: (error) => {
+      if (error !== 'Payment cancelled') {
+        toast.error('Payment Failed', { description: error });
+      }
+    },
+  });
+
+  const handlePlanCTA = (planName: string) => {
+    if (planName === 'Starter') {
+      navigate('/signup');
+      return;
+    }
+    if (!user) {
+      navigate('/signup');
+      return;
+    }
+    const planType = planName as 'PRO' | 'ELITE';
+    openCheckout(planType, annualBilling ? 'annual' : 'monthly');
+  };
 
   const plans = [
     {
@@ -202,10 +234,14 @@ export default function PricingSection() {
 
               <div className="pt-2">
                 <MagneticButton
-                  onClick={() => navigate('/signup')}
+                  onClick={() => handlePlanCTA(plan.name)}
                   variant={plan.popular ? "primary" : "secondary"}
                   className="w-full min-h-[48px] justify-center text-sm font-bold shadow-sm"
+                  disabled={isCheckoutLoading && plan.name !== 'Starter'}
                 >
+                  {isCheckoutLoading && plan.name !== 'Starter' ? (
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                  ) : null}
                   {plan.cta}
                 </MagneticButton>
                 
