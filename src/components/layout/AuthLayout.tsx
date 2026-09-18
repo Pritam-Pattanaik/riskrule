@@ -87,16 +87,16 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       </div>
 
       {/* ── Right Panel — Interactive Auth Form ── */}
-      <div className="flex-1 flex flex-col relative bg-canvas items-center justify-center p-6 sm:p-12 h-full overflow-y-auto">
+      <div className="flex-1 flex flex-col relative bg-canvas p-6 sm:p-12 h-full overflow-y-auto">
         
         {/* Mobile Header Logo */}
-        <div className="lg:hidden absolute top-6 left-6 flex items-center justify-between w-[calc(100%-3rem)]">
+        <div className="lg:hidden flex items-center mb-6 shrink-0">
           <Link to="/" className="flex items-center outline-none focus-ring rounded-lg">
             <Logo variant="full" size="md" />
           </Link>
         </div>
 
-        <div className="w-full max-w-[420px] relative z-10 py-12 lg:py-0">
+        <div className="w-full max-w-[420px] relative z-10 mx-auto my-auto lg:py-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -118,7 +118,11 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
                   <Lock size={14} className="text-success" />
                   <span>256-Bit TLS Encryption</span>
                 </span>
-                <Link to="/terms" className="hover:text-primary transition-colors">Terms of Execution ↗</Link>
+                <div className="flex items-center gap-2">
+                  <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Terms of Execution ↗</Link>
+                  <span className="opacity-30">•</span>
+                  <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Privacy ↗</Link>
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
