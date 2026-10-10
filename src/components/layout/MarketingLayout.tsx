@@ -26,18 +26,11 @@ export default function MarketingLayout() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-open beta modal after 4 seconds
+  // Auto-open beta modal instantly (localStorage check bypassed for testing)
   useEffect(() => {
     const timer = setTimeout(() => {
-      try {
-        const seen = localStorage.getItem('betaModalSeen');
-        if (!seen) {
-          setBetaModalOpen(true);
-        }
-      } catch (e) {
-        // Ignore localStorage errors
-      }
-    }, 4000);
+      setBetaModalOpen(true);
+    }, 100);
     return () => clearTimeout(timer);
   }, [setBetaModalOpen]);
 
