@@ -8,6 +8,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { cn } from '../../lib/cn';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Logo } from '../ui/Logo';
+import { useUIStore } from '../../stores/uiStore';
+import BetaModal from '../marketing/BetaModal';
 
 export default function MarketingLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,12 +18,28 @@ export default function MarketingLayout() {
   const { token } = useAuthStore();
   const shouldReduceMotion = useReducedMotion();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const { setBetaModalOpen } = useUIStore();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Auto-open beta modal after 4 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const seen = localStorage.getItem('betaModalSeen');
+        if (!seen) {
+          setBetaModalOpen(true);
+        }
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [setBetaModalOpen]);
 
   // Scroll to top on route change
   useEffect(() => {
@@ -140,6 +158,12 @@ export default function MarketingLayout() {
               >
                 Sign In
               </Link>
+              <button
+                onClick={() => setBetaModalOpen(true)}
+                className="text-xs font-semibold text-iris hover:text-iris/80 transition-colors px-3 py-1.5 rounded-lg focus-ring"
+              >
+                Join the Beta
+              </button>
               <Link
                 to="/signup"
                 className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-gradient-to-r from-accent to-iris text-white text-xs font-bold hover:opacity-95 transition-all shadow-md shadow-accent/20 focus-ring"
@@ -357,6 +381,8 @@ export default function MarketingLayout() {
         </div>
       </footer>
 
+      {/* Beta Modal */}
+      <BetaModal />
     </div>
   );
 }

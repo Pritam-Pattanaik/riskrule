@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { TrendingUp, Shield, Lock, Star, CheckCircle2, Zap, Terminal } from 'lucide-react';
+import { TrendingUp, Shield, Lock, Star, CheckCircle2, Zap, Terminal, ArrowLeft } from 'lucide-react';
 import { Logo } from '../ui/Logo';
 
 interface AuthLayoutProps {
@@ -89,10 +89,19 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       {/* ── Right Panel — Interactive Auth Form ── */}
       <div className="flex-1 flex flex-col relative bg-canvas p-6 sm:p-12 h-full overflow-y-auto">
         
-        {/* Mobile Header Logo */}
-        <div className="lg:hidden flex items-center mb-6 shrink-0">
-          <Link to="/" className="flex items-center outline-none focus-ring rounded-lg">
-            <Logo variant="full" size="md" />
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between mb-6 shrink-0 w-full">
+          <div className="lg:hidden">
+            <Link to="/" className="flex items-center outline-none focus-ring rounded-lg">
+              <Logo variant="full" size="md" />
+            </Link>
+          </div>
+          <Link 
+            to="/" 
+            className="flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-primary transition-colors focus-ring rounded-lg py-1.5 px-3 bg-surface-1/50 border border-border/50 hover:bg-surface-2 lg:ml-auto"
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Home</span>
           </Link>
         </div>
 
