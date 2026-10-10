@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { ArrowRight, Shield, Terminal, Sparkles, Check, Sliders, Brain, Lock } from 'lucide-react';
 import { Reveal } from '../ui/Motion';
+import { useUIStore } from '../../stores/uiStore';
 
 export default function HeroSection() {
   const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
+  const { setBetaModalOpen } = useUIStore();
 
   return (
     <section className="relative w-full pt-28 sm:pt-36 pb-20 md:pb-28 flex flex-col items-center justify-center overflow-hidden">
@@ -53,13 +55,21 @@ export default function HeroSection() {
 
         {/* Action Conversion Trigger Button Group */}
         <Reveal direction="up" delay={0.2} className="w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-8 w-full max-w-md sm:max-w-none mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-8 w-full max-w-3xl sm:max-w-none mx-auto">
             <button
               onClick={() => navigate('/signup')}
               className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-primary text-canvas font-semibold text-base shadow-sm hover:opacity-95 transition-all duration-200 focus-ring"
             >
               <span>Start Building Discipline Free</span>
               <ArrowRight size={17} />
+            </button>
+
+            <button
+              onClick={() => setBetaModalOpen(true)}
+              className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl border border-iris/50 bg-iris/10 text-iris font-semibold text-base hover:bg-iris/20 transition-all duration-200 focus-ring"
+            >
+              <Sparkles size={16} />
+              <span>Join the Beta</span>
             </button>
 
             <a

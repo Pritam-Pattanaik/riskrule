@@ -4,12 +4,14 @@ interface UIState {
   sidebarOpen: boolean; // Mobile drawer
   desktopSidebarExpanded: boolean; // Desktop width toggle
   theme: 'dark' | 'light';
+  betaModalOpen: boolean;
   setSidebarOpen: (isOpen: boolean) => void;
   toggleSidebar: () => void;
   setDesktopSidebarExpanded: (isExpanded: boolean) => void;
   toggleDesktopSidebar: () => void;
   setTheme: (theme: 'dark' | 'light') => void;
   toggleTheme: () => void;
+  setBetaModalOpen: (isOpen: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => {
@@ -27,6 +29,7 @@ export const useUIStore = create<UIState>((set) => {
     sidebarOpen: false, // hidden on mobile by default
     desktopSidebarExpanded: initialSidebarExpanded,
     theme: savedTheme,
+    betaModalOpen: false,
     setSidebarOpen: (isOpen) => set({ sidebarOpen: isOpen }),
     toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
     setDesktopSidebarExpanded: (isExpanded) => {
@@ -58,5 +61,6 @@ export const useUIStore = create<UIState>((set) => {
         }
         return { theme: newTheme };
       }),
+    setBetaModalOpen: (isOpen) => set({ betaModalOpen: isOpen }),
   };
 });
