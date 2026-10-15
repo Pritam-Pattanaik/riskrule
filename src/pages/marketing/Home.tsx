@@ -30,30 +30,30 @@ export default function Home() {
       {/* 02. Institutional Broker Ecosystem Marquee */}
       <TrustTicker />
 
-      {/* 03. Interactive Discipline-to-Profit Simulator (How discipline changes the equity curve) */}
+      {/* 03. Live Product Preview & Interactive Command Center Showcase */}
+      <div id="workspace" className="pt-10 scroll-mt-20">
+        <InteractiveDashboard />
+      </div>
+
+      {/* 04. Concrete Trader Benefits & Engineering Pillars Bento Grid */}
+      <BentoGridSection />
+
+      {/* 05. AI Behavioral Coach Deep-Dive Engine */}
+      <AICoachSection />
+
+      {/* 06. Macroeconomic News Protection & Event Lockouts */}
+      <MarketNewsSection />
+
+      {/* 07. The 4-Step Blueprint to Trader Consistency */}
+      <TraderJourneySection />
+
+      {/* 08. Interactive Discipline-to-Profit Simulator */}
       <div id="discipline-simulator" className="pt-8 scroll-mt-20">
         <DisciplineSimulatorSection />
       </div>
 
-      {/* 04. The 4-Step Blueprint to Trader Consistency */}
-      <TraderJourneySection />
-
-      {/* 05. Interactive Diagnostic: Where are you leaking capital right now? */}
+      {/* 09. Interactive Diagnostic: Where are you leaking capital right now? */}
       <EdgeLeakCheckerSection />
-
-      {/* 06. Interactive Command Center Showcase (Live 4-Tab Simulation) */}
-      <div className="pt-12">
-        <InteractiveDashboard />
-      </div>
-
-      {/* 07. Concrete Trader Benefits & Engineering Pillars Bento Grid */}
-      <BentoGridSection />
-
-      {/* 08. Macroeconomic News Protection & Event Lockouts */}
-      <MarketNewsSection />
-
-      {/* 09. AI Behavioral Coach Deep-Dive Engine */}
-      <AICoachSection />
 
       {/* 10. Verified Social Proof & Audited Prop Performance */}
       <SocialProofSection />

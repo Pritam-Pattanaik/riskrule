@@ -26,13 +26,6 @@ export default function MarketingLayout() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-open beta modal instantly (localStorage check bypassed for testing)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setBetaModalOpen(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [setBetaModalOpen]);
 
   // Scroll to top on route change
   useEffect(() => {
@@ -168,16 +161,27 @@ export default function MarketingLayout() {
           )}
         </div>
 
-        {/* Mobile Toggle Button */}
-        <button
-          aria-expanded={mobileMenuOpen}
-          aria-controls="mobile-navigation"
-          aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-          className="lg:hidden touch-target p-2 text-secondary hover:text-primary transition-colors rounded-xl focus-ring"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Toggle Button & Quick Beta Action */}
+        <div className="flex items-center gap-2 lg:hidden">
+          {!token && (
+            <button
+              onClick={() => setBetaModalOpen(true)}
+              className="inline-flex sm:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-iris/15 border border-iris/30 text-iris text-xs font-bold hover:bg-iris/25 transition-colors focus-ring"
+            >
+              <Sparkles size={13} />
+              <span>Join Beta</span>
+            </button>
+          )}
+          <button
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="touch-target p-2 text-secondary hover:text-primary transition-colors rounded-xl focus-ring"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </header>
 
       {/* ── Accessible Mobile Menu Drawer ── */}
@@ -255,6 +259,16 @@ export default function MarketingLayout() {
                 </Link>
               ) : (
                 <>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setBetaModalOpen(true);
+                    }}
+                    className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 bg-iris/15 border border-iris/40 text-iris rounded-xl font-bold text-base hover:bg-iris/25 transition-colors focus-ring"
+                  >
+                    <Sparkles size={18} />
+                    <span>Join the Beta</span>
+                  </button>
                   <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}

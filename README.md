@@ -2,6 +2,8 @@
 
 <div align="center">
 
+### *Your broker records your trades. RiskRule helps you understand them.*
+
 **Institutional-grade trading journal and market intelligence platform for retail traders.**
 
 *Automated broker sync · AI behavioral coaching · Real-time market data · Discipline analytics*
