@@ -3,12 +3,13 @@ import { logger } from '../lib/logger';
 import { creditAffiliateReward } from '../routes/affiliate';
 
 /**
- * Billing service: the ONLY place allowed to grant a paid plan.
+ * Billing service: the ONLY place allowed to mutate a user's subscription plan.
  *
  * Invariants (enforced by tests/security/no-free-plan.test.ts):
  *  1. A paid plan is only ever written here, after a payment row has been atomically claimed.
- *  2. The plan and user come from OUR stored order, never from client / webhook payload data.
- *  3. Calling this twice (verify + webhook race, webhook replay) activates exactly once.
+ *  2. The plan, amount, and user come from OUR stored order, never from client / webhook payload data.
+ *  3. Calling settleCapturedPayment twice (verify + webhook race, webhook replay) activates exactly once.
+ *  4. Plan expiry and cancellation also flow exclusively through this module.
  */
 
 export interface SettleParams {
@@ -89,8 +90,8 @@ export async function settleCapturedPayment(params: SettleParams): Promise<Settl
     return { activated: false };
   }
 
-  // Post-commit side effects. These are idempotent / non-critical and must never undo the activation.
-  await creditAffiliateReward(settled.userId, settled.planType);
+  // Post-commit side effects. Pass the actual captured amount (in paise) so commission is 20% of what was paid.
+  await creditAffiliateReward(settled.userId, settled.planType, settled.amount);
 
   try {
     await db.notification.create({
@@ -108,7 +109,51 @@ export async function settleCapturedPayment(params: SettleParams): Promise<Settl
   }
 
   logger.info(
-    `[Billing] Activated: user=${settled.userId}, plan=${settled.planType}, payment=${params.razorpayPaymentId}, source=${params.source}`,
+    `[Billing] Activated: user=${settled.userId}, plan=${settled.planType}, amountPaise=${settled.amount}, payment=${params.razorpayPaymentId}, source=${params.source}`,
   );
   return { activated: true, planType: settled.planType, userId: settled.userId };
+}
+
+/**
+ * Checks whether the user's active subscription(s) have passed currentPeriodEnd.
+ * If all active subscriptions have expired, marks them 'expired' and downgrades user.plan to 'FREE'.
+ */
+export async function expireLapsedSubscriptions(userId: string): Promise<boolean> {
+  const db = prisma as any;
+  const now = new Date();
+
+  const expiredCount = await db.$transaction(async (tx: any) => {
+    const res = await tx.subscription.updateMany({
+      where: {
+        userId,
+        status: 'active',
+        currentPeriodEnd: { lt: now },
+      },
+      data: { status: 'expired', updatedAt: now },
+    });
+
+    if (res.count === 0) return 0;
+
+    const remainingActive = await tx.subscription.count({
+      where: {
+        userId,
+        status: 'active',
+        OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gte: now } }],
+      },
+    });
+
+    if (remainingActive === 0) {
+      await tx.user.update({
+        where: { id: userId },
+        data: { plan: 'FREE' },
+      });
+    }
+    return res.count;
+  });
+
+  if (expiredCount > 0) {
+    logger.info(`[Billing] Expired ${expiredCount} lapsed subscription(s) for user=${userId}`);
+    return true;
+  }
+  return false;
 }

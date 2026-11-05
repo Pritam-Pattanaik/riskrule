@@ -1,0 +1,15 @@
+# Security-critical files require owner review on all Pull Requests.
+/server/src/config/env.ts                @Pritam-Pattanaik
+/server/src/lib/jwt.ts                   @Pritam-Pattanaik
+/server/src/lib/razorpay.ts              @Pritam-Pattanaik
+/server/src/lib/razorpaySignature.ts     @Pritam-Pattanaik
+/server/src/middleware/auth.ts           @Pritam-Pattanaik
+/server/src/services/billing.ts          @Pritam-Pattanaik
+/server/src/routes/auth.ts               @Pritam-Pattanaik
+/server/src/routes/payment.ts            @Pritam-Pattanaik
+/server/src/routes/affiliate.ts          @Pritam-Pattanaik
+/server/src/routes/admin.ts              @Pritam-Pattanaik
+/server/tests/security/                  @Pritam-Pattanaik
+/.github/workflows/security.yml          @Pritam-Pattanaik
+/.gitleaks.toml                          @Pritam-Pattanaik
+/eslint.config.js                        @Pritam-Pattanaik

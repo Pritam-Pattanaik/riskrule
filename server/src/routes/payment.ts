@@ -12,7 +12,7 @@ import {
   PlanType,
   BillingCycle,
 } from '../lib/razorpay';
-import { settleCapturedPayment } from '../services/billing';
+import { settleCapturedPayment, expireLapsedSubscriptions } from '../services/billing';
 import { config } from '../config/env';
 
 const router = Router();
@@ -310,6 +310,9 @@ router.get('/status', authenticate, async (req: AuthRequest, res: Response): Pro
   try {
     const userId = req.userId;
     if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+
+    // Enforce billing period expiry before returning status
+    await expireLapsedSubscriptions(userId);
 
     const user = await (prisma as any).user.findUnique({
       where: { id: userId },

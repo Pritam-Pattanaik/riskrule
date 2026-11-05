@@ -205,3 +205,32 @@ test('webhook route fails closed (static guard on payment.ts)', () => {
   assert.ok(!/JSON\.stringify\(req\.body\)/.test(src), 'must not verify a re-serialised body');
   assert.ok(!/notes\.userId|notes\.planType/.test(src), 'must not trust webhook notes for user/plan');
 });
+
+
+// ─────────────────── Phase 2: commission, pricing, payout & expiry ────────────
+
+test('no route fabricates affiliate earnings from conversionsCount multiplication', () => {
+  const affiliate = fs.readFileSync(path.join(SRC, 'routes/affiliate.ts'), 'utf8');
+  const admin = fs.readFileSync(path.join(SRC, 'routes/admin.ts'), 'utf8');
+  assert.ok(!/conversionsCount\s*\*|totalConversions\s*\*/.test(affiliate), 'affiliate.ts must not fabricate earnings from conversionsCount');
+  assert.ok(!/conversionsCount\s*\*|totalConversions\s*\*/.test(admin), 'admin.ts must not fabricate earnings from conversionsCount');
+});
+
+test('affiliate pricing is derived from PLAN_CONFIG (single source of truth)', () => {
+  const affiliate = fs.readFileSync(path.join(SRC, 'routes/affiliate.ts'), 'utf8');
+  assert.ok(/PLAN_CONFIG\.PRO\.monthly\.amount/.test(affiliate), 'PRO_MONTHLY_PRICE must be derived from PLAN_CONFIG');
+  assert.ok(!/PRO_MONTHLY_PRICE\s*=\s*1999/.test(affiliate), 'stale 1999 constant must not reappear');
+});
+
+test('affiliate payout route uses a transaction + row lock to prevent double-spend races', () => {
+  const affiliate = fs.readFileSync(path.join(SRC, 'routes/affiliate.ts'), 'utf8');
+  assert.ok(/\$transaction/.test(affiliate), 'payout must run inside a database transaction');
+  assert.ok(/FOR UPDATE/i.test(affiliate), 'payout must lock the affiliate user row during balance check');
+});
+
+test('subscription expiry is enforced by billing service', () => {
+  const billing = fs.readFileSync(path.join(SRC, 'services/billing.ts'), 'utf8');
+  const payment = fs.readFileSync(path.join(SRC, 'routes/payment.ts'), 'utf8');
+  assert.ok(/export async function expireLapsedSubscriptions/.test(billing), 'billing.ts must export expireLapsedSubscriptions');
+  assert.ok(/expireLapsedSubscriptions\(/.test(payment), 'payment.ts must enforce subscription expiry');
+});
