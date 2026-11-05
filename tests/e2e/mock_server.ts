@@ -2,12 +2,14 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-const JWT_SECRET = 'fallback_secret_please_change';
+// Test-only mock server: random per-run secret, never a hardcoded value.
+const JWT_SECRET = crypto.randomBytes(32).toString('hex');
 const PORT = process.env.MOCK_PORT || 3001; // use 3001 to avoid conflicting with actual dev server during tests
 
 // ─── STATE TYPES ─────────────────────────────────────────────────────────────

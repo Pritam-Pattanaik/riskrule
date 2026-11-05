@@ -3,7 +3,8 @@ import { prisma } from '../db';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { logger } from '../lib/logger';
 import {
-  razorpay,
+  getRazorpay,
+  isRazorpayConfigured,
   RAZORPAY_KEY_ID,
   getPlanConfig,
   verifyPaymentSignature,
@@ -11,7 +12,8 @@ import {
   PlanType,
   BillingCycle,
 } from '../lib/razorpay';
-import { creditAffiliateReward } from './affiliate';
+import { settleCapturedPayment } from '../services/billing';
+import { config } from '../config/env';
 
 const router = Router();
 
@@ -22,6 +24,12 @@ router.post('/create-order', authenticate, async (req: AuthRequest, res: Respons
   try {
     const userId = req.userId;
     if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+
+    if (!isRazorpayConfigured()) {
+      logger.error('[Payment] create-order called but Razorpay is not configured');
+      res.status(503).json({ error: 'Payments are temporarily unavailable' });
+      return;
+    }
 
     const { planType, billingCycle } = req.body as { planType?: string; billingCycle?: string };
 
@@ -54,7 +62,7 @@ router.post('/create-order', authenticate, async (req: AuthRequest, res: Respons
     }
 
     // Create a Razorpay Order
-    const order = await razorpay.orders.create({
+    const order = await getRazorpay().orders.create({
       amount: config.amount,
       currency: 'INR',
       receipt: `rr_${userId.slice(0, 8)}_${Date.now()}`,
@@ -146,67 +154,18 @@ router.post('/verify', authenticate, async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    // Check idempotency — if already captured, don't process again
-    if (payment.status === 'captured') {
+    // Atomic: claims this payment exactly once, then activates plan + subscription + commission.
+    // Safe against verify/webhook races and replays.
+    const result = await settleCapturedPayment({
+      paymentId: payment.id,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
+      source: 'verify',
+    });
+
+    if (!result.activated) {
       res.json({ success: true, message: 'Payment already verified', plan: payment.planType });
       return;
-    }
-
-    // Update payment record
-    await (prisma as any).payment.update({
-      where: { id: payment.id },
-      data: {
-        razorpayPaymentId: razorpay_payment_id,
-        razorpaySignature: razorpay_signature,
-        status: 'captured',
-      },
-    });
-
-    // Upgrade user plan
-    await (prisma as any).user.update({
-      where: { id: userId },
-      data: { plan: payment.planType },
-    });
-
-    // Create a subscription record for tracking
-    const now = new Date();
-    const periodEnd = new Date(now);
-    if (payment.billingCycle === 'annual') {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-    } else {
-      periodEnd.setMonth(periodEnd.getMonth() + 1);
-    }
-
-    await (prisma as any).subscription.create({
-      data: {
-        userId,
-        razorpaySubscriptionId: razorpay_order_id, // Using order ID as reference
-        razorpayPlanId: `${payment.planType}_${payment.billingCycle}`,
-        planType: payment.planType,
-        billingCycle: payment.billingCycle,
-        status: 'active',
-        currentPeriodStart: now,
-        currentPeriodEnd: periodEnd,
-      },
-    });
-
-    // Credit affiliate reward if user was referred
-    await creditAffiliateReward(userId, payment.planType);
-
-    // Create a success notification
-    try {
-      await (prisma as any).notification.create({
-        data: {
-          userId,
-          title: `Welcome to RiskRule ${payment.planType}! 🚀`,
-          description: `Your ${payment.planType} plan is now active. Enjoy unlimited access to all ${payment.planType} features.`,
-          category: 'Trading',
-          priority: 'Success',
-          isRead: false,
-        },
-      });
-    } catch (notifErr) {
-      logger.warn('[Payment] Failed to create upgrade notification:', notifErr);
     }
 
     logger.info(`[Payment] Verified & activated: user=${userId}, plan=${payment.planType}, payment=${razorpay_payment_id}`);
@@ -224,19 +183,23 @@ router.post('/verify', authenticate, async (req: AuthRequest, res: Response): Pr
 
 // ─── POST /api/payment/webhook ───────────────────────────────────────────────
 // Razorpay webhook handler — source of truth for payment events.
-// No CSRF, no auth — secured via webhook signature verification.
+// No CSRF, no auth — secured ONLY via webhook signature verification (fails closed).
 router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
   try {
-    const signature = req.headers['x-razorpay-signature'] as string;
-    const rawBody = JSON.stringify(req.body);
+    // Fail CLOSED: without a configured secret we cannot authenticate Razorpay, so we refuse.
+    if (!config.razorpay.webhookSecret) {
+      logger.error('[Webhook] RAZORPAY_WEBHOOK_SECRET is not configured — rejecting webhook');
+      res.status(503).json({ error: 'Webhook not configured' });
+      return;
+    }
 
-    // Verify webhook signature (skip in test mode if no secret set)
-    if (process.env.RAZORPAY_WEBHOOK_SECRET) {
-      if (!signature || !verifyWebhookSignature(rawBody, signature)) {
-        logger.warn('[Webhook] Invalid webhook signature');
-        res.status(400).json({ error: 'Invalid webhook signature' });
-        return;
-      }
+    // Razorpay signs the RAW bytes; index.ts captures them in req.rawBody for this route.
+    const signature = req.headers['x-razorpay-signature'];
+    const rawBody = (req as any).rawBody as Buffer | undefined;
+    if (typeof signature !== 'string' || !rawBody || !verifyWebhookSignature(rawBody, signature)) {
+      logger.warn('[Webhook] Invalid or missing webhook signature');
+      res.status(400).json({ error: 'Invalid webhook signature' });
+      return;
     }
 
     const event = req.body?.event;
@@ -251,55 +214,36 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
 
         const razorpayPaymentId = paymentEntity.id;
         const razorpayOrderId = paymentEntity.order_id;
-        const notes = paymentEntity.notes || {};
-        const userId = notes.userId;
-        const planType = notes.planType;
-
-        if (!userId || !planType) {
-          logger.warn('[Webhook] payment.captured missing userId or planType in notes');
+        if (!razorpayPaymentId || !razorpayOrderId) {
+          logger.warn('[Webhook] payment.captured missing payment id or order id');
           break;
         }
 
-        // Check idempotency
-        const existing = await (prisma as any).payment.findUnique({
-          where: { razorpayPaymentId },
-        });
-        if (existing && existing.status === 'captured') {
-          logger.info(`[Webhook] Payment ${razorpayPaymentId} already processed — skipping`);
+        // Never trust payload "notes": resolve user + plan from OUR order record.
+        const payment = await (prisma as any).payment.findFirst({ where: { razorpayOrderId } });
+        if (!payment) {
+          logger.warn(`[Webhook] payment.captured for unknown order ${razorpayOrderId} — ignoring`);
           break;
         }
 
-        // Update payment record if exists, or create new
-        if (existing) {
-          await (prisma as any).payment.update({
-            where: { id: existing.id },
-            data: { status: 'captured', razorpayPaymentId },
-          });
-        } else {
-          await (prisma as any).payment.create({
-            data: {
-              userId,
-              razorpayPaymentId,
-              razorpayOrderId,
-              amount: paymentEntity.amount,
-              currency: paymentEntity.currency || 'INR',
-              planType,
-              billingCycle: notes.billingCycle || 'monthly',
-              status: 'captured',
-            },
-          });
+        // The captured amount/currency must match what we asked Razorpay to charge.
+        if (paymentEntity.amount !== payment.amount || (paymentEntity.currency || 'INR') !== payment.currency) {
+          logger.error(
+            `[Webhook] AMOUNT MISMATCH order=${razorpayOrderId}: expected ${payment.amount} ${payment.currency}, got ${paymentEntity.amount} ${paymentEntity.currency}`,
+          );
+          break;
         }
 
-        // Upgrade user plan
-        await (prisma as any).user.update({
-          where: { id: userId },
-          data: { plan: planType },
+        const result = await settleCapturedPayment({
+          paymentId: payment.id,
+          razorpayPaymentId,
+          source: 'webhook',
         });
-
-        // Credit affiliate
-        await creditAffiliateReward(userId, planType);
-
-        logger.info(`[Webhook] Plan upgraded via webhook: user=${userId}, plan=${planType}`);
+        logger.info(
+          result.activated
+            ? `[Webhook] Plan activated via webhook: user=${payment.userId}, plan=${payment.planType}`
+            : `[Webhook] Payment ${razorpayPaymentId} already processed — skipping`,
+        );
         break;
       }
 
@@ -307,13 +251,16 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
         const paymentEntity = payload?.payment?.entity;
         if (!paymentEntity) break;
 
-        const notes = paymentEntity.notes || {};
-        const userId = notes.userId;
+        // Resolve the user from OUR order record, never from payload "notes".
+        const failedPayment = paymentEntity.order_id
+          ? await (prisma as any).payment.findFirst({ where: { razorpayOrderId: paymentEntity.order_id } })
+          : null;
+        const userId: string | undefined = failedPayment?.userId;
 
-        if (userId) {
-          // Update payment record status
+        // A late "failed" attempt must never overwrite an already captured payment.
+        if (userId && failedPayment.status !== 'captured') {
           await (prisma as any).payment.updateMany({
-            where: { razorpayOrderId: paymentEntity.order_id, userId },
+            where: { id: failedPayment.id, status: { not: 'captured' } },
             data: { status: 'failed' },
           });
 
@@ -352,8 +299,8 @@ router.post('/webhook', async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ status: 'ok' });
   } catch (err: any) {
     logger.error('[Webhook] Error processing webhook:', err);
-    // Still respond 200 to prevent Razorpay from retrying
-    res.status(200).json({ status: 'error' });
+    // Non-2xx makes Razorpay retry; settleCapturedPayment is idempotent so retries are safe.
+    res.status(500).json({ status: 'error' });
   }
 });
 

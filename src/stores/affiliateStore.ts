@@ -84,8 +84,6 @@ interface AffiliateState {
   fetchStats: () => Promise<void>;
   updateCustomCode: (code: string) => Promise<{ success: boolean; error?: string }>;
   saveBankDetails: (details: BankDetails) => Promise<{ success: boolean; error?: string }>;
-  upgradeToPro: () => Promise<{ success: boolean; rewardCredited?: boolean; message?: string }>;
-  simulateReferral: (traderName?: string, upgradeToPro?: boolean) => Promise<{ success: boolean; message?: string }>;
   requestPayout: (amount: number, method: string, bankDetails?: BankDetails) => Promise<{ success: boolean; message?: string }>;
 }
 
@@ -182,33 +180,6 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
       return { success: false, error: 'Failed to update code' };
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to update code' };
-    }
-  },
-
-  upgradeToPro: async () => {
-    try {
-      const data = await api.post<{ success: boolean; plan: string; rewardCredited: boolean; message: string }>(
-        '/affiliate/upgrade-to-pro',
-        {}
-      );
-      set({ userPlan: 'PRO' });
-      await get().fetchStats();
-      return { success: true, rewardCredited: data.rewardCredited, message: data.message };
-    } catch (err: any) {
-      return { success: false, message: err.message || 'Failed to upgrade to Pro' };
-    }
-  },
-
-  simulateReferral: async (traderName = 'Aditya Patel', upgradeToPro = true) => {
-    try {
-      const data = await api.post<{ success: boolean; message: string }>('/affiliate/simulate-referral', {
-        traderName,
-        upgradeToPro,
-      });
-      await get().fetchStats();
-      return { success: true, message: data.message };
-    } catch (err: any) {
-      return { success: false, message: err.message || 'Failed to simulate referral' };
     }
   },
 

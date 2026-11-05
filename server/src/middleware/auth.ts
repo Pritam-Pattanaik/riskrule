@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import { prisma } from '../db';
-
-// Safe JWT_SECRET initialization: uses env var or secure 64-char fallback
-const _jwtSecret = process.env.JWT_SECRET || 'riskrule_production_jwt_secret_key_safe_2026_x89a_99887766_secure';
-export const JWT_SECRET = _jwtSecret.length >= 32 ? _jwtSecret : `${_jwtSecret}_padded_for_security_compliance_2026`;
+import { verifyAccessToken } from '../lib/jwt';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -32,12 +28,12 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
   }
 
   try {
-    // L-1 fix: Explicitly specify HS256 to prevent algorithm confusion attacks
-    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { userId: string; v?: number };
-    
-    // Check token version for forced invalidation
+    // Verifies HS256 signature, issuer, audience, expiry and the MANDATORY `v` claim.
+    const decoded = verifyAccessToken(token);
+
+    // Check token version for forced invalidation (v is always present, so this cannot be skipped)
     const user = await prisma.user.findUnique({ where: { id: decoded.userId }, select: { id: true, role: true, plan: true, tokenVersion: true } });
-    if (!user || (decoded.v !== undefined && decoded.v !== user.tokenVersion)) {
+    if (!user || decoded.v !== user.tokenVersion) {
       res.status(401).json({ error: 'Token invalidated' });
       return;
     }

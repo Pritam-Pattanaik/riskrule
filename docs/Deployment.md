@@ -44,7 +44,10 @@ All variables must be defined in `server/.env` for local development, and in the
 | Variable | Required | Default | Description | Example |
 |---|:---:|---|---|---|
 | `DATABASE_URL` | **Yes** | — | PostgreSQL connection string (Neon serverless) | `postgresql://user:pass@ep-host.neon.tech/neondb?sslmode=require` |
-| `JWT_SECRET` | **Yes** | `fallback_secret` | Secret key for signing JWTs | `super_secret_jwt_key_12345` |
+| `JWT_SECRET` | **Yes** | — (**no fallback; server refuses to start in production without it**) | Secret for signing JWTs. ≥ 32 chars, random. | _generate_ (see `docs/SECURITY.md`) |
+| `CSRF_SECRET` | **Yes** | — (**no fallback**) | Secret for CSRF tokens. ≥ 32 chars, random, **must differ from `JWT_SECRET`** | _generate_ (see `docs/SECURITY.md`) |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | For payments | — | Razorpay API credentials. Payments return 503 if missing. | `rzp_live_...` |
+| `RAZORPAY_WEBHOOK_SECRET` | For payments | — | Must match the secret in the Razorpay dashboard webhook. Webhooks are **rejected** if missing. | _from Razorpay dashboard_ |
 | `PORT` | No | `3000` | Express server port (local development) | `3000` |
 | `ALLOWED_ORIGINS` | No | `http://localhost:5173` | Comma-separated CORS origins | `http://localhost:5173,https://riskrule.vercel.app` |
 | `ANTHROPIC_API_KEY` | No* | — | Anthropic Claude API key | `sk-ant-api03-...` |

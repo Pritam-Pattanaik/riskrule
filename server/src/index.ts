@@ -22,6 +22,7 @@ import dns from 'dns';
 import { logger } from './lib/logger';
 import helmet from 'helmet';
 import { doubleCsrf } from 'csrf-csrf';
+import { config } from './config/env';
 
 // Force IPv4 resolution for Neon/Prisma stability
 dns.setDefaultResultOrder('ipv4first');
@@ -67,13 +68,22 @@ if (process.env.SENTRY_DSN) {
 
 // Dynamic CORS configuration
 app.use(cors({ origin: process.env.EXTERNAL_FRONTEND_URL || false, credentials: true }));
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({
+  limit: '15mb',
+  // Razorpay signs the exact raw bytes of the webhook body, so keep them for signature verification.
+  verify: (req, _res, buf) => {
+    if (((req as any).originalUrl as string | undefined)?.startsWith('/api/payment/webhook')) {
+      (req as any).rawBody = buf;
+    }
+  },
+}));
 app.use(cookieParser());
 app.use(helmet());
 
 // ── CSRF Protection via csrf-csrf (double-submit cookie) ───────────────────────
 // Replaces deprecated `csurf` which crashed in Vercel serverless environments.
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'riskrule_csrf_fallback_2026_x99887766';
+// Dedicated secret (must differ from JWT_SECRET) validated at boot in config/env.ts - no fallbacks.
+const CSRF_SECRET = config.csrfSecret;
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
   getSecret: () => CSRF_SECRET,
   // In the double-submit pattern, the session identifier binds the token to the user.

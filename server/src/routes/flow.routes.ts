@@ -21,7 +21,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { authenticate, JWT_SECRET } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import { rateLimit } from 'express-rate-limit';
 import { signalWorker, registerSSEClient, unregisterSSEClient } from '../flow/workers/SignalWorker';
 import { flowDataWorker } from '../flow/workers/FlowDataWorker';
