@@ -18,6 +18,7 @@
 7. [Logging & Compliance](#7-logging--compliance)
 8. [SEBI Regulatory Compliance](#8-sebi-regulatory-compliance)
 9. [Security Hardening Checklist](#9-security-hardening-checklist)
+10. [Plan, Payment & Commission Integrity](#10-plan-payment--commission-integrity)
 
 ---
 
@@ -38,7 +39,9 @@ RiskRule handles highly sensitive financial data including broker API keys, trad
 ## 2. Authentication & Authorization
 
 ### JWT Implementation
-- Tokens are signed with `JWT_SECRET` using HS256.
+- Tokens are signed with `JWT_SECRET` using HS256, **only** via `server/src/lib/jwt.ts` (adds `iss`/`aud`; the `v` token-version claim is **mandatory** - tokens without it are rejected).
+- `JWT_SECRET` has **no fallback**: in production the server refuses to start if it is missing, too short, low-entropy or a previously leaked value (`server/src/config/env.ts`).
+- To log every user out: rotate `JWT_SECRET` and/or `UPDATE users SET token_version = token_version + 1;`.
 - Tokens are transmitted as `Bearer` tokens in the `Authorization` header.
 - Routes are protected via `auth.ts` middleware that verifies signature and expiry before passing `req.userId`.
 
@@ -165,12 +168,22 @@ All secrets are stored as environment variables in `server/.env` (local) or Verc
 
 | Secret | Storage | Never Do |
 |---|---|---|
-| `JWT_SECRET` | Server `.env` | Commit to git |
+| `JWT_SECRET` | Server `.env` | Commit to git, or give it a code fallback |
+| `CSRF_SECRET` | Server `.env` | Reuse `JWT_SECRET`; commit to git |
+| `RAZORPAY_KEY_SECRET` / `RAZORPAY_WEBHOOK_SECRET` | Server `.env` | Commit to git; leave unset in production (payments/webhooks fail closed) |
 | `DATABASE_URL` | Server `.env` | Expose to client |
 | `ANTHROPIC_API_KEY` | Server `.env` | Log to console |
 | `GROQ_API_KEY` | Server `.env` | Send to frontend |
 | `GEMINI_API_KEY` | Server `.env` | Include in error messages |
 | `DHAN_API_KEY` | Per-user, encrypted in DB | Store in plaintext |
+
+**Rules (enforced by tests, ESLint and CI):**
+
+- Secrets are read only through `server/src/config/env.ts`. `process.env.X || 'literal'` for secret-like names is an ESLint **error**.
+- `JWT_SECRET` and `CSRF_SECRET` must be different, >= 32 chars, random. Use different values for production / preview / local.
+- Generate one: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
+- Only `server/.env.example` (placeholders) is committed. If a secret is ever committed or shared, **rotate it immediately** (deleting it from git history is not enough).
+- CI runs gitleaks (`.gitleaks.toml`, `.github/workflows/security.yml`).
 
 See [Deployment.md](./Deployment.md) for the full environment variable reference.
 
@@ -228,6 +241,29 @@ RiskRule operates strictly in **EDUCATIONAL_MODE** as required by SEBI regulatio
 | Multi-tenant `userId` filter on all Prisma queries | Done | P0 |
 | JWT signature verification on all protected routes | Done | P0 |
 | Immutable `NewsAuditLog` | Done | P1 |
+| No hardcoded secret fallbacks; fail-fast env validation (C-1) | Done | P0 |
+| Plans granted only by `services/billing.ts` after verified payment (C-2) | Done | P0 |
+| Webhook fails closed + raw-body signature + amount check | Done | P0 |
+
+---
+
+## 10. Plan, Payment & Commission Integrity
+
+> **A user's plan may only be changed by `server/src/services/billing.ts`, after a verified Razorpay payment.**
+
+- Never add an endpoint that sets `plan` or credits commission "on request" (no `upgrade-to-pro`, no "simulate" helpers).
+- Webhooks are verified against the **raw body** with `RAZORPAY_WEBHOOK_SECRET` and are **rejected** (503) if the secret is not configured.
+- Never trust webhook/client `notes` for user or plan. Resolve both from our own `payments` row and verify amount + currency.
+- Activation is **atomic and idempotent**: `settleCapturedPayment` claims the row with `updateMany ... status != 'captured'` inside a transaction, so verify/webhook races and replays activate exactly once.
+- `creditAffiliateReward` is only called from the billing service.
+- Regression tests: `cd server && npm test` (`server/tests/security/no-free-plan.test.ts`).
+
+**Checklist for any PR touching `auth`, `payment`, `affiliate`, `admin`:**
+
+- [ ] Does it change a plan, balance or money? Then it goes through `services/billing.ts`.
+- [ ] New secret-like env var is read in `config/env.ts` with no fallback.
+- [ ] New mutating route: authenticated, rate limited, and CSRF-protected (or signature-verified).
+- [ ] `cd server && npm test` passes; add a regression test for the new rule.
 
 ---
 

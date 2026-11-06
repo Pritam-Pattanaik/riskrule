@@ -1,6 +1,6 @@
+// Run with: npx tsx scripts/test-ai-chat.js   (needs JWT_SECRET in server/.env - there is NO fallback)
 const { PrismaClient } = require('@prisma/client');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const { signAccessToken } = require('../src/lib/jwt');
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,7 @@ async function main() {
   }
   
   console.log('Found user:', user.email);
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'super_secret_jwt_key_12345', { expiresIn: '1h' });
+  const token = signAccessToken(user);
 
   // Create a conversation for the test
   const conv = await prisma.aiConversation.create({

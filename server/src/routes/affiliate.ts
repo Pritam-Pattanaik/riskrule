@@ -2,23 +2,28 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../db';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { logger } from '../lib/logger';
+import { PLAN_CONFIG } from '../lib/razorpay';
 
 const router = Router();
 
-// 20% Recurring Commission Model on Subscriptions
+// 20% Recurring Commission Model on Subscriptions — single pricing source from PLAN_CONFIG
 export const COMMISSION_PERCENT = 20; // 20% recurring
-export const PRO_MONTHLY_PRICE = 1999; // ₹1,999/mo Pro plan
-export const PRO_ANNUAL_PRICE = 19999; // ₹19,999/yr Pro plan
-export const MONTHLY_REWARD_PER_PRO = Math.round((PRO_MONTHLY_PRICE * COMMISSION_PERCENT) / 100); // ₹400/mo
+export const PRO_MONTHLY_PRICE = Math.round(PLAN_CONFIG.PRO.monthly.amount / 100); // ₹1,499/mo Pro plan
+export const PRO_ANNUAL_PRICE = Math.round((PLAN_CONFIG.PRO.annual.amount / 100) * 12); // ₹14,388/yr Pro plan
+export const MONTHLY_REWARD_PER_PRO = Math.round((PRO_MONTHLY_PRICE * COMMISSION_PERCENT) / 100); // ₹300/mo
 
-export function computeCommission(planPrice: number = PRO_MONTHLY_PRICE, percent: number = COMMISSION_PERCENT): number {
-  return Math.round((planPrice * percent) / 100);
+export function computeCommission(planPriceInr: number = PRO_MONTHLY_PRICE, percent: number = COMMISSION_PERCENT): number {
+  return Math.round((planPriceInr * percent) / 100);
 }
 
 // ─── Reusable Affiliate Reward Function ─────────────────────────────────────
-// Called from both the upgrade-to-pro endpoint and the Razorpay payment webhook.
-// Credits 20% recurring commission to the referrer if the upgraded user was referred.
-export async function creditAffiliateReward(userId: string, planType: string = 'PRO'): Promise<boolean> {
+// Called ONLY from services/billing.ts after a payment has been verified & atomically claimed.
+// Credits 20% commission of the ACTUAL amount paid to the referrer if the upgraded user was referred.
+export async function creditAffiliateReward(
+  userId: string,
+  planType: string = 'PRO',
+  paidAmountPaise?: number,
+): Promise<boolean> {
   try {
     const user = await (prisma as any).user.findUnique({
       where: { id: userId },
@@ -27,7 +32,16 @@ export async function creditAffiliateReward(userId: string, planType: string = '
 
     if (!user || !user.referredById) return false;
 
-    const referrerRewardAmount = MONTHLY_REWARD_PER_PRO;
+    // Prevent self-referral abuse
+    if (user.referredById === userId) {
+      logger.warn(`[Affiliate] Self-referral blocked for user ${userId}`);
+      return false;
+    }
+
+    const paidInr = typeof paidAmountPaise === 'number' && paidAmountPaise > 0
+      ? Math.round(paidAmountPaise / 100)
+      : PRO_MONTHLY_PRICE;
+    const referrerRewardAmount = computeCommission(paidInr, COMMISSION_PERCENT);
 
     // Check if reward was already credited for this user+plan combo (idempotency)
     const existingReward = await (prisma as any).affiliateEarning.findFirst({
@@ -188,12 +202,15 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response): Prom
     const signupsCount = referredTraders.length;
     const conversionsCount = referredTraders.filter((t: any) => t.plan === 'PRO').length;
 
-    // Sum real earnings or fallback to MONTHLY_REWARD_PER_PRO * conversions
-    const calculatedEarnings = earningsRecords.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
-    const totalEarnings = calculatedEarnings > 0 ? calculatedEarnings : conversionsCount * MONTHLY_REWARD_PER_PRO;
+    // Strictly sum verified affiliateEarning records only — never fabricate earnings from user.plan
+    const totalEarnings = earningsRecords
+      .filter((r: any) => !r.status || r.status === 'PAID')
+      .reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
 
-    // Calculate available balance
-    const totalPayouts = payoutRecords.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
+    // Reserve Paid, Processing, and Pending payouts; Rejected payouts return to available balance
+    const totalPayouts = payoutRecords
+      .filter((p: any) => p.status !== 'Rejected')
+      .reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
     const availableBalance = Math.max(0, totalEarnings - totalPayouts);
 
     // Mask emails for privacy (e.g. j***@gmail.com)
@@ -264,18 +281,7 @@ router.get('/stats', authenticate, async (req: AuthRequest, res: Response): Prom
       },
       referredUsers: formattedReferredUsers,
       earningsHistory: earningsRecords,
-      payouts: payoutRecords.length > 0 ? payoutRecords : [
-        {
-          id: 'PO-PENDING',
-          date: nextPayoutStr,
-          amount: totalEarnings,
-          currency: '₹',
-          referralsCount: conversionsCount || 1,
-          method: 'Bank Transfer (••••4092)',
-          status: 'Processing',
-          invoiceId: `INV-RR-${user.referralCode}`,
-        }
-      ],
+      payouts: payoutRecords,
     });
   } catch (err: any) {
     logger.error('Affiliate stats error:', err);
@@ -315,163 +321,10 @@ router.post('/click/:code', async (req: Request, res: Response): Promise<void> =
   }
 });
 
-// POST /api/affiliate/upgrade-to-pro — User takes Pro plan; triggers 20% recurring reward to referrer
-router.post('/upgrade-to-pro', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const userId = req.userId;
-    if (!userId) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
-    }
-
-    const user = await (prisma as any).user.findUnique({
-      where: { id: userId },
-      select: { id: true, fullName: true, email: true, plan: true, referredById: true },
-    });
-
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    // Upgrade user to PRO
-    await (prisma as any).user.update({
-      where: { id: userId },
-      data: { plan: 'PRO' },
-    });
-
-    let rewardCredited = false;
-    let referrerRewardAmount = 0;
-
-    // If this user was referred by someone, credit 20% recurring commission to the sender!
-    if (user.referredById) {
-      referrerRewardAmount = MONTHLY_REWARD_PER_PRO;
-
-      try {
-        await (prisma as any).affiliateEarning.create({
-          data: {
-            affiliateId: user.referredById,
-            referredUserId: user.id,
-            amount: referrerRewardAmount,
-            currency: 'INR',
-            planType: 'PRO',
-            description: `20% recurring commission for ${user.fullName || 'referred trader'} upgrading to Pro`,
-            status: 'PAID',
-          },
-        });
-      } catch (earnErr) {
-        logger.warn('Failed to insert affiliateEarning record:', earnErr);
-      }
-
-      // Create a notification for the referrer in real-time
-      try {
-        await (prisma as any).notification.create({
-          data: {
-            userId: user.referredById,
-            type: 'AFFILIATE_REWARD',
-            title: '20% Affiliate Commission Credited! 🎉',
-            message: `You earned a 20% recurring commission of ₹${referrerRewardAmount} because ${user.fullName || 'a trader you referred'} upgraded to RiskRules Pro!`,
-            isRead: false,
-          },
-        });
-      } catch (notifErr) {
-        logger.warn('Failed to send reward notification:', notifErr);
-      }
-
-      rewardCredited = true;
-    }
-
-    res.json({
-      success: true,
-      message: 'Upgraded to RiskRules Pro successfully',
-      plan: 'PRO',
-      rewardCredited,
-      referrerRewardAmount,
-    });
-  } catch (err: any) {
-    logger.error('Upgrade to pro error:', err);
-    res.status(500).json({ error: 'Failed to process upgrade' });
-  }
-});
-
-// POST /api/affiliate/simulate-referral — Developer / live interactive simulator for testing
-router.post('/simulate-referral', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const userId = req.userId;
-    if (!userId) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
-    }
-
-    const { traderName = 'Rohit Verma', upgradeToPro = true } = req.body;
-    const cleanName = traderName.trim();
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const mockEmail = `trader_${randomSuffix}@riskrule.io`;
-
-    // 1. Create a simulated registered trader under this affiliate
-    const simulatedTrader = await (prisma as any).user.create({
-      data: {
-        email: mockEmail,
-        password: 'SimulatedPassword123!',
-        fullName: cleanName,
-        phoneNumber: `+91 98${randomSuffix}4321`,
-        referredById: userId,
-        plan: upgradeToPro ? 'PRO' : 'FREE',
-      },
-    });
-
-    let rewardAmount = 0;
-    if (upgradeToPro) {
-      rewardAmount = MONTHLY_REWARD_PER_PRO;
-      try {
-        await (prisma as any).affiliateEarning.create({
-          data: {
-            affiliateId: userId,
-            referredUserId: simulatedTrader.id,
-            amount: rewardAmount,
-            currency: 'INR',
-            planType: 'PRO',
-            description: `20% recurring commission for ${cleanName} upgrading to Pro`,
-            status: 'PAID',
-          },
-        });
-      } catch (e) {
-        logger.warn('Simulated earning creation fallback:', e);
-      }
-
-      try {
-        await (prisma as any).notification.create({
-          data: {
-            userId,
-            type: 'AFFILIATE_REWARD',
-            title: 'Referral Reward Received! 🎉',
-            message: `You earned 20% recurring commission of ₹${rewardAmount} because ${cleanName} registered and subscribed to RiskRules Pro!`,
-            isRead: false,
-          },
-        });
-      } catch (e) {
-        logger.warn('Simulated notification fallback:', e);
-      }
-    }
-
-    res.json({
-      success: true,
-      message: upgradeToPro
-        ? `Simulated trader "${cleanName}" registered and upgraded to Pro. ₹${rewardAmount} (20% commission) credited!`
-        : `Simulated trader "${cleanName}" registered with your referral link.`,
-      trader: {
-        id: simulatedTrader.id,
-        name: simulatedTrader.fullName,
-        email: mockEmail,
-        plan: simulatedTrader.plan,
-      },
-      rewardAmount,
-    });
-  } catch (err: any) {
-    logger.error('Simulate referral error:', err);
-    res.status(500).json({ error: 'Failed to simulate referral' });
-  }
-});
+// SECURITY: There is intentionally NO endpoint that changes a user's plan or credits commission
+// on request. Plans are granted only by services/billing.ts after a verified Razorpay payment.
+// (Removed: POST /upgrade-to-pro and POST /simulate-referral - both allowed free PRO / minted commission.)
+// A regression test (tests/security/no-free-plan.test.ts) fails if they come back.
 
 // PUT /api/affiliate/custom-code — Update referral code
 router.put('/custom-code', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
@@ -567,9 +420,12 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    const { amount, method, bankDetails } = req.body;
-    
-    if (!amount || amount <= 0) {
+    const { amount: rawAmount, method, bankDetails } = req.body;
+    const amount = typeof rawAmount === 'number' && Number.isFinite(rawAmount)
+      ? Math.round(rawAmount * 100) / 100
+      : NaN;
+
+    if (!Number.isFinite(amount) || amount <= 0) {
       res.status(400).json({ error: 'Invalid payout amount' });
       return;
     }
@@ -606,34 +462,6 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
       }
     }
 
-    // Get earnings
-    const earningsRecords = await (prisma as any).affiliateEarning.findMany({
-      where: { affiliateId: userId },
-    });
-    const calculatedEarnings = earningsRecords.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
-    
-    // Get referrals count for fallback logic if needed
-    const conversionsCount = await (prisma as any).user.count({
-      where: { referredById: userId, plan: 'PRO' }
-    });
-    
-    const totalEarnings = calculatedEarnings > 0 ? calculatedEarnings : conversionsCount * MONTHLY_REWARD_PER_PRO;
-
-    // Get payouts
-    const payoutRecords = await (prisma as any).affiliatePayout.findMany({
-      where: { affiliateId: userId },
-    });
-    const totalPayouts = payoutRecords.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
-
-    const availableBalance = Math.max(0, totalEarnings - totalPayouts);
-
-    if (amount > availableBalance) {
-      res.status(400).json({ 
-        error: `Requested amount (₹${amount}) exceeds available balance (₹${availableBalance})` 
-      });
-      return;
-    }
-
     // Build rich payoutMethod string with full bank coordinates
     let formattedMethod = method || 'Bank Transfer';
     const activeBank = bankDetails || (user.flowPreferences as any)?.bankDetails;
@@ -645,20 +473,57 @@ router.post('/payout', authenticate, async (req: AuthRequest, res: Response): Pr
       }
     }
 
-    // 2. Create the payout record
     const invoiceId = `INV-PO-${user.referralCode}-${Math.floor(1000 + Math.random() * 9000)}`;
-    
-    const newPayout = await (prisma as any).affiliatePayout.create({
-      data: {
-        affiliateId: userId,
-        amount,
-        currency: 'INR',
-        referralsCount: conversionsCount || 1,
-        payoutMethod: formattedMethod,
-        status: 'Processing',
-        invoiceId,
+
+    // 2. Atomic balance check + payout insert under a per-user row lock (prevents double-spend race)
+    const txResult = await (prisma as any).$transaction(async (tx: any) => {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId}::uuid FOR UPDATE`;
+
+      const earningsRecords = await tx.affiliateEarning.findMany({
+        where: { affiliateId: userId },
+      });
+      const totalEarnings = earningsRecords
+        .filter((r: any) => !r.status || r.status === 'PAID')
+        .reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
+
+      const payoutRecords = await tx.affiliatePayout.findMany({
+        where: { affiliateId: userId },
+      });
+      const totalPayouts = payoutRecords
+        .filter((p: any) => p.status !== 'Rejected')
+        .reduce((sum: number, r: any) => sum + (Number(r.amount) || 0), 0);
+
+      const availableBalance = Math.max(0, totalEarnings - totalPayouts);
+      if (amount > availableBalance) {
+        return { ok: false as const, availableBalance };
       }
+
+      const conversionsCount = await tx.user.count({
+        where: { referredById: userId, plan: { in: ['PRO', 'ELITE'] } },
+      });
+
+      const created = await tx.affiliatePayout.create({
+        data: {
+          affiliateId: userId,
+          amount,
+          currency: 'INR',
+          referralsCount: conversionsCount || 1,
+          payoutMethod: formattedMethod,
+          status: 'Processing',
+          invoiceId,
+        },
+      });
+      return { ok: true as const, availableBalance, newPayout: created };
     });
+
+    if (!txResult.ok) {
+      res.status(400).json({
+        error: `Requested amount (₹${amount}) exceeds available balance (₹${txResult.availableBalance})`,
+      });
+      return;
+    }
+
+    const { newPayout, availableBalance } = txResult;
 
     res.json({ 
       success: true, 

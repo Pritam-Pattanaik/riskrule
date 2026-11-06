@@ -1,8 +1,8 @@
+// Run with: npx tsx scripts/test-admin.js   (needs JWT_SECRET in server/.env - there is NO fallback)
 const { PrismaClient } = require('@prisma/client');
-const jwt = require('jsonwebtoken');
+const { signAccessToken } = require('../src/lib/jwt');
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-for-dev-only-change-in-prod';
 
 async function run() {
   const admin = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
@@ -11,7 +11,7 @@ async function run() {
     process.exit(1);
   }
   
-  const token = jwt.sign({ userId: admin.id, role: admin.role }, JWT_SECRET, { expiresIn: '1h' });
+  const token = signAccessToken(admin);
   console.log('Token generated');
   
   try {

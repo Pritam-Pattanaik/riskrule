@@ -27,3 +27,7 @@ dist-ssr
 server/.env
 server/.env.*
 .agents/
+
+# Allow placeholder-only example env files
+!.env.example
+!server/.env.example

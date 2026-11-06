@@ -1105,10 +1105,7 @@ router.get('/affiliates/stats', authenticate, requireRoles(['SUPER_ADMIN']), asy
       });
       totalCommissions = earnAgg._sum.amount || 0;
     } catch {
-      totalCommissions = totalConversions * 400;
-    }
-    if (totalCommissions === 0 && totalConversions > 0) {
-      totalCommissions = totalConversions * 400;
+      totalCommissions = 0;
     }
 
     // 6. Payout metrics
@@ -1218,15 +1215,20 @@ router.get('/affiliates/list', authenticate, requireRoles(['SUPER_ADMIN']), asyn
       const conversionsCount = u.referredUsers?.filter((r: any) => r.plan === 'PRO').length || 0;
       const conversionRate = signupsCount > 0 ? Math.round((conversionsCount / signupsCount) * 1000) / 10 : 0;
 
-      const totalEarningsReal = u.affiliateEarnings?.reduce((sum: number, e: any) => sum + (e.amount || 0), 0) || 0;
-      const totalEarnings = totalEarningsReal > 0 ? totalEarningsReal : conversionsCount * 400;
+      const totalEarnings = u.affiliateEarnings
+        ?.filter((e: any) => !e.status || e.status === 'PAID')
+        ?.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0) || 0;
 
       const totalPaid = u.affiliatePayouts
         ?.filter((p: any) => p.status === 'Paid')
-        ?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
+        ?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) || 0;
+
+      const totalReserved = u.affiliatePayouts
+        ?.filter((p: any) => p.status !== 'Rejected')
+        ?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) || 0;
 
       const pendingPayouts = u.affiliatePayouts?.filter((p: any) => p.status === 'Processing' || p.status === 'Pending').length || 0;
-      const availableBalance = Math.max(0, totalEarnings - totalPaid);
+      const availableBalance = Math.max(0, totalEarnings - totalReserved);
 
       const bankDetails = (u.flowPreferences as any)?.bankDetails || null;
 

@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { signAccessToken } from '../lib/jwt';
 import { z } from 'zod';
 import { prisma } from '../db';
-import { authenticate, AuthRequest, JWT_SECRET } from '../middleware/auth';
+import { authenticate, AuthRequest } from '../middleware/auth';
 import { lockService } from '../services/lockService';
 import { sendPasswordResetEmail } from '../services/emailService';
 import { logger } from '../lib/logger';
@@ -92,7 +92,7 @@ const handleSignup = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    const token = jwt.sign({ userId: newUser.id, v: newUser.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
+    const token = signAccessToken(newUser);
     res.cookie('token', token, COOKIE_OPTIONS);
 
     res.status(201).json({
@@ -146,7 +146,7 @@ router.post('/login', lockService.authRateLimit(), async (req: Request, res: Res
       return;
     }
 
-    const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
+    const token = signAccessToken(user);
     res.cookie('token', token, COOKIE_OPTIONS);
 
     res.json({
@@ -197,7 +197,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise
       });
     }
 
-    const token = jwt.sign({ userId: user.id, v: user.tokenVersion }, JWT_SECRET, { expiresIn: '7d' });
+    const token = signAccessToken(user);
     res.cookie('token', token, COOKIE_OPTIONS);
     res.json({
       token,

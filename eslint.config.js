@@ -41,4 +41,22 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // SECURITY GUARD: never give secret-like env vars a hardcoded fallback, e.g.
+    //   process.env.JWT_SECRET || 'some-literal'   <- forbidden
+    // Secrets must come from the environment (see server/src/config/env.ts).
+    files: ['server/**/*.{ts,js}', 'tests/**/*.{ts,js}'],
+    ignores: ['server/node_modules/**', 'server/prisma/generated/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "LogicalExpression[operator=/^(\\|\\||\\?\\?)$/][right.type='Literal'][right.value=/.+/] MemberExpression[object.property.name='env'][property.name=/SECRET|PASSWORD|PRIVATE_KEY|API_KEY|TOKEN/]",
+          message:
+            'Do not give secret-like environment variables a hardcoded fallback. Read them via server/src/config/env.ts and fail fast when missing.',
+        },
+      ],
+    },
+  },
 ])

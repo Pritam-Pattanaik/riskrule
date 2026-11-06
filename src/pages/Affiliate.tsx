@@ -2,11 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Sparkles,
   Zap,
   Crown,
   Users,
-  CheckCircle2,
   RefreshCw,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
@@ -42,14 +40,10 @@ export default function Affiliate() {
     loading,
     fetchStats,
     updateCustomCode,
-    upgradeToPro,
-    simulateReferral,
   } = useAffiliateStore();
 
   const [isTermsOpen, setIsTermsOpen] = useState<boolean>(false);
   const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(null);
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
-  const [isUpgrading, setIsUpgrading] = useState<boolean>(false);
 
   // Real-time pro referrals count
   const proUsersCount = referredUsers && referredUsers.length > 0
@@ -75,27 +69,6 @@ export default function Affiliate() {
 
   const scrollToPayoutHistory = () => {
     payoutHistoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // Real-time test simulation of a trader using this user's referral and taking the Pro plan
-  const handleSimulateProReferral = async () => {
-    if (isSimulating) return;
-    setIsSimulating(true);
-
-    const names = ['Aarav Patel', 'Vikram Sen', 'Priya Nair', 'Kavita Joshi', 'Rohan Mehta', 'Sneha Kapoor'];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-
-    const res = await simulateReferral(randomName, true);
-    setIsSimulating(false);
-
-    if (res.success) {
-      toast.success(`🎉 20% Recurring Commission Credited: ₹${monthlyRewardPerPro}!`, {
-        description: `Trader ${randomName} subscribed to Pro. ₹${monthlyRewardPerPro} (20% monthly recurring) added to your earnings balance!`,
-        icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
-      });
-    } else {
-      toast.error(res.message || 'Simulation failed');
-    }
   };
 
   // Razorpay checkout for Pro upgrade
@@ -144,19 +117,7 @@ export default function Affiliate() {
           </div>
         </div>
 
-        {/* Live Simulator Trigger Button */}
         <div className="flex items-center gap-2 shrink-0">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSimulateProReferral}
-            disabled={isSimulating}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-iris transition-all cursor-pointer disabled:opacity-50"
-          >
-            <Sparkles className={`w-3.5 h-3.5 text-amber-300 ${isSimulating ? 'animate-spin' : ''}`} />
-            <span>{isSimulating ? 'Simulating...' : `⚡ Test Live Pro Referral (+₹${monthlyRewardPerPro})`}</span>
-          </motion.button>
-
           {userPlan === 'FREE' && (
             <button
               onClick={() => handleUpgradeSelf('PRO')}
