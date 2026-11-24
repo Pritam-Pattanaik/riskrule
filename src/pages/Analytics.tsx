@@ -165,7 +165,7 @@ export default function Analytics() {
   const SuspenseFallback = () => <div className="h-[200px] bg-surface-1 rounded-lg animate-pulse" />;
 
   return (
-    <div className="flex flex-col gap-6 w-full pb-20 max-w-6xl mx-auto">
+    <div className="flex flex-col gap-6 w-full pb-16">
 
       {/* ── Page Header ── */}
       <motion.div
@@ -176,15 +176,9 @@ export default function Analytics() {
       >
         <div>
           <h1 className="text-3xl font-display font-bold text-primary tracking-tight">Analytics</h1>
-          <p className="text-secondary mt-1 text-sm">Deep mathematical breakdown of your trading performance.</p>
+          <p className="text-secondary mt-1 text-sm">See which setups earned their risk and when drawdowns built up.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          {workerMetrics && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-1 border border-border text-[10px] font-semibold text-iris">
-              <Cpu className="w-3 h-3" />
-              Monte Carlo Active
-            </div>
-          )}
           <AnalyticsDateFilter value={dateRange} onChange={setDateRange} />
         </div>
       </motion.div>
@@ -264,32 +258,9 @@ export default function Analytics() {
       )}
 
       {/* ── Tabs ── */}
-      <div className="flex items-center gap-1 p-1 bg-surface-1 border border-border rounded-xl w-full overflow-x-auto">
-        {TABS.map(({ key, label, icon: Icon }) => {
-          const active = activeTab === key;
-          return (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              className={cn(
-                'relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 outline-none whitespace-nowrap flex-1 justify-center',
-                'focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-                active ? 'text-white' : 'text-secondary hover:text-primary'
-              )}
-              aria-selected={active}
-            >
-              {active && (
-                <motion.div
-                  layoutId="analyticsTab"
-                  className="absolute inset-0 bg-iris rounded-lg shadow-sm"
-                  transition={{ duration: 0.18, ease: 'easeInOut' }}
-                />
-              )}
-              <Icon className="w-3.5 h-3.5 relative z-10" />
-              <span className="relative z-10">{label}</span>
-            </button>
-          );
-        })}
+      <div className="desk-tabs" role="group" aria-label="Analytics view">
+        {TABS.map(({ key, label, icon: Icon }) => <button key={key} aria-pressed={activeTab === key} onClick={() => setActiveTab(key)} className="inline-flex items-center gap-2">
+          <Icon size={15} />{label}</button>)}
       </div>
 
       {/* ── Tab Content ── */}

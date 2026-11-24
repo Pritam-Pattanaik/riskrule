@@ -14,7 +14,7 @@ export interface Trade {
   charges: number;
   netPnl: number;
   status: string;
-  strategyId?: string;
+  strategyId?: string | null;
   strategyName?: string;
   setupDescription?: string;
   mindset?: string;

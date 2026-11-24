@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 interface NoteState {
   notes: any[];
   loading: boolean;
+  loadError: boolean;
   fetchNotes: () => Promise<void>;
   addNote: (note: any) => Promise<void>;
   updateNote: (id: string, updates: any) => Promise<void>;
@@ -13,13 +14,14 @@ interface NoteState {
 export const useNoteStore = create<NoteState>((set, get) => ({
   notes: [],
   loading: false,
+  loadError: false,
   fetchNotes: async () => {
-    set({ loading: true });
+    set({ loading: true, loadError: false, notes: [] });
     try {
       const notes = await api.get<any[]>('/notes');
       set({ notes, loading: false });
     } catch {
-      set({ loading: false });
+      set({ loading: false, loadError: true });
     }
   },
   addNote: async (note) => {
@@ -27,7 +29,7 @@ export const useNoteStore = create<NoteState>((set, get) => ({
       const newNote = await api.post<any>('/notes', note);
       set({ notes: [newNote, ...get().notes] });
     } catch (e) {
-      console.error(e);
+      throw e;
     }
   },
   updateNote: async (id, updates) => {

@@ -132,6 +132,8 @@ export function useLiveChartData(symbol: string, timeframe: string) {
 
   // Fetch chart data on mount or when symbol/timeframe changes
   useEffect(() => {
+    setData([]);
+    setError(null);
     fetchChart();
 
     return () => {
@@ -182,10 +184,8 @@ export function useMarketSectors() {
     if (!isBackground) setLoading(true);
     try {
       const res = await api.get<SectorQuote[]>('/market/sectors');
-      if (res?.length > 0) {
-        setSectors(res);
-        setError(null);
-      }
+      setSectors(res ?? []);
+      setError(null);
     } catch (err: any) {
       if (!isBackground) setError('Sector data unavailable');
     } finally {

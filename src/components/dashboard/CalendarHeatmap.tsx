@@ -1,16 +1,38 @@
 import React from 'react';
 import type { Trade } from '../../types';
 import { getLocalYYYYMMDD } from '../../lib/dateUtils';
+import { formatCurrency } from '../../lib/analytics';
 
 interface CalendarHeatmapProps {
   trades: Trade[];
 }
 
+const DAYS = 90;
+const WEEKS = Math.ceil(DAYS / 7);
+
+// Each step means something: loss size on the left, profit size on the right.
+const LEVELS = {
+  none:      'rgb(var(--color-text-primary) / 0.06)',
+  flat:      'rgb(var(--color-text-primary) / 0.24)',
+  smallWin:  'rgb(var(--color-success) / 0.40)',
+  bigWin:    'rgb(var(--color-success) / 0.90)',
+  smallLoss: 'rgb(var(--color-danger) / 0.40)',
+  bigLoss:   'rgb(var(--color-danger) / 0.90)',
+};
+
+function cellColor(pnl: number | undefined): string {
+  if (pnl === undefined) return LEVELS.none;
+  if (pnl > 1000)  return LEVELS.bigWin;
+  if (pnl > 0)     return LEVELS.smallWin;
+  if (pnl < -1000) return LEVELS.bigLoss;
+  if (pnl < 0)     return LEVELS.smallLoss;
+  return LEVELS.flat; // traded, broke even
+}
+
 export default React.memo(function CalendarHeatmap({ trades }: CalendarHeatmapProps) {
-  // Aggregate PnL by day for the last 90 days
   const today = new Date();
   const days: string[] = [];
-  for (let i = 89; i >= 0; i--) {
+  for (let i = DAYS - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     days.push(getLocalYYYYMMDD(d));
@@ -19,141 +41,55 @@ export default React.memo(function CalendarHeatmap({ trades }: CalendarHeatmapPr
   const pnlMap = new Map<string, number>();
   trades.forEach(t => {
     const d = t.isCarryForward && t.exitTime ? new Date(t.exitTime) : new Date(t.date);
-    const dateOnly = getLocalYYYYMMDD(d);
-    pnlMap.set(dateOnly, (pnlMap.get(dateOnly) || 0) + t.netPnl);
+    const key = getLocalYYYYMMDD(d);
+    pnlMap.set(key, (pnlMap.get(key) || 0) + t.netPnl);
   });
 
-  const getCellColor = (pnl: number | undefined): string => {
-    if (pnl === undefined) return 'rgb(var(--color-border) / 0.15)';
-    if (pnl > 1000)  return 'rgb(var(--color-success) / 0.9)';
-    if (pnl > 0)     return 'rgb(var(--color-success) / 0.4)';
-    if (pnl < -1000) return 'rgb(var(--color-danger) / 0.9)';
-    if (pnl < 0)     return 'rgb(var(--color-danger) / 0.4)';
-    return 'rgb(var(--color-warning) / 0.4)'; // Breakeven
-  };
-
-  const legendSquares = [
-    { color: 'rgb(var(--color-danger) / 0.9)',  label: 'Big loss' },
-    { color: 'rgb(var(--color-danger) / 0.4)',  label: 'Loss' },
-    { color: 'rgb(var(--color-border) / 0.15)', label: 'No trades' },
-    { color: 'rgb(var(--color-success) / 0.4)', label: 'Profit' },
-    { color: 'rgb(var(--color-success) / 0.9)', label: 'Big profit' },
-  ];
+  const legend = [LEVELS.bigLoss, LEVELS.smallLoss, LEVELS.none, LEVELS.smallWin, LEVELS.bigWin];
+  const isEmpty = trades.length === 0;
 
   return (
-    <div
-      style={{
-        background: 'rgb(var(--color-surface))',
-        border: '1px solid rgba(var(--color-border-rgb), var(--border-alpha))',
-        borderRadius: 'var(--radius-lg)',
-        padding: 16,
-      }}
-      role="img"
-      aria-label="Trading Heatmap showing PnL for the last 90 days"
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 16,
-        }}
-      >
-        <h3
+    <div role="img" aria-label="Heatmap of daily P&L for the last 90 days">
+      <div className="mb-5 flex items-baseline justify-between gap-3">
+        <h2 className="text-sm font-medium text-primary">Daily P&amp;L</h2>
+        <span className="text-xs text-tertiary">Last 90 days</span>
+      </div>
+
+      <div className="relative">
+        <div
+          className="grid max-w-[392px] gap-1"
           style={{
-            fontSize: 'var(--text-sm)',
-            fontWeight: 600,
-            color: 'rgba(var(--color-text-primary), 0.9)',
+            gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))`,
+            gridTemplateRows: 'repeat(7, auto)',
+            gridAutoFlow: 'column',
+            opacity: isEmpty ? 0.4 : 1,
           }}
         >
-          Trading Heatmap (Last 90 Days)
-        </h3>
-        {trades.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: 'var(--text-xs)',
-              color: 'rgb(var(--color-text-secondary))',
-            }}
-          >
-            <span>Less</span>
-            {legendSquares.map((sq, i) => (
+          {days.map(dateString => {
+            const pnl = pnlMap.get(dateString);
+            return (
               <div
-                key={i}
-                title={sq.label}
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 2,
-                  background: sq.color,
-                }}
+                key={dateString}
+                title={`${dateString}: ${pnl !== undefined ? formatCurrency(pnl) : 'No trades'}`}
+                className="aspect-square rounded-[4px] transition-opacity duration-150 hover:opacity-70"
+                style={{ background: cellColor(pnl) }}
               />
-            ))}
-            <span>More</span>
-          </div>
+            );
+          })}
+        </div>
+        {isEmpty && (
+          <p className="absolute inset-0 flex items-center justify-center text-sm text-secondary">
+            Not enough data yet
+          </p>
         )}
       </div>
 
-      {/* Grid with Empty State Overlay */}
-      <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: 4 }}>
-        {trades.length === 0 && (
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(var(--color-surface), 0.6)',
-            backdropFilter: 'blur(2px)',
-            zIndex: 10,
-            borderRadius: 'var(--radius-md)'
-          }}>
-            <p style={{
-              fontSize: 'var(--text-sm)',
-              fontWeight: 600,
-              color: 'rgb(var(--color-text-secondary))',
-              background: 'rgb(var(--color-surface))',
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-sm)',
-              border: '1px solid rgba(var(--color-border-rgb), var(--border-alpha))'
-            }}>
-              Not enough data to generate heatmap
-            </p>
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: 4, minWidth: 'max-content', opacity: trades.length === 0 ? 0.3 : 1 }}>
-          {Array.from({ length: Math.ceil(90 / 7) }).map((_, weekIndex) => (
-            <div key={weekIndex} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {Array.from({ length: 7 }).map((_, dayIndex) => {
-                const globalIndex = weekIndex * 7 + dayIndex;
-                if (globalIndex >= 90) return null;
-                const dateString = days[globalIndex];
-                const pnl = pnlMap.get(dateString);
-
-                return (
-                  <div
-                    key={dateString}
-                    title={`${dateString}: ${pnl !== undefined ? '₹' + pnl.toLocaleString('en-IN') : 'No trades'}`}
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 2,
-                      background: getCellColor(pnl),
-                      transition: 'transform var(--duration-fast) var(--ease-out)',
-                      cursor: trades.length === 0 ? 'default' : 'pointer',
-                    }}
-                    onMouseEnter={e => { if (trades.length > 0) (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.3)'; }}
-                    onMouseLeave={e => { if (trades.length > 0) (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)'; }}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
+      <div className="mt-5 flex items-center gap-2 text-xs text-tertiary">
+        <span>Loss</span>
+        {legend.map((color, i) => (
+          <span key={i} className="h-3 w-3 rounded-[4px]" style={{ background: color }} aria-hidden="true" />
+        ))}
+        <span>Profit</span>
       </div>
     </div>
   );

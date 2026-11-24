@@ -57,7 +57,7 @@ export async function streamAIInference({
     }
 
     const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json') && !response.body) {
+    if (contentType.includes('application/json')) {
       const json = await response.json();
       const text = json.message || json.insight || JSON.stringify(json);
       accumulatedText = text;
@@ -104,26 +104,22 @@ export async function streamAIInference({
               break;
             }
 
+            let parsed;
             try {
-              const parsed = JSON.parse(dataStr);
-
-              if (currentEvent === 'chunk') {
-                const tokenContent = parsed.text || parsed.chunk || parsed.token || parsed.content || '';
-                accumulatedText += tokenContent;
-                onToken(tokenContent, accumulatedText);
-              } else if (currentEvent === 'discipline') {
-                onDiscipline?.(parsed);
-              } else if (currentEvent === 'done') {
-                completedMetadata = parsed;
-                done = true;
-              } else if (currentEvent === 'error') {
-                throw new Error(parsed.error || 'Stream error');
-              }
-            } catch (parseErr) {
-              if (currentEvent === 'chunk') {
-                accumulatedText += dataStr;
-                onToken(dataStr, accumulatedText);
-              }
+              parsed = JSON.parse(dataStr);
+            } catch {
+              parsed = { text: dataStr, error: dataStr };
+            }
+            if (currentEvent === 'error') throw new Error(parsed.error || parsed.message || 'Stream error');
+            if (currentEvent === 'chunk') {
+              const tokenContent = typeof parsed === 'string' ? parsed : parsed.text || parsed.chunk || parsed.token || parsed.content || '';
+              accumulatedText += tokenContent;
+              onToken(tokenContent, accumulatedText);
+            } else if (currentEvent === 'discipline') {
+              onDiscipline?.(parsed);
+            } else if (currentEvent === 'done') {
+              completedMetadata = parsed;
+              done = true;
             }
           }
         }
@@ -134,7 +130,7 @@ export async function streamAIInference({
     return accumulatedText.trim();
   } catch (error: any) {
     if (error?.name === 'AbortError') {
-      return accumulatedText;
+      throw error;
     }
     onError?.(error instanceof Error ? error : new Error(String(error)));
     throw error;

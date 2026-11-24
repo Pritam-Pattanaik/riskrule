@@ -65,6 +65,7 @@ function normalizeQuotes(newQuotes: MarketQuote[], prevData: MarketQuote[]): Mar
 
 let _sseInstance: EventSource | null = null;
 let _flashTimer: ReturnType<typeof setTimeout> | null = null;
+let generation = 0;
 let _retryCount = 0;
 let _retryTimeout: ReturnType<typeof setTimeout> | null = null;
 const MAX_RETRIES = 10;
@@ -93,24 +94,25 @@ export const useMarketQuoteStore = create<MarketQuoteState>((set, get) => ({
   initSSE: () => {
     // Guard: only one SSE connection regardless of how many times initSSE is called
     if (get().initialized) return;
+    const currentGeneration = ++generation;
     set({ initialized: true });
 
     // 1. Warm up with REST snapshot for immediate rendering
     api.get<MarketQuote[]>('/market/quotes')
       .then(response => {
-        if (response?.length > 0) {
-          set({ quotes: normalizeQuotes(response, []), loading: false, error: null });
-        }
+        if (currentGeneration !== generation) return;
+        set({ quotes: normalizeQuotes(response ?? [], []), loading: false, error: null });
       })
       .catch(() => {
-        set({ error: 'Market data unavailable', loading: false });
+        if (currentGeneration === generation) set({ error: 'Market data unavailable', loading: false });
       })
       .finally(() => {
-        _connectSSE();
+        if (currentGeneration === generation) _connectSSE();
       });
   },
 
   cleanupSSE: () => {
+    generation++;
     _disconnect();
     set({ initialized: false, loading: true, quotes: [], error: null });
   },

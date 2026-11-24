@@ -1,394 +1,275 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { 
-  Menu, X, Shield, Terminal, Sparkles, Activity, ArrowRight, 
-  ExternalLink, CheckCircle2, ChevronRight, Cpu, Lock, Layers
-} from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { cn } from '../../lib/cn';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../ui/Logo';
 import { useUIStore } from '../../stores/uiStore';
 import BetaModal from '../marketing/BetaModal';
+import { container, btnPrimary } from '../marketing/MarketingBits';
+
+const navLinks = [
+  { name: 'Workspace', path: '/workspace' },
+  { name: 'Features', path: '/features' },
+  { name: 'AI coach', path: '/ai-coach' },
+  { name: 'Pricing', path: '/pricing' },
+  { name: 'FAQ', path: '/faq' },
+];
+
+const footerColumns = [
+  {
+    title: 'Product',
+    links: [
+      { name: 'Workspace', to: '/workspace' },
+      { name: 'Features', to: '/features' },
+      { name: 'AI coach', to: '/ai-coach' },
+      { name: 'For funded traders', to: '/prop-traders' },
+      { name: 'Pricing', to: '/pricing' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { name: 'FAQ', to: '/faq' },
+      { name: 'Changelog', to: '/changelog' },
+    ],
+  },
+  { title: 'Company', links: [{ name: 'About', to: '/about' }] },
+  {
+    title: 'Legal',
+    links: [
+      { name: 'Privacy', to: '/privacy' },
+      { name: 'Terms', to: '/terms' },
+    ],
+  },
+];
+
+const quietLink =
+  'text-sm font-medium text-secondary transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md';
 
 export default function MarketingLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const location = useLocation();
   const { token } = useAuthStore();
-  const shouldReduceMotion = useReducedMotion();
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { setBetaModalOpen } = useUIStore();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 8);
+      setPastHero(window.scrollY > 720);
+    };
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-
-  // Scroll to top on route change
   useEffect(() => {
-    window.scrollTo(0, 0);
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
-
-  // Trap focus and lock body scroll when mobile menu is active
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') setMobileMenuOpen(false);
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.body.style.overflow = '';
-        window.removeEventListener('keydown', handleKeyDown);
-      };
+    if (location.hash) {
+      document.getElementById(location.hash.slice(1))?.scrollIntoView();
+    } else {
+      window.scrollTo(0, 0);
     }
+    setMobileMenuOpen(false);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [mobileMenuOpen]);
 
-  const navLinks = [
-    { name: 'Workspace', path: '/workspace', badge: null },
-    { name: 'Features', path: '/features', badge: null },
-    { name: 'AI Coach', path: '/ai-coach', badge: 'AI' },
-    { name: 'Prop Traders', path: '/prop-traders', badge: 'PROP' },
-    { name: 'Investment', path: '/pricing', badge: null },
-    { name: 'FAQ', path: '/faq', badge: null },
-  ];
-
-  const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <div id="main-content" className="flex flex-col min-h-screen bg-canvas text-primary font-sans overflow-x-hidden selection:bg-iris/25">
-      
-      {/* ── Sleek Glassmorphic Floating Navigation Bar ── */}
+    <div className="landing flex min-h-screen flex-col overflow-x-hidden bg-canvas text-primary">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-surface focus:px-4 focus:py-2">
+        Skip to main content
+      </a>
+
       <header
         className={cn(
-          "fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 h-14 sm:h-[62px] z-50 flex items-center justify-between px-4 sm:px-6 transition-all duration-300 ease-out rounded-full border w-[95%] max-w-[1200px]",
-          scrolled 
-            ? "bg-surface-1/90 backdrop-blur-2xl border-border-hover shadow-[0_8px_32px_rgba(0,0,0,0.5)]" 
-            : "bg-surface-0/70 backdrop-blur-xl border-border/60 shadow-lg"
+          'fixed inset-x-0 top-0 z-50 h-16 border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200',
+          scrolled
+            ? 'border-primary/10 bg-canvas/85 shadow-[0_1px_0_rgb(15_23_42/0.02),0_8px_24px_-12px_rgb(15_23_42/0.12)]'
+            : 'border-transparent bg-canvas/60'
         )}
-        aria-label="Main Navigation"
       >
-        {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-3 group outline-none focus-ring rounded-xl shrink-0">
-          <Logo variant="full" size="md" />
-        </Link>
+        <div className={cn(container, 'flex h-full items-center justify-between gap-6')}>
+          <Link to="/" className="shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="RiskRule home">
+            <Logo variant="full" size="md" />
+          </Link>
 
-        {/* Desktop Navigation Routes with Animated Active Pill */}
-        <nav className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-surface-1/50 border border-border/40" aria-label="Main Navigation">
-          {navLinks.map(link => {
-            const active = isActive(link.path);
-            return (
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+            {navLinks.map(link => (
               <Link
-                key={link.name}
+                key={link.path}
                 to={link.path}
+                aria-current={isActive(link.path) ? 'page' : undefined}
                 className={cn(
-                  "relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 outline-none focus-ring",
-                  active 
-                    ? "text-primary font-bold shadow-xs" 
-                    : "text-secondary hover:text-primary hover:bg-surface-2/60"
+                  quietLink,
+                  'relative px-3 py-2',
+                  'after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-[var(--brand-green)] after:transition-transform after:duration-200',
+                  isActive(link.path) && 'text-primary after:scale-x-100'
                 )}
               >
-                {active && (
-                  <motion.div
-                    layoutId="navbar-active-pill"
-                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    className="absolute inset-0 bg-surface-2/90 border border-border-hover rounded-full -z-10 shadow-sm"
-                  />
-                )}
-                <span>{link.name}</span>
-                {link.badge && (
-                  <span className={cn(
-                    "text-[9px] font-mono-stat font-extrabold px-1.5 py-0.2 rounded-md uppercase tracking-wider",
-                    link.badge === 'AI' 
-                      ? "bg-iris/20 text-iris border border-iris/30" 
-                      : "bg-gold/20 text-gold border border-gold/30"
-                  )}>
-                    {link.badge}
-                  </span>
-                )}
+                {link.name}
               </Link>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
 
-        {/* Desktop Actions */}
-        <div className="hidden sm:flex items-center gap-3 shrink-0">
-          {/* Live System Indicator */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-1/70 border border-border/60 text-[11px] font-mono-stat text-tertiary">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-            </span>
-            <span className="font-semibold text-primary">MARKETS LIVE</span>
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            {token ? (
+              <Link to="/app" className={cn(btnPrimary, 'h-10 px-4 text-sm')}>Open app</Link>
+            ) : (
+              <>
+                <button onClick={() => setBetaModalOpen(true)} className={cn(quietLink, 'hidden px-3 py-2 xl:inline')}>
+                  Join the beta
+                </button>
+                <Link to="/login" className={cn(quietLink, 'px-3 py-2')}>Sign in</Link>
+                <Link to="/signup" className={cn(btnPrimary, 'h-10 px-4 text-sm')}>Start free</Link>
+              </>
+            )}
           </div>
 
-          {token ? (
-            <Link
-              to="/app"
-              className="inline-flex items-center justify-center h-9 px-5 rounded-full bg-primary text-canvas text-xs font-bold hover:opacity-95 transition-all shadow-sm focus-ring"
-            >
-              Launch Terminal
-            </Link>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="text-xs font-semibold text-secondary hover:text-primary transition-colors px-3 py-1.5 rounded-lg focus-ring"
-              >
-                Sign In
-              </Link>
-              <button
-                onClick={() => setBetaModalOpen(true)}
-                className="text-xs font-semibold text-iris hover:text-iris/80 transition-colors px-3 py-1.5 rounded-lg focus-ring"
-              >
-                Join the Beta
-              </button>
-              <Link
-                to="/signup"
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-gradient-to-r from-accent to-iris text-white text-xs font-bold hover:opacity-95 transition-all shadow-md shadow-accent/20 focus-ring"
-              >
-                <span>Get Started</span>
-                <ArrowRight size={13} className="opacity-90" />
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Mobile Toggle Button & Quick Beta Action */}
-        <div className="flex items-center gap-2 lg:hidden">
-          {!token && (
-            <button
-              onClick={() => setBetaModalOpen(true)}
-              className="inline-flex sm:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-iris/15 border border-iris/30 text-iris text-xs font-bold hover:bg-iris/25 transition-colors focus-ring"
-            >
-              <Sparkles size={13} />
-              <span>Join Beta</span>
-            </button>
-          )}
           <button
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
-            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-            className="touch-target p-2 text-secondary hover:text-primary transition-colors rounded-xl focus-ring"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            className="touch-target -mr-2 rounded-xl p-2 text-secondary transition-colors lg:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={22} strokeWidth={1.75} /> : <Menu size={22} strokeWidth={1.75} />}
           </button>
         </div>
       </header>
 
-      {/* ── Accessible Mobile Menu Drawer ── */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             id="mobile-navigation"
-            ref={mobileMenuRef}
-            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:hidden fixed inset-x-0 top-0 h-screen bg-canvas/98 backdrop-blur-3xl z-40 pt-24 px-6 pb-12 flex flex-col justify-between border-b border-border overflow-y-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-40 flex flex-col justify-between overflow-y-auto bg-canvas px-5 pb-10 pt-24 lg:hidden"
             role="dialog"
             aria-modal="true"
+            aria-label="Navigation"
           >
-            <div className="flex flex-col gap-2">
-              <p className="text-[11px] font-mono-stat uppercase tracking-wider text-tertiary px-3 mb-1">
-                Navigation Directory
-              </p>
-              <nav className="flex flex-col gap-1.5" aria-label="Mobile Navigation">
-                {navLinks.map((link, idx) => {
-                  const active = isActive(link.path);
-                  return (
-                    <motion.div
-                      key={link.name}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                    >
-                      <Link
-                        to={link.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={cn(
-                          "text-base font-display font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-between border",
-                          active
-                            ? "bg-surface-2 text-primary border-border-hover shadow-xs"
-                            : "text-secondary hover:text-primary hover:bg-surface-1 border-transparent"
-                        )}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span>{link.name}</span>
-                          {link.badge && (
-                            <span className="text-[9px] font-mono-stat font-extrabold px-2 py-0.5 rounded bg-iris/20 text-iris border border-iris/30">
-                              {link.badge}
-                            </span>
-                          )}
-                        </div>
-                        <ChevronRight size={16} className="text-tertiary" />
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </nav>
-
-              <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-2 gap-2 text-xs font-medium text-tertiary">
-                <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-lg bg-surface-1 hover:text-primary">
-                  About RiskRule
-                </Link>
-                <Link to="/changelog" onClick={() => setMobileMenuOpen(false)} className="p-2.5 rounded-lg bg-surface-1 hover:text-primary flex items-center justify-between">
-                  <span>Changelog</span>
-                  <span className="text-[9px] px-1 bg-accent/20 text-accent font-bold rounded">v2.4</span>
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 mt-8 pt-6 border-t border-border">
-              {token ? (
+            <nav className="flex flex-col" aria-label="Mobile">
+              {navLinks.map(link => (
                 <Link
-                  to="/app"
+                  key={link.path}
+                  to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full min-h-[48px] inline-flex items-center justify-center bg-primary text-canvas rounded-xl font-bold text-base shadow-md"
+                  className={cn(
+                    'flex items-center justify-between border-b border-primary/10 py-4 font-display text-[28px] font-semibold leading-none tracking-tight text-secondary transition-colors ',
+                    isActive(link.path) && 'text-primary'
+                  )}
                 >
-                  Launch Terminal
+                  {link.name}
+                  <ArrowRight size={18} className="text-tertiary" aria-hidden="true" />
+                </Link>
+              ))}
+            </nav>
+
+            <div className="mt-10 flex flex-col gap-3">
+              {token ? (
+                <Link to="/app" onClick={() => setMobileMenuOpen(false)} className={cn(btnPrimary, 'w-full')}>
+                  Open app
                 </Link>
               ) : (
                 <>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setBetaModalOpen(true);
-                    }}
-                    className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 bg-iris/15 border border-iris/40 text-iris rounded-xl font-bold text-base hover:bg-iris/25 transition-colors focus-ring"
-                  >
-                    <Sparkles size={18} />
-                    <span>Join the Beta</span>
-                  </button>
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full min-h-[48px] inline-flex items-center justify-center bg-surface-1 border border-border text-primary rounded-xl font-semibold text-base"
-                  >
-                    Sign In
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className={cn(btnPrimary, 'w-full')}>
+                    Start free
                   </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full min-h-[48px] inline-flex items-center justify-center bg-gradient-to-r from-accent to-iris text-white rounded-xl font-bold text-base shadow-md shadow-accent/20"
-                  >
-                    Start Free (No CC Required)
-                  </Link>
+                  <div className="flex items-center justify-center gap-6 pt-2">
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)} className={quietLink}>Sign in</Link>
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); setBetaModalOpen(true); }}
+                      className={quietLink}
+                    >
+                      Join the beta
+                    </button>
+                  </div>
                 </>
               )}
-
-              <div className="flex items-center justify-center gap-2 mt-3 text-xs text-tertiary font-medium">
-                <Shield size={14} className="text-success" />
-                <span>Bank-Grade Read-Only OAuth Security</span>
-              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Page Content ── */}
-      <main className="flex-1 mt-14 sm:mt-16">
+      <main id="main-content" tabIndex={-1} className="mt-16 flex-1 scroll-mt-16 outline-none">
         <Outlet />
       </main>
 
-      {/* ── Institutional Modern SaaS Footer ── */}
-      <footer className="border-t border-border bg-surface-0/90 pt-20 pb-12 px-6 lg:px-12 text-secondary" aria-label="Institutional resources">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-12 pb-14 border-b border-border/60">
-          
-          {/* Column 1: Brand, Description, Socials (2 cols) */}
-          <div className="col-span-2 lg:col-span-2 flex flex-col justify-between gap-8 pr-4">
-            <div className="space-y-5">
-              <div className="flex items-center gap-2.5">
-                <Logo variant="full" size="md" />
-              </div>
-              <p className="text-[13px] text-tertiary max-w-sm leading-relaxed font-medium">
-                The institutional quantitative trading workspace engineered for funded prop traders and rule-based discretionary desks. Replace emotional willpower with mathematically verified discipline.
-              </p>
-              
-              {/* Live Status Pill */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-1 border border-border w-fit shadow-xs">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-                </span>
-                <span className="text-[11px] font-semibold text-primary">All Execution Engines Operational</span>
-              </div>
+      <footer className="ink" aria-label="Site">
+        <div className={cn(container, 'grid grid-cols-2 gap-x-8 gap-y-10 py-16 md:grid-cols-[1.6fr_repeat(4,1fr)]')}>
+          <div className="col-span-2 md:col-span-1">
+            <Logo variant="full" size="md" className="[&>span]:!text-white" />
+            <p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">
+              The trading journal that checks every session against your own rules. Built for Indian traders.
+            </p>
+            {!token && (
+              <Link to="/signup" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--brand-green)] transition-colors ">
+                Start free <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+            )}
+          </div>
+
+          {footerColumns.map(col => (
+            <div key={col.title}>
+              <p className="text-sm font-semibold text-white">{col.title}</p>
+              <ul className="mt-4 flex flex-col gap-3">
+                {col.links.map(l => (
+                  <li key={l.to}>
+                    <Link to={l.to} className="rounded-md text-sm text-slate-400 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-green)]">
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
-
-          {/* Column 2: Platform */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-primary tracking-wide uppercase font-mono-stat">Platform</p>
-            <ul className="space-y-3 text-[13px] font-medium text-tertiary">
-              <li><Link to="/workspace" className="hover:text-primary transition-colors">Trading Terminal</Link></li>
-              <li><Link to="/features" className="hover:text-primary transition-colors">Features</Link></li>
-              <li><Link to="/ai-coach" className="hover:text-primary transition-colors flex items-center gap-1.5">AI Coach <span className="px-1.5 py-0.2 rounded bg-iris/20 text-iris text-[9px] font-bold">SMART</span></Link></li>
-              <li><Link to="/prop-traders" className="hover:text-primary transition-colors">Prop Firm Tracker</Link></li>
-              <li><Link to="/pricing" className="hover:text-primary transition-colors">Investment Plans</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 3: Resources */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-primary tracking-wide uppercase font-mono-stat">Resources</p>
-            <ul className="space-y-3 text-[13px] font-medium text-tertiary">
-              <li><Link to="/faq" className="hover:text-primary transition-colors">Knowledge Vault &amp; FAQ</Link></li>
-              <li><Link to="/changelog" className="hover:text-primary transition-colors flex items-center gap-1.5">Changelog <span className="px-1.5 py-0.2 rounded bg-surface-2 text-[9px] font-bold text-primary">v2.4</span></Link></li>
-              <li><a href="#" className="hover:text-primary transition-colors">API Documentation</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Broker Sync Status</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Drawdown Calculator</a></li>
-            </ul>
-          </div>
-
-          {/* Column 4: Company */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-primary tracking-wide uppercase font-mono-stat">Company</p>
-            <ul className="space-y-3 text-[13px] font-medium text-tertiary">
-              <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Quantitative Research</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Institutional Partners</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Security Architecture</a></li>
-            </ul>
-          </div>
-
-          {/* Column 5: Legal */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] font-bold text-primary tracking-wide uppercase font-mono-stat">Legal &amp; Trust</p>
-            <ul className="space-y-3 text-[13px] font-medium text-tertiary">
-              <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><a href="#" className="hover:text-primary transition-colors">SOC-2 Compliance</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Read-Only API Protocol</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Cookie Preferences</a></li>
-            </ul>
-          </div>
-
+          ))}
         </div>
 
-        {/* Bottom Bar */}
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-[12px] text-tertiary font-medium">
-          <p>© 2026 RiskRule, Inc. Designed and engineered for high-frequency discipline.</p>
-          <div className="flex items-center gap-4 sm:gap-6">
-            <span className="text-secondary font-semibold hidden sm:inline-block">Discipline Over Dopamine</span>
-            <span className="hidden sm:inline-block">·</span>
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-            <span>All rights reserved</span>
+        <div className="ink-line border-t">
+          <div className={cn(container, 'flex flex-col gap-3 py-6 pb-24 text-[13px] leading-5 text-slate-400 sm:pb-6')}>
+            <p>
+              RiskRule is a journaling, analytics and AI-coaching tool. It is not a broker or an investment adviser, and
+              nothing here is a recommendation to trade. Trading involves risk of loss.
+            </p>
+            <p>© 2026 RiskRule, Inc. All rights reserved.</p>
           </div>
         </div>
       </footer>
 
-      {/* Beta Modal */}
+      {/* Phones only: a persistent way to start once the hero has scrolled away. */}
+      <AnimatePresence>
+        {!token && pastHero && !mobileMenuOpen && !location.pathname.startsWith('/privacy') && !location.pathname.startsWith('/terms') && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-primary/10 bg-canvas/90 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:hidden"
+          >
+            <Link to="/signup" className={cn(btnPrimary, 'w-full')}>Start free</Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <BetaModal />
     </div>
   );

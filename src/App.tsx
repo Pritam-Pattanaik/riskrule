@@ -5,13 +5,13 @@ import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import PageWrapper from './components/layout/PageWrapper';
 import MarketingLayout from './components/layout/MarketingLayout';
+import { RouteMetadata } from './components/layout/RouteMetadata';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminLayout from './components/layout/AdminLayout';
 import { PageLoadingFallback } from './components/ui/PageLoadingFallback';
-import { useAuthStore } from './stores/authStore';
 import { useUIStore } from './stores/uiStore';
 import { useAutoSync } from './hooks/useAutoSync';
-import { AuroraBackground } from './components/ui/AuroraBackground';
+import { CommandPalette } from './components/ui/CommandPalette';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { AsyncStateBoundary } from './components/ui/AsyncStateBoundary';
 import { useMarketQuoteStore } from './stores/marketQuoteStore';
@@ -61,32 +61,34 @@ const AdminAffiliates = React.lazy(() => import('./pages/admin/AdminAffiliates')
 const SystemHealth = React.lazy(() => import('./pages/SystemHealth'));
 
 function MainLayout() {
-  const { profile } = useAuthStore();
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const { desktopSidebarExpanded } = useUIStore();
   const initSSE = useMarketQuoteStore(s => s.initSSE);
 
   // Initialize singleton SSE connection once per authenticated session (MKT-01 fix)
   useEffect(() => {
     initSSE();
+    return () => useMarketQuoteStore.getState().cleanupSSE();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize system (OS) notifications — registers callback on notification store
   useSystemNotifications();
   return (
-    <AuroraBackground className="h-screen w-screen overflow-hidden bg-canvas">
+    <div className="trading-desk h-dvh w-full overflow-hidden bg-canvas text-primary">
       <div className="relative h-full w-full flex">
         {/* Absolute Positioning for the Sidebar */}
-        <Sidebar />
+        <Sidebar onSearch={() => setSearchOpen(true)} />
+        <CommandPalette open={searchOpen} setOpen={setSearchOpen} />
 
         {/* Main Content Area */}
         <div 
           className={cn(
-            "flex flex-col flex-1 h-full overflow-hidden transition-all duration-250 ease-in-out w-full",
+            "flex flex-col flex-1 h-full overflow-hidden transition-[margin] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] w-full",
             desktopSidebarExpanded ? "lg:ml-[240px]" : "lg:ml-[68px]"
           )}
         >
           {/* Navigation Header */}
-          <Header />
+          <Header onSearch={() => setSearchOpen(true)} />
 
           {/* Scrollable Page Wrapper */}
           <PageWrapper>
@@ -117,13 +119,16 @@ function MainLayout() {
           </PageWrapper>
         </div>
       </div>
-    </AuroraBackground>
+    </div>
   );
 }
 
-export default function App() {
+function SessionSync() {
   useAutoSync();
+  return null;
+}
 
+export default function App() {
   // Ctrl+Shift+D — navigate to developer diagnostics page
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -138,7 +143,9 @@ export default function App() {
 
   return (
     <>
+    <RouteMetadata />
     <Suspense fallback={<PageLoadingFallback />}>
+      <SessionSync />
       <Routes>
         {/* Public SaaS Pages */}
         <Route element={<MarketingLayout />}>

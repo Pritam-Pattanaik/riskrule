@@ -49,6 +49,7 @@ interface InsightState {
 }
 
 // Per-conversation abort controllers
+let selectionVersion = 0;
 const abortControllers = new Map<string, AbortController>();
 let coachMemoryInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -92,9 +93,11 @@ export const useInsightStore = create<InsightState>((set, get) => ({
 
   // Lazy: only creates DB record when called from sendMessage, not from UI click
   createConversation: async (title?: string) => {
+    const version = selectionVersion;
     set({ loading: false, error: null });
     try {
       const response = await api.post<AiConversation>('/ai/conversations', { title: title || 'New Chat' });
+      if (version !== selectionVersion) throw new DOMException('Conversation changed', 'AbortError');
       set(state => ({
         conversations: [response, ...state.conversations],
         activeConversationId: response.id,
@@ -103,13 +106,20 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       try { localStorage.setItem('lastActiveConversationId', response.id); } catch { /* non-critical */ }
       return response.id;
     } catch (error: any) {
-      set({ error: error.message || 'Failed to create conversation' });
+      if (version === selectionVersion) set({ error: error.message || 'Failed to create conversation' });
       throw error;
     }
   },
 
   setActiveConversation: async (id: string | null) => {
+    const version = ++selectionVersion;
+    const previous = get().activeConversationId;
+    if (previous) {
+      abortControllers.get(previous)?.abort();
+      abortControllers.delete(previous);
+    }
     set({
+      loading: Boolean(id),
       activeConversationId: id,
       messages: [],
       streamingMessage: '',
@@ -131,8 +141,10 @@ export const useInsightStore = create<InsightState>((set, get) => ({
         ...m,
         content: m.content ? m.content.replace(/^\[MODE:[\w]+\]\s*/i, '') : ''
       }));
+      if (version !== selectionVersion || get().activeConversationId !== id) return;
       set({ messages: sanitized, loading: false });
     } catch (error: any) {
+      if (version !== selectionVersion || get().activeConversationId !== id) return;
       set({ error: error.message || 'Failed to fetch messages', loading: false });
     }
   },
@@ -261,6 +273,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
 
   // ─── LAZY CREATION: DB conversation is created here, not on New Chat click ─
   sendMessage: async (content: string, modeOverride?: string) => {
+    if (get().isTyping || !content.trim()) return;
     let { activeConversationId } = get();
     const { currentMode } = get();
     const isFirstMessage = get().messages.length === 0;
@@ -278,10 +291,13 @@ export const useInsightStore = create<InsightState>((set, get) => ({
 
     // LAZY CREATION: Create the DB conversation only when first message is sent
     if (!activeConversationId) {
+      const version = selectionVersion;
       try {
+        set({ isTyping: true });
         const preview = cleanContent.substring(0, 40);
         activeConversationId = await get().createConversation(preview);
       } catch {
+        if (version === selectionVersion) set({ isTyping: false });
         return;
       }
     }
@@ -312,6 +328,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
 
     const controller = new AbortController();
     abortControllers.set(conversationId, controller);
+    const isCurrent = () => get().activeConversationId === conversationId && abortControllers.get(conversationId) === controller;
 
     let capturedDiscipline: any = null;
     let serverMessageId: string | undefined = undefined;
@@ -322,7 +339,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
         payload: { conversationId, message: cleanContent, mode: modeToUse },
         signal: controller.signal,
         onToken: (_token, accumulated) => {
-          set({ streamingMessage: accumulated });
+          if (isCurrent()) set({ streamingMessage: accumulated });
         },
         onDiscipline: (data) => {
           capturedDiscipline = data;
@@ -332,6 +349,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
         },
       });
 
+      if (!isCurrent()) return;
       set(state => ({
         messages: [
           ...state.messages,
@@ -348,6 +366,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       }));
 
     } catch (error: any) {
+      if (!isCurrent()) return;
       if (error.name === 'AbortError') {
         set(state => {
           const streamText = state.streamingMessage.trim();
@@ -374,7 +393,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
         }
       }
     } finally {
-      abortControllers.delete(conversationId);
+      if (abortControllers.get(conversationId) === controller) abortControllers.delete(conversationId);
       if (isFirstMessage && conversationId) {
         get().generateConversationTitle(conversationId);
       }
@@ -400,7 +419,6 @@ export const useInsightStore = create<InsightState>((set, get) => ({
     const ctrl = abortControllers.get(activeConversationId);
     if (ctrl) {
       ctrl.abort();
-      abortControllers.delete(activeConversationId);
     }
   },
 
@@ -425,6 +443,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
 
     const controller = new AbortController();
     abortControllers.set(activeConversationId, controller);
+    const isCurrent = () => get().activeConversationId === activeConversationId && abortControllers.get(activeConversationId) === controller;
 
     let capturedDiscipline: any = null;
     let serverMessageId: string | undefined = undefined;
@@ -439,11 +458,12 @@ export const useInsightStore = create<InsightState>((set, get) => ({
           isRegeneration: true,
         },
         signal: controller.signal,
-        onToken: (_token, accumulated) => set({ streamingMessage: accumulated }),
+        onToken: (_token, accumulated) => { if (isCurrent()) set({ streamingMessage: accumulated }); },
         onDiscipline: (data) => { capturedDiscipline = data; },
         onComplete: (_fullText, metadata) => { if (metadata?.messageId) serverMessageId = metadata.messageId; },
       });
 
+      if (!isCurrent()) return;
       set(state => ({
         messages: [
           ...state.messages,
@@ -459,6 +479,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
         isTyping: false,
       }));
     } catch (error: any) {
+      if (!isCurrent()) return;
       if (error.name === 'AbortError') {
         set(state => {
           const content = state.streamingMessage.trim();
@@ -480,7 +501,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
         set({ error: error.message || 'Regeneration failed', isTyping: false });
       }
     } finally {
-      abortControllers.delete(activeConversationId);
+      if (abortControllers.get(activeConversationId) === controller) abortControllers.delete(activeConversationId);
     }
   },
 

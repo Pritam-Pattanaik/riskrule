@@ -80,6 +80,7 @@ export function Button({
         'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
         'outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
         variants[variant],
+        variant === 'primary' && 'desk-primary',
         sizes[size],
         className,
       )}

@@ -12,6 +12,8 @@ import { useNewsStore } from '../../stores/newsStore';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface NewsItem {
+  publishedAt: string;
+  url: string | null;
   id: string;
   title: string;
   source: string;
@@ -80,7 +82,7 @@ function NewsSkeleton() {
 // ─── News Item Row ────────────────────────────────────────────────────────────
 
 function NewsRow({ item, onAnalyze }: {
-  item: { id: string; title: string; source: string; time: string; impact: 'high' | 'medium' | 'low'; sector: string; category: string; readTime: string; urgency: string; url: string | null; sectorTags: string[] };
+  item: { id: string; title: string; source: string; time: string; impact: 'high' | 'medium' | 'low'; sector: string; category: string; readTime: string; publishedAt: string; urgency: string; url: string | null; sectorTags: string[] };
   onAnalyze: (item: NewsItem) => void;
 }) {
   const impact = IMPACT[item.impact];
@@ -121,7 +123,7 @@ function NewsRow({ item, onAnalyze }: {
 
       {/* Headline */}
       <button
-        onClick={() => onAnalyze({ id: item.id, title: item.title, source: item.source, time: item.time, impact: item.impact, sector: item.sector, category: item.category, readTime: item.readTime })}
+        onClick={() => onAnalyze(item)}
         className="text-left w-full mb-2.5 text-[13px] font-semibold leading-snug transition-colors duration-150 cursor-pointer"
         style={{ color: 'rgba(var(--color-border-rgb),0.75)', background: 'none', border: 'none', padding: 0 }}
         onMouseEnter={e => (e.currentTarget.style.color = 'rgba(var(--color-border-rgb),0.95)')}
@@ -151,7 +153,7 @@ function NewsRow({ item, onAnalyze }: {
         {/* Hover actions */}
         <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <button
-            onClick={() => onAnalyze({ id: item.id, title: item.title, source: item.source, time: item.time, impact: item.impact, sector: item.sector, category: item.category, readTime: item.readTime })}
+            onClick={() => onAnalyze(item)}
             className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors"
             style={{ background: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(139,92,246,0.2)')}
@@ -184,7 +186,7 @@ function NewsRow({ item, onAnalyze }: {
 interface Props { onAnalyze: (item: NewsItem) => void }
 
 export default function BreakingNewsTimeline({ onAnalyze }: Props) {
-  const { engineFeed, loadingFeed, fetchEngineFeed } = useNewsStore();
+  const { engineFeed, loadingFeed, feedError, fetchEngineFeed } = useNewsStore();
   const [activeFilter, setActiveFilter] = useState<typeof FILTERS[number]>('All');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -212,6 +214,7 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
       title: item.headline,
       source: item.source,
       time: timeAgo(item.publishedAt),
+      publishedAt: item.publishedAt,
       impact: confidenceToImpact(item.confidence),
       sector: item.sectors[0] || 'General',
       category: DIR_LABEL[item.direction] || 'News',
@@ -233,10 +236,7 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
   const breakingCount = filtered.filter(i => i.urgency === 'breaking').length;
 
   return (
-    <div
-      className="rounded-2xl p-5"
-      style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
-    >
+    <section className="desk-panel">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
@@ -247,8 +247,7 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
             <Flame size={14} className="text-red-400" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-primary/90 leading-none">News Feed</h3>
-            <p className="text-[10px] text-primary/25 mt-0.5">AI-triaged · Real-time</p>
+            <h3 className="text-[14px] font-bold text-primary/90 leading-none">Market headlines</h3>
           </div>
           {breakingCount > 0 && (
             <span
@@ -261,17 +260,14 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1" style={{ color: loadingFeed ? 'rgba(var(--color-border-rgb),0.25)' : '#10b981' }}>
-            {loadingFeed ? <WifiOff size={10} /> : <Wifi size={10} />}
-            <span className="text-[10px] font-semibold">{loadingFeed ? 'Updating' : 'Live'}</span>
-          </div>
+          {loadingFeed && <span className="text-xs text-secondary">Updating…</span>}
           <button
             onClick={handleRefresh}
             className="p-1.5 rounded-lg transition-colors"
             style={{ background: 'rgba(var(--color-border-rgb),0.04)' }}
             title="Refresh news"
           >
-            <RefreshCw size={12} className={`transition-all ${isRefreshing ? 'animate-spin text-violet-400' : 'text-primary/25 hover:text-primary/60'}`} />
+            <RefreshCw size={12} className={`transition-all ${isRefreshing ? 'animate-spin text-violet-400' : 'text-secondary hover:text-primary'}`} />
           </button>
         </div>
       </div>
@@ -284,12 +280,8 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className="text-[10px] font-bold px-2.5 py-1 rounded-full transition-all duration-150"
-              style={{
-                background: isActive ? 'rgba(139,92,246,0.18)' : 'rgba(var(--color-border-rgb),0.04)',
-                color: isActive ? '#c4b5fd' : 'rgba(var(--color-border-rgb),0.3)',
-                border: isActive ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(var(--color-border-rgb),0.06)',
-              }}
+              aria-pressed={isActive}
+              className="rounded-md border border-border px-2.5 py-1 text-xs text-secondary aria-pressed:bg-accent/10 aria-pressed:text-accent"
             >
               {f}
             </button>
@@ -323,14 +315,13 @@ export default function BreakingNewsTimeline({ onAnalyze }: Props) {
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
           >
-            <Newspaper size={18} className="text-primary/20" />
+            <Newspaper size={18} className="text-tertiary" />
           </div>
           <div className="text-center">
-            <p className="text-[13px] font-semibold text-primary/30">No news in this category</p>
-            <p className="text-[11px] text-primary/15 mt-1">Live items appear during market hours</p>
+            <p className="text-[13px] font-semibold text-secondary">{feedError ? "Headlines are unavailable." : "No headlines in this category."}</p>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

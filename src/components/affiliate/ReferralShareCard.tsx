@@ -7,7 +7,7 @@ import { Card } from '../ui/Card';
 interface ReferralShareCardProps {
   referralLink: string;
   referralCode: string;
-  onUpdateCode?: (newCode: string) => void;
+  onUpdateCode?: (newCode: string) => Promise<{success: boolean; error?: string}>;
 }
 
 export default function ReferralShareCard({
@@ -19,8 +19,10 @@ export default function ReferralShareCard({
   const [isEditing, setIsEditing] = useState(false);
   const [customCode, setCustomCode] = useState(referralCode);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referralLink);
+  const [saving, setSaving] = useState(false);
+  const handleCopy = async () => {
+    try { await navigator.clipboard.writeText(referralLink); }
+    catch { toast.error('Select the referral link and copy it manually.'); return; }
     setCopied(true);
     toast.success('Referral link copied to clipboard!', {
       description: referralLink,
@@ -28,14 +30,19 @@ export default function ReferralShareCard({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleSaveCode = () => {
+  const handleSaveCode = async () => {
     const clean = customCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
     if (clean.length < 3) {
       toast.error('Code must be at least 3 characters');
       return;
     }
     if (onUpdateCode) {
-      onUpdateCode(clean);
+      if (saving) return;
+      setSaving(true);
+      try {
+        const result = await onUpdateCode(clean);
+        if (!result.success) { toast.error(result.error || 'Could not update the referral code.'); return; }
+      } finally { setSaving(false); }
     }
     setIsEditing(false);
     toast.success(`Referral code updated to ${clean}`);
@@ -43,9 +50,9 @@ export default function ReferralShareCard({
 
   // Social Share configurations with pre-filled promotional text focused on Trading Journal & Discipline
   const shareMessage = encodeURIComponent(
-    `I've been journaling my trades, analyzing win rate, and building disciplined trading habits with RiskRules. Track your performance and master your risk rules here: ${referralLink}`
+    `I've been journaling my trades, analyzing win rate, and building disciplined trading habits with RiskRule. Track your performance and master your risk rules here: ${referralLink}`
   );
-  const shareTitle = encodeURIComponent('Level up your trading with RiskRules AI Trading Journal');
+  const shareTitle = encodeURIComponent('Level up your trading with RiskRule AI Trading Journal');
   const encodedUrl = encodeURIComponent(referralLink);
 
   const shareChannels = [
@@ -115,12 +122,12 @@ export default function ReferralShareCard({
             <h3 className="text-base font-bold text-primary">Your Referral Link</h3>
           </div>
           <p className="text-xs text-secondary mt-1">
-            Share this link with your network to earn lifetime 20% recurring commissions.
+            Share your personal link so signups are credited to you.
           </p>
         </div>
 
         <button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => { setCustomCode(referralCode); setIsEditing(!isEditing); }}
           className="text-xs text-tertiary hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer"
         >
           <Edit3 className="w-3 h-3" />
@@ -137,10 +144,10 @@ export default function ReferralShareCard({
           className="p-3 rounded-xl bg-surface-2/60 border border-border space-y-2"
         >
           <label className="text-[11px] font-semibold text-secondary uppercase tracking-wider">
-            Custom Referral Slug
+            Referral code
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-tertiary font-mono">riskrules.com/r/</span>
+            <span className="text-xs text-tertiary font-mono">/r/</span>
             <input
               type="text"
               value={customCode}
@@ -149,7 +156,7 @@ export default function ReferralShareCard({
               className="flex-1 bg-surface-1 border border-border px-3 py-1.5 rounded-lg text-xs font-mono text-primary uppercase focus:outline-none focus:border-violet-500"
             />
             <button
-              onClick={handleSaveCode}
+              disabled={saving} onClick={handleSaveCode}
               className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
             >
               Save
@@ -163,7 +170,7 @@ export default function ReferralShareCard({
         <div className="relative flex-1">
           <input
             type="text"
-            readOnly
+            readOnly aria-label="Your referral link"
             value={referralLink}
             className="w-full bg-surface-0/90 border border-border rounded-xl px-4 py-3 text-xs sm:text-sm font-mono text-primary/90 focus:outline-none focus:ring-1 focus:ring-violet-500/50 select-all"
           />
@@ -172,8 +179,8 @@ export default function ReferralShareCard({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={handleCopy}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-iris transition-all duration-200 cursor-pointer shrink-0"
+          disabled={!referralLink} onClick={handleCopy}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white bg-accent transition-all duration-200 cursor-pointer shrink-0"
         >
           {copied ? (
             <>

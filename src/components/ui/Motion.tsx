@@ -206,7 +206,7 @@ export const NumberCounter = ({
     return () => controls.stop();
   }, [value, duration, format, shouldReduceMotion]);
 
-  return <span ref={nodeRef} className={className}>{format(shouldReduceMotion ? value : 0)}</span>;
+  return <span ref={nodeRef} className={className}>{format(0)}</span>;
 };
 
 /**

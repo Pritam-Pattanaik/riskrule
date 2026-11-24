@@ -38,21 +38,12 @@ export default function Settings() {
   const { connections, fetchConnections, removeConnection, syncConnection, syncingBrokers, updateToken, isLoading: brokersLoading } = useBrokerStore();
   const { rules, fetchRules, saveRules } = useTradingRulesStore();
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as 'brokers' | 'rules' | 'voice' | 'profile' | 'security' | 'notifications' | null;
 
   useEffect(() => { fetchConnections(); fetchRules(); }, [fetchConnections, fetchRules]);
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'brokers' | 'rules' | 'voice' | 'profile' | 'security' | 'notifications'>(
-    tabFromUrl && VALID_TABS.includes(tabFromUrl as any) ? tabFromUrl : 'brokers'
-  );
-
-  useEffect(() => {
-    if (tabFromUrl && VALID_TABS.includes(tabFromUrl as any)) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl]);
+  const activeTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'brokers';
 
   const [wizardOpen, setWizardOpen] = useState(false);
 
@@ -302,27 +293,25 @@ export default function Settings() {
   };
 
   const tabs = [
-    { id: 'brokers', label: '🔌 Broker Integrations', count: connections.length },
-    { id: 'rules', label: '🛡️ Risk & Discipline Rules' },
-    { id: 'voice', label: '🎙️ Voice & Audio AI' },
-    { id: 'notifications', label: '🔔 Notifications' },
-    { id: 'profile', label: '👤 Profile & Workspace' },
-    { id: 'security', label: '🔐 Security & Data Vault' },
+    { id: 'brokers', label: 'Brokers', count: connections.length },
+    { id: 'rules', label: 'Trading rules' },
+    { id: 'voice', label: 'Voice' },
+    { id: 'notifications', label: 'Notifications' },
+    { id: 'profile', label: 'Profile' },
+    { id: 'security', label: 'Security' },
   ];
 
 
   return (
-    <div className="max-w-5xl mx-auto pb-28 space-y-8 font-sans animate-fadeIn">
+    <div className="pb-16 space-y-8 font-sans animate-fadeIn">
       
       {/* Institutional Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-iris/10 text-iris text-xs font-bold mb-2.5 border border-iris/20">
-            <Sparkles size={12} /> Institutional Control Center & BMS
-          </div>
-          <h1 className="font-display text-3xl font-black text-primary tracking-tight">System Settings & Governance</h1>
+
+          <h1 className="font-display text-3xl font-black text-primary tracking-tight">Settings</h1>
           <p className="text-sm text-tertiary mt-1 max-w-2xl leading-relaxed">
-            Manage data-driven brokerage API connections, set prop-trading behavioral discipline guardrails, and audit cloud security vaults.
+            Manage broker connections, trading rules, notifications and account details.
           </p>
         </div>
         
@@ -331,7 +320,7 @@ export default function Settings() {
             onClick={() => setWizardOpen(true)}
             className="h-12 px-6 font-bold text-sm shadow-iris shrink-0 gap-2"
           >
-            <Link2 size={16} /> Connect Broker Institution
+            <Link2 size={16} /> Connect broker
           </Button>
         )}
       </div>
@@ -343,7 +332,7 @@ export default function Settings() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              aria-pressed={isActive} onClick={() => setSearchParams({tab: tab.id})}
               className={cn(
                 'relative px-5 py-3 rounded-2xl font-bold text-[13px] transition-all duration-200 shrink-0 select-none flex items-center gap-2',
                 isActive
@@ -378,26 +367,6 @@ export default function Settings() {
         {activeTab === 'brokers' && (
           <div className="space-y-6">
           
-          {/* AI Coach Proactive Health Notice (Institutional Feature) */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-iris/10 via-surface-1 to-surface-1 border border-iris/20 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-iris/20 border border-iris/30 text-iris flex items-center justify-center shrink-0">
-                <Bell size={18} className="animate-pulse" />
-              </div>
-              <div>
-                <h5 className="font-display font-bold text-[13px] text-primary">AI Diagnostic Advisory & Token Watchdog</h5>
-                <p className="text-xs text-tertiary mt-0.5">
-                  {connections.length > 0
-                    ? `Active surveillance operational. All ${connections.length} account token${connections.length !== 1 ? 's are' : ' is'} within healthy execution tolerances for today's NSE market session.`
-                    : 'No connected brokerage vaults detected. Connect a broker to enable real-time ledger synchronization.'}
-                </p>
-              </div>
-            </div>
-            <span className="text-[11px] font-mono font-bold text-success bg-success/10 px-3 py-1 rounded-lg border border-success/20 hidden sm:inline-block">
-              ● ACTIVE STREAM
-            </span>
-          </div>
-
           {/* Broker Connections Directory */}
           <div className="space-y-4">
             {brokersLoading ? (

@@ -137,9 +137,9 @@ export default function Strategies() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
-          <h1 className="font-display text-2xl font-bold text-primary tracking-tight">Strategy Vault</h1>
+          <h1 className="font-display text-2xl font-bold text-primary tracking-tight">Strategies</h1>
           <p className="text-xs text-tertiary mt-1">
-            Access curated platform default setups and build or customize your own trading strategies.
+            Keep entry and exit rules alongside the trades you took with each setup.
           </p>
         </div>
         <Button
@@ -154,56 +154,10 @@ export default function Strategies() {
       {/* Tabs & Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 bg-surface-1 p-1 rounded-xl border border-border">
-          <button
-            onClick={() => setActiveTab('ALL')}
-            className={cn(
-              'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2',
-              activeTab === 'ALL'
-                ? 'bg-surface text-primary shadow-xs'
-                : 'text-tertiary hover:text-secondary'
-            )}
-          >
-            <Layers size={13} />
-            All Strategies
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-2 text-muted font-bold font-mono">
-              {strategies.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('DEFAULT')}
-            className={cn(
-              'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2',
-              activeTab === 'DEFAULT'
-                ? 'bg-iris/10 text-iris border border-iris/20 shadow-xs'
-                : 'text-tertiary hover:text-secondary'
-            )}
-          >
-            <Sparkles size={13} className="text-iris" />
-            Default Strategies
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-iris/10 text-iris font-bold font-mono">
-              {defaultStrategies.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('CUSTOM')}
-            className={cn(
-              'px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2',
-              activeTab === 'CUSTOM'
-                ? 'bg-accent/10 text-accent border border-accent/20 shadow-xs'
-                : 'text-tertiary hover:text-secondary'
-            )}
-          >
-            <User size={13} className="text-accent" />
-            Custom Strategies
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-accent/10 text-accent font-bold font-mono">
-              {customStrategies.length}
-            </span>
-          </button>
+        <div className="desk-tabs" role="group" aria-label="Strategy library">
+          {(['ALL', 'DEFAULT', 'CUSTOM'] as const).map(key => <button key={key} aria-pressed={activeTab === key}
+            onClick={() => setActiveTab(key)}>{key === 'ALL' ? 'All strategies' : key === 'DEFAULT' ? 'Platform setups' : 'My strategies'}</button>)}
         </div>
-
         {/* Search & Market filter */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1 sm:w-60">

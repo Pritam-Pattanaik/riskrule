@@ -9,7 +9,7 @@ export default {
     extend: {
       fontFamily: {
         display: ['Bricolage Grotesque', 'Geist Sans', 'system-ui', 'sans-serif'],
-        sans:    ['Geist Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        sans:    ['Geist', 'Geist Sans', 'system-ui', '-apple-system', 'sans-serif'],
         mono:    ['DM Mono', 'Geist Mono', 'ui-monospace', 'monospace'],
         serif:   ['Instrument Serif', 'Georgia', 'serif'],
       },

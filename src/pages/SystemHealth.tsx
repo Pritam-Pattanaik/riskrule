@@ -76,7 +76,7 @@ function SectionCard({ title, icon, children, refreshFn, loading }: {
     <div className="rounded-2xl p-5 bg-surface-1 border border-border">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-violet-400">{icon}</span>
+          <span className="text-accent">{icon}</span>
           <h3 className="text-[13px] font-bold text-primary">{title}</h3>
         </div>
         {refreshFn && (
@@ -163,8 +163,8 @@ export default function SystemHealth() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Activity size={20} className="text-violet-400" />
-              <h1 className="text-xl font-bold text-primary">System Health Center</h1>
+              <Activity size={20} className="text-accent" />
+              <h1 className="text-xl font-bold text-primary">System health</h1>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>DEV ONLY</span>
             </div>
             <p className="text-[12px] text-tertiary">
@@ -172,7 +172,7 @@ export default function SystemHealth() {
               {lastRefresh && <span className="ml-2 text-muted">Last: {lastRefresh.toLocaleTimeString()}</span>}
             </p>
           </div>
-          <button onClick={refreshAll} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-bold text-violet-400 transition-colors" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
+          <button onClick={refreshAll} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-bold text-accent transition-colors" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)" }}>
             <RefreshCw size={12} />Refresh All
           </button>
         </div>
@@ -183,7 +183,7 @@ export default function SystemHealth() {
             { icon: <Server size={16} className="text-blue-400" />, label: "Backend", chip: <StatusChip ok={serverHealth?.status === "ok"} label={serverHealth?.status ?? "..."} /> },
             { icon: <Radio size={16} className="text-emerald-400" />, label: "SSE", chip: sseConnected === null ? <span className="text-[11px] text-tertiary">Checking...</span> : <StatusChip ok={sseConnected} label={sseConnected ? "Connected" : "Failed"} /> },
             { icon: <Cpu size={16} className="text-yellow-400" />, label: "News Engine", chip: newsHealth ? <StatusChip ok={newsHealth.status === "healthy"} label={newsHealth.status} /> : <span className="text-[11px] text-tertiary">Loading...</span> },
-            { icon: <Zap size={16} className="text-violet-400" />, label: "Market API", chip: marketHealth ? <StatusChip ok={Object.values(marketHealth.providers).some(p => p.healthy)} /> : <span className="text-[11px] text-tertiary">Loading...</span> },
+            { icon: <Zap size={16} className="text-accent" />, label: "Market API", chip: marketHealth ? <StatusChip ok={Object.values(marketHealth.providers).some(p => p.healthy)} /> : <span className="text-[11px] text-tertiary">Loading...</span> },
           ].map((item, i) => (
             <div key={i} className="rounded-xl p-3 flex items-center gap-3 bg-surface-1 border border-border">
               {item.icon}

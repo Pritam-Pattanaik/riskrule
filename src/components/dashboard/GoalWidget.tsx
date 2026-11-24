@@ -1,79 +1,85 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Check, Loader2 } from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
 import { useGoalStore } from '../../stores/goalStore';
-import { Target, CheckCircle, Loader2, Plus } from 'lucide-react';
-import { Button } from '../ui/Button';
 import { getLocalYYYYMMDD } from '../../lib/dateUtils';
-import { useNavigate } from 'react-router-dom';
+
+const panel = 'rounded-xl border border-primary/10 bg-surface p-5 sm:p-6';
 
 export default function GoalWidget() {
-  const { goals, loading, fetchGoals, completeGoal } = useGoalStore();
-  const navigate = useNavigate();
+  const userId = useAuthStore(state => state.user?.id);
+  const [pending, setPending] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  const { goals, loading, loadedFor, loadError, fetchGoals, completeGoal } = useGoalStore();
 
   useEffect(() => {
     fetchGoals();
-  }, [fetchGoals]);
-
-  const handleComplete = async (goalId: string) => {
-    const today = getLocalYYYYMMDD(new Date());
-    await completeGoal(goalId, today, true);
-  };
+  }, [fetchGoals, userId]);
 
   const today = getLocalYYYYMMDD(new Date());
 
-  if (loading) {
-    return <div className="card p-6 flex justify-center items-center h-[200px]"><Loader2 className="animate-spin text-tertiary" /></div>;
+  const handleComplete = async (goalId: string) => {
+    setPending(goalId);
+    setFailed(false);
+    setFailed(!await completeGoal(goalId, today, true));
+    setPending(null);
+  };
+
+  if (loading || loadedFor !== userId) {
+    return (
+      <div className={`${panel} flex h-[200px] items-center justify-center`}>
+        <Loader2 size={16} className="animate-spin text-tertiary" aria-label="Loading goals" />
+      </div>
+    );
   }
 
   return (
-    <div className="card p-6 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-primary/90">
-          <Target className="w-4 h-4 text-accent" />
-          <h3 className="text-xs font-bold uppercase tracking-widest">Daily & Weekly Goals</h3>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/app/goals')}>
-          <Plus className="w-4 h-4" />
-        </Button>
+    <section className={panel} aria-labelledby="goals-title">
+      <div className="mb-3 flex items-baseline justify-between">
+        <h2 id="goals-title" className="text-base font-semibold text-primary">Goals</h2>
+        <Link
+          to="/app/goals"
+          className="rounded-[4px] text-xs text-secondary transition-colors hover:text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          Manage
+        </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-border">
-        {goals.length === 0 ? (
-          <div className="text-center py-6 text-secondary font-medium text-sm">No goals set yet.</div>
-        ) : (
-          goals.slice(0, 5).map(goal => {
-            const isCompletedToday = goal.completions?.some((c: any) => c.date.startsWith(today));
+      {failed && <p role="alert" className="mb-2 text-sm text-danger">Could not mark this goal done. Try again.</p>}
+      {loadError ? <button className="text-sm text-accent" onClick={fetchGoals}>Could not load goals. Retry</button> : goals.length === 0 ? (
+        <p className="py-8 text-center text-sm text-secondary">No goals set yet</p>
+      ) : (
+        <ul className="divide-y divide-primary/10">
+          {goals.slice(0, 5).map(goal => {
+            const isCompletedToday = goal.completions?.some((c: { date: string; completed: boolean }) => c.completed && c.date.startsWith(today));
             return (
-              <div key={goal.id} className="bg-surface-1 border border-border-subtle hover:border-border hover:bg-surface-2 p-3 rounded-xl flex items-center justify-between group transition-all">
-                <div className="flex-1 min-w-0 pr-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-tertiary bg-surface-2 px-1.5 py-0.5 rounded">
-                      {goal.type}
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-semibold text-primary truncate group-hover:text-accent transition-colors">
-                    {goal.description}
-                  </h4>
-                  {goal.target && <p className="text-[10px] text-tertiary mt-0.5">Target: {goal.target}</p>}
+              <li key={goal.id} className="flex min-h-12 items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] text-primary">{goal.description}</p>
+                  <p className="mt-1 text-xs text-tertiary">
+                    <span className="lowercase first-letter:uppercase">{goal.type}</span>
+                    {goal.target && <span className="font-mono tabular-nums"> · {goal.target}</span>}
+                  </p>
                 </div>
-                
-                <Button 
-                  variant={isCompletedToday ? "ghost" : "secondary"}
-                  size="sm"
-                  disabled={isCompletedToday}
-                  onClick={() => handleComplete(goal.id)}
-                  className="shrink-0 text-[10px] py-1 h-auto"
-                >
-                  {isCompletedToday ? (
-                    <CheckCircle className="w-3.5 h-3.5 text-success" />
-                  ) : (
-                    'Done'
-                  )}
-                </Button>
-              </div>
+
+                {isCompletedToday ? (
+                  <Check size={16} strokeWidth={1.5} className="shrink-0 text-success" aria-label="Done today" />
+                ) : (
+                  <button
+                    disabled={!!pending}
+                    aria-label={`Mark ${goal.description} done`}
+                    onClick={() => handleComplete(goal.id)}
+                    className="h-8 shrink-0 rounded-sm border border-primary/10 px-3 text-xs font-medium text-primary transition-colors hover:bg-surface-1 outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    {pending === goal.id ? 'Saving…' : 'Done'}
+                  </button>
+                )}
+              </li>
             );
-          })
-        )}
-      </div>
-    </div>
+          })}
+        </ul>
+      )}
+    </section>
   );
 }

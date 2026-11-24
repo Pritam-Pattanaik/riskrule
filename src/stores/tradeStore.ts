@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Trade } from '../types';
+import { useAuthStore } from './authStore';
 import { api } from '../lib/api';
 import { useAnalyticsStore } from './analyticsStore';
 
@@ -49,6 +50,7 @@ function normalize(raw: any): Trade {
 
 interface TradeState {
   trades: Trade[];
+  loadedFor: string | null;
   loading: boolean;
   error: string | null;
   dailySummaries: Record<string, any>;
@@ -62,21 +64,29 @@ interface TradeState {
 
 export const useTradeStore = create<TradeState>((set) => ({
   trades: [],
+  loadedFor: null,
   loading: false,
   error: null,
   dailySummaries: {},
 
   fetchTrades: async () => {
-    set({ loading: true, error: null });
+    const owner = useAuthStore.getState().user?.id;
+    if (!owner) return;
+    set(state => ({
+      loading: true, error: null,
+      ...(state.loadedFor === owner ? {} : { trades: [], dailySummaries: {}, loadedFor: null }),
+    }));
     try {
       const [raw, summaries] = await Promise.all([
         api.get<any[]>('/trades'),
         api.get<Record<string, any>>('/trades/summary/daily').catch(() => ({}))
       ]);
-      set({ trades: raw.map(normalize), dailySummaries: summaries, loading: false });
+      if (useAuthStore.getState().user?.id !== owner) return;
+      set({ loadedFor: owner, trades: raw.map(normalize), dailySummaries: summaries, loading: false });
     } catch (err: any) {
+      if (useAuthStore.getState().user?.id !== owner) return;
       console.error('fetchTrades error:', err);
-      set({ error: err.message, loading: false });
+      set({ loadedFor: owner, error: err.message, loading: false });
     }
   },
 
@@ -89,7 +99,7 @@ export const useTradeStore = create<TradeState>((set) => ({
       useAnalyticsStore.getState().fetchAnalytics().catch(() => {});
     } catch (err: any) {
       console.error('addTrade error:', err);
-      set({ error: err.message });
+      throw err;
     }
   },
 
@@ -104,7 +114,7 @@ export const useTradeStore = create<TradeState>((set) => ({
       useAnalyticsStore.getState().fetchAnalytics().catch(() => {});
     } catch (err: any) {
       console.error('updateTrade error:', err);
-      set({ error: err.message });
+      throw err;
     }
   },
 
@@ -120,5 +130,5 @@ export const useTradeStore = create<TradeState>((set) => ({
     }
   },
 
-  clearAll: () => set({ trades: [] }),
+  clearAll: () => set({ trades: [], loadedFor: null, dailySummaries: {}, error: null, loading: false }),
 }));

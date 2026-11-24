@@ -1,4 +1,4 @@
-import { queryClient } from '../main';
+import { queryClient } from './queryClient';
 import { api } from './api';
 
 const prefetchedRoutes = new Set<string>();

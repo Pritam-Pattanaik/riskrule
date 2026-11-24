@@ -1,40 +1,34 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Shield, Sparkles, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
-import { Reveal } from '../ui/Motion';
-import { MagneticButton } from '../ui/MagneticButton';
+import { ArrowRight, Check, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { useAuthStore } from '../../stores/authStore';
 import { useRazorpayCheckout } from '../../hooks/useRazorpayCheckout';
 import { toast } from 'sonner';
+import { Section, btnPrimary, btnSecondary, textLink } from './MarketingBits';
 
 export default function PricingSection() {
   const [annualBilling, setAnnualBilling] = useState(true);
-  const [revengeCost, setRevengeCost] = useState(5000);
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
   const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
     onSuccess: (plan) => {
-      toast.success(`Welcome to RiskRule ${plan}! 🚀`, {
-        description: 'Your plan has been activated. Redirecting to dashboard...',
+      toast.success(`Welcome to RiskRule ${plan}`, {
+        description: 'Your plan has been activated. Redirecting to your dashboard.',
       });
       useAuthStore.getState().initialize();
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setTimeout(() => navigate('/app'), 2000);
     },
     onFailure: (error) => {
       if (error !== 'Payment cancelled') {
-        toast.error('Payment Failed', { description: error });
+        toast.error('Payment failed', { description: error });
       }
     },
   });
 
   const handlePlanCTA = (planName: string) => {
-    if (planName === 'Starter') {
-      navigate('/signup');
-      return;
-    }
-    if (!user) {
+    if (planName === 'Starter' || !user) {
       navigate('/signup');
       return;
     }
@@ -45,227 +39,147 @@ export default function PricingSection() {
   const plans = [
     {
       name: 'Starter',
-      badge: 'Forever Free',
       price: '₹0',
-      period: '/ month',
-      desc: 'Essential algorithmic journaling and expectancy analytics for developing traders.',
-      cta: 'Claim Free Starter Plan',
+      period: 'a month',
+      desc: 'Journaling and expectancy analytics for developing traders.',
+      cta: 'Get started free',
       popular: false,
       features: [
-        'Automated broker sync (1 connection)',
-        'Verified R:R expectancy calculations',
-        '30-day execution performance ledger',
-        'Standard setup attribution tags',
-        'Read-only encrypted token vault'
-      ]
+        'Broker sync, 1 connection',
+        'R:R expectancy calculations',
+        '30-day performance ledger',
+        'Setup attribution tags',
+      ],
     },
     {
       name: 'PRO',
-      badge: 'Most Popular',
       price: annualBilling ? '₹1,199' : '₹1,499',
-      period: annualBilling ? '/ month (billed annually)' : '/ month',
-      desc: 'The complete discipline workstation engineered to defend funded prop allocations.',
-      cta: 'Start 14-Day Free PRO Trial',
+      period: annualBilling ? 'a month, billed yearly' : 'a month',
+      desc: 'The full discipline workstation for funded prop accounts.',
+      cta: 'Choose PRO',
       popular: true,
       features: [
-        'Unlimited automated broker integration',
-        'Real-time AI Behavioral Coach monitoring',
-        'Real-time AI Voice Guidance while trading',
-        'Automated Daily Drawdown lockout guardrails',
-        'Live economic event schedules & volatility alerts',
-        'Full CSV audit exports for accounting compliance',
-        'Asynchronous real-time broker sync via webhooks'
-      ]
+        'Unlimited broker connections',
+        'AI trading coach',
+        'Voice playback for coach responses',
+        'Daily loss limit tracking',
+        'Economic calendar and volatility alerts',
+        'CSV exports for accounting',
+        'Broker sync through webhooks',
+      ],
     },
     {
       name: 'ELITE',
-      badge: 'Custom Desk',
       price: annualBilling ? '₹3,199' : '₹3,999',
-      period: annualBilling ? '/ month (billed annually)' : '/ month',
-      desc: 'Designed for multi-account algorithmic desks and proprietary evaluation firms.',
-      cta: 'Launch ELITE Plan',
+      period: annualBilling ? 'a month, billed yearly' : 'a month',
+      desc: 'For multi-account desks and proprietary evaluation firms.',
+      cta: 'Choose ELITE',
       popular: false,
       features: [
-        'Everything included in PRO tier',
-        'Real-time AI Voice Co-Pilot (Custom Personas)',
-        'Multi-account copy orchestration ledgers',
-        'Custom strategy alert webhooks & API access',
-        'Dedicated quantitative desk architect',
-        'SOC-2 Type II verification ready architecture',
-        'Priority 24/7 technical desk engineering support'
-      ]
-    }
+        'Everything in PRO',
+        'Voice co-pilot with custom personas',
+        'Multi-account copy ledgers',
+        'Strategy alert webhooks and API access',
+        'A dedicated desk architect',
+        'Priority support',
+      ],
+    },
   ];
 
   return (
-    <section id="pricing" className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-24 relative z-20 scroll-mt-20" aria-label="Transparent Investment Plans and ROI Calculator">
-      
-      {/* Chapter Title Bar */}
-      <div className="text-center max-w-3xl mx-auto mb-14">
-        <Reveal direction="up">
-          <p className="text-xs font-semibold uppercase tracking-wider text-iris mb-2.5">
-            Rational Software Economics
-          </p>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight mb-4">
-            An investment that justifies itself by blocking one mistake.
-          </h2>
-          <p className="text-base sm:text-lg text-secondary leading-relaxed">
-            Choose your algorithmic workstation tier. Change or cancel your plan anytime with zero termination fees.
-          </p>
-        </Reveal>
-      </div>
-
-      {/* ── Interactive ROI Estimator Container ── */}
-      <Reveal direction="up" delay={0.1}>
-        <div className="max-w-4xl mx-auto p-7 sm:p-9 rounded-3xl bg-surface-1 border border-border mb-16 shadow-card">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-3 text-center md:text-left flex-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/15 border border-success/30 text-success font-semibold text-xs">
-                <TrendingUp size={14} /> <span>ROI Justification Calculator</span>
-              </div>
-              <h4 className="font-display text-2xl font-bold text-primary">
-                What is the financial impact of an emotional trade?
-              </h4>
-              <p className="text-sm text-secondary leading-relaxed">
-                Adjust the slider to estimate your average capital drawdown when discipline rules are violated during trading sessions.
-              </p>
-            </div>
-
-            {/* Slider Controls */}
-            <div className="w-full md:w-80 flex flex-col gap-4 bg-surface-0 p-6 rounded-2xl border border-border">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-secondary uppercase tracking-wider">Est. Loss / Mistake:</span>
-                <span className="text-2xl sm:text-3xl font-extrabold text-danger tabular-nums">
-                  ₹{revengeCost.toLocaleString()}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="1000"
-                max="25000"
-                step="500"
-                value={revengeCost}
-                onChange={(e) => setRevengeCost(Number(e.target.value))}
-                className="w-full accent-primary h-2 bg-surface-2 rounded-lg cursor-pointer outline-none focus-ring"
-                aria-label="Estimated loss per mistake slider"
-              />
-              <div className="text-center pt-3 border-t border-border/50 text-xs font-semibold text-success">
-                Avoiding 1 error = {(revengeCost / 1249).toFixed(1)}x your annual subscription!
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* ── Billing Cycle Toggle Switch ── */}
-      <Reveal direction="up" delay={0.15}>
-        <div className="flex items-center justify-center gap-4 mb-14">
-          <span className={cn("text-sm font-semibold cursor-pointer transition-colors", !annualBilling ? "text-primary font-bold" : "text-secondary")} onClick={() => setAnnualBilling(false)}>
-            Monthly Billing
-          </span>
-          
-          <button
-            role="switch"
-            aria-checked={annualBilling}
-            aria-label="Toggle annual billing discount"
-            onClick={() => setAnnualBilling(!annualBilling)}
-            className="w-14 h-8 rounded-full bg-surface-2 border border-border-hover p-1 transition-all flex items-center outline-none focus-ring cursor-pointer shadow-inner"
-          >
-            <div className={cn(
-              "w-6 h-6 rounded-full bg-primary transition-transform duration-300 shadow-sm",
-              annualBilling ? "translate-x-6" : "translate-x-0"
-            )} />
-          </button>
-
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setAnnualBilling(true)}>
-            <span className={cn("text-sm font-semibold transition-colors", annualBilling ? "text-primary font-bold" : "text-secondary")}>
-              Annual Billing
-            </span>
-            <span className="text-[11px] font-bold text-canvas bg-success px-2.5 py-0.5 rounded-full">
-              Save 22%
-            </span>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* ── Pricing Tier Cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-        {plans.map((plan, idx) => (
-          <Reveal key={idx} direction="up" delay={0.1 + idx * 0.1}>
-            <div
+    <Section
+      id="pricing"
+      title="Priced to pay for itself on one avoided mistake"
+      lead="Change or cancel your plan at any time, with no termination fees."
+    >
+      {/* Billing toggle */}
+      <div className="mb-8 flex items-center gap-4">
+        <div role="group" aria-label="Billing period" className="flex gap-1 rounded-xl bg-surface-1 p-1">
+          {[
+            { label: 'Monthly', value: false },
+            { label: 'Yearly', value: true },
+          ].map(opt => (
+            <button
+              key={opt.label}
+              onClick={() => setAnnualBilling(opt.value)}
+              aria-pressed={annualBilling === opt.value}
               className={cn(
-                "h-full rounded-3xl p-8 flex flex-col justify-between border transition-all duration-300 relative",
-                plan.popular
-                  ? "bg-surface-1 border-primary shadow-card ring-1 ring-primary/40 scale-[1.02]"
-                  : "bg-surface-0 border-border hover:border-border-hover shadow-card"
+                'h-8 rounded-lg px-4 text-[13px] font-semibold transition-colors duration-150',
+                annualBilling === opt.value
+                  ? 'bg-primary text-inverse shadow-xs'
+                  : 'text-secondary '
               )}
             >
-              {plan.popular && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-canvas text-xs font-bold tracking-wide uppercase shadow-md flex items-center gap-1.5">
-                  <Sparkles size={13} /> <span>Built for Funded Traders</span>
-                </div>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <span className="rounded-full bg-[var(--brand-green)]/15 px-2.5 py-1 text-[12px] font-semibold text-success">Yearly saves 20%</span>
+      </div>
+
+      {/* Plans */}
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:items-stretch">
+        {plans.map(plan => {
+          const busy = isCheckoutLoading && plan.name !== 'Starter';
+          const dark = plan.popular;
+          return (
+            <article
+              key={plan.name}
+              className={cn(
+                'relative flex flex-col justify-between rounded-2xl border p-7 transition-shadow duration-200',
+                dark
+                  ? 'ink border-white/10 shadow-[0_30px_70px_-30px_rgb(15_23_42/0.6)] md:-my-3 md:py-10'
+                  : 'border-primary/10 bg-surface shadow-card hover:shadow-card-hover'
               )}
-
+            >
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold uppercase text-tertiary tracking-wider">{plan.badge}</span>
+                <div className="flex items-center justify-between">
+                  <h3 className={cn('font-display text-[22px] font-semibold tracking-tight', dark ? 'text-white' : 'text-primary')}>{plan.name}</h3>
+                  {dark && (
+                    <span className="rounded-full bg-[var(--brand-green)] px-2.5 py-1 text-[12px] font-semibold text-[#0F172A]">Most popular</span>
+                  )}
                 </div>
-                <h3 className="font-display font-bold text-2xl text-primary mb-2.5">{plan.name}</h3>
-                <p className="text-sm text-secondary leading-relaxed mb-6 h-12">{plan.desc}</p>
+                <p className={cn('mt-2 min-h-12 text-[15px] leading-6', dark ? 'text-slate-300' : 'text-secondary')}>{plan.desc}</p>
 
-                {/* Price Display */}
-                <div className="pb-6 mb-6 border-b border-border flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-extrabold text-primary tabular-nums tracking-tight">
-                    {plan.price}
-                  </span>
-                  <span className="text-xs font-medium text-tertiary">{plan.period}</span>
-                </div>
+                <p className={cn('mt-6 border-b pb-6', dark ? 'ink-line' : 'border-primary/10')}>
+                  <span className={cn('block font-mono-stat text-[40px] font-medium leading-none tracking-tight', dark ? 'text-white' : 'text-primary')}>{plan.price}</span>
+                  <span className={cn('mt-2 block text-[13px]', dark ? 'text-slate-400' : 'text-tertiary')}>{plan.period}</span>
+                </p>
 
-                {/* Features List */}
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feat, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-secondary font-medium">
-                      <CheckCircle2 size={18} className="text-success shrink-0 mt-0.5" />
+                <ul className="mt-6 flex flex-col gap-3">
+                  {plan.features.map(feat => (
+                    <li key={feat} className={cn('flex items-start gap-3 text-[15px] leading-6', dark ? 'text-slate-200' : 'text-secondary')}>
+                      <Check
+                        size={17}
+                        strokeWidth={2.5}
+                        className={cn('mt-[3px] shrink-0', dark ? 'text-[var(--brand-green)]' : 'text-accent')}
+                        aria-hidden="true"
+                      />
                       <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="pt-2">
-                <MagneticButton
-                  onClick={() => handlePlanCTA(plan.name)}
-                  variant={plan.popular ? "primary" : "secondary"}
-                  className="w-full min-h-[48px] justify-center text-sm font-bold shadow-sm"
-                  disabled={isCheckoutLoading && plan.name !== 'Starter'}
-                >
-                  {isCheckoutLoading && plan.name !== 'Starter' ? (
-                    <Loader2 size={16} className="animate-spin mr-2" />
-                  ) : null}
-                  {plan.cta}
-                </MagneticButton>
-                
-                <p className="text-xs text-center text-tertiary font-medium mt-4 flex items-center justify-center gap-1.5">
-                  <Shield size={13} className="text-success" />
-                  <span>No hidden fees · Instant cancellation</span>
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        ))}
+              <button
+                onClick={() => handlePlanCTA(plan.name)}
+                disabled={busy}
+                className={cn('mt-8 w-full disabled:opacity-60', plan.popular ? btnPrimary : btnSecondary)}
+              >
+                {busy && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}
+                {plan.cta}
+              </button>
+            </article>
+          );
+        })}
       </div>
 
-      {/* Deep-dive Full Pricing & Comparison Matrix Link */}
-      <div className="mt-14 text-center">
-        <Link
-          to="/pricing"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-1 border border-border hover:border-iris/40 text-primary font-display font-bold text-sm transition-all shadow-xs hover:bg-surface-2"
-        >
-          <span>Compare Full Plan Specifications &amp; Capital Protection Calculator</span>
-          <ArrowRight size={15} className="text-iris" />
+      <div className="mt-8">
+        <Link to="/pricing" className={textLink}>
+          Compare plans in detail
+          <ArrowRight size={16} strokeWidth={2} />
         </Link>
       </div>
-
-    </section>
+    </Section>
   );
 }
