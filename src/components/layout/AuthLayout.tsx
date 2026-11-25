@@ -1,8 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { TrendingUp, Shield, Lock, Star, CheckCircle2, Zap, Terminal, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Gauge, LineChart, MessageSquareText } from 'lucide-react';
 import { Logo } from '../ui/Logo';
+import { cn } from '../../lib/cn';
+import dhan from '../../assets/brokers/dhan.svg';
+import angelone from '../../assets/brokers/angelone.svg';
+import delta from '../../assets/brokers/delta_exchange_mark.svg';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -10,135 +14,119 @@ interface AuthLayoutProps {
   subtitle: string;
 }
 
-const VERIFIED_PROOF = {
-  quote: "RiskRule's automated daily loss guardrail saved my funded account twice last month during volatile CPI announcements. It is essential software.",
-  author: "Vikram Mehta",
-  role: "Funded Futures Speculator (₹400k Allocation)",
-  metric: "0 Daily Loss Breaches in 180 Days"
-};
+const points = [
+  { icon: LineChart, text: 'Imports your trades from Dhan, Angel One and Delta Exchange' },
+  { icon: Gauge, text: 'Checks every session against the daily loss limit you set' },
+  { icon: MessageSquareText, text: 'Lunar AI reviews the trades that broke your rules' },
+];
+
+/** A small static session: the line crosses the limit once. Decorative, so it is hidden from assistive tech. */
+function MiniSession() {
+  const pts: [number, number][] = [[0, 70], [40, 58], [80, 64], [120, 92], [160, 84], [200, 128], [236, 150], [280, 168]];
+  const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x + 8} ${y}`).join(' ');
+  return (
+    <svg viewBox="0 0 300 190" className="h-auto w-full" aria-hidden="true">
+      <line x1="8" x2="292" y1="70" y2="70" stroke="rgb(248 250 252 / 0.25)" />
+      <line x1="8" x2="292" y1="134" y2="134" stroke="#EF4444" strokeOpacity="0.7" strokeDasharray="4 4" />
+      <rect x="210" y="12" width="82" height="166" fill="#EF4444" fillOpacity="0.07" />
+      <path d={d} pathLength={1} className="draw-line" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="210" cy="134" r="5" fill="#EF4444" stroke="#0F172A" strokeWidth="2" className="fill-in" />
+      <text x="12" y="62" fontSize="9" fill="#CBD5E1" fontFamily="DM Mono, monospace">₹0</text>
+      <text x="12" y="127" fontSize="9" fill="#F87171" fontFamily="DM Mono, monospace">limit</text>
+    </svg>
+  );
+}
 
 export default function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   const location = useLocation();
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="flex h-screen w-full bg-canvas text-primary font-sans selection:bg-iris/25 overflow-hidden">
+    <div className="landing flex h-screen w-full overflow-hidden bg-canvas font-sans text-primary">
 
-      {/* ── Left Panel — Institutional Showcase (Desktop Only) ── */}
-      <div className="hidden lg:flex w-[48%] max-w-[620px] h-full flex-col justify-between relative overflow-hidden bg-surface-1 border-r border-border p-12 lg:p-14">
-        {/* Zero-CPU Ambient CSS Glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-accent/15 rounded-full blur-[140px] pointer-events-none -z-10" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-iris/15 rounded-full blur-[120px] pointer-events-none -z-10" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(242,246,254,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(242,246,254,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-40" />
+      {/* Left: what you get */}
+      <aside className="ink relative hidden h-full w-[46%] max-w-[600px] shrink-0 flex-col justify-between overflow-hidden p-12 lg:flex xl:p-14">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[var(--brand-green)]/20 blur-[110px]" aria-hidden="true" />
+        <div className="hero-backdrop pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
 
-        {/* Brand Header */}
-        <div className="relative z-10">
-          <Link to="/" className="flex items-center gap-3 outline-none focus-ring w-fit rounded-xl">
-            <Logo variant="full" size="lg" />
-            <span className="text-[10px] font-mono-stat font-bold px-2 py-0.5 rounded bg-iris/15 text-iris border border-iris/25 uppercase tracking-wider mt-1">
-              v2.0 PRO
-            </span>
+        <Link to="/" className="relative w-fit rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-green)]" aria-label="RiskRule home">
+          <Logo variant="full" size="lg" className="[&>span]:!text-white" />
+        </Link>
+
+        <div className="relative my-auto py-10">
+          <h1 className="max-w-md font-display text-[40px] font-bold leading-[1.05] tracking-[-0.035em] text-white xl:text-[46px]" style={{ textWrap: 'balance' }}>
+            Know exactly where the day went wrong.
+          </h1>
+
+          <ul className="mt-9 flex max-w-md flex-col gap-4">
+            {points.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-start gap-3.5 text-[15px] leading-6 text-slate-200">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-[#4ADE80]" aria-hidden="true">
+                  <Icon size={16} strokeWidth={1.9} />
+                </span>
+                {text}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-10 max-w-sm rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
+            <div className="mb-2 flex items-center justify-between text-[12px] text-slate-400">
+              <span>Daily loss limit ₹2,000</span>
+              <span>Sample session</span>
+            </div>
+            <MiniSession />
+          </div>
+        </div>
+
+        <div className="relative flex items-center gap-3 text-[13px] text-slate-400">
+          <span>Syncs with</span>
+          {[dhan, angelone, delta].map((src, i) => (
+            <img key={i} src={src} alt="" className="h-6 w-auto max-w-[36px] rounded object-contain opacity-90" />
+          ))}
+        </div>
+      </aside>
+
+      {/* Right: the form */}
+      <main className="relative flex h-full flex-1 flex-col overflow-y-auto bg-canvas px-5 py-6 sm:px-10">
+        <div className="flex w-full shrink-0 items-center justify-between">
+          <Link to="/" className="rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent lg:hidden" aria-label="RiskRule home">
+            <Logo variant="full" size="md" />
           </Link>
-        </div>
-
-        {/* Middle Core Value Prop & Audited Quote */}
-        <div className="relative z-10 my-auto py-10 space-y-8">
-          <div className="space-y-4 max-w-md text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-border text-xs font-mono-stat font-bold text-success">
-              <Zap size={13} className="text-success" />
-              <span>SUB-SECOND BROKER INTEGRATION READY</span>
-            </div>
-            <h1 className="font-display text-4xl lg:text-5xl font-extrabold text-primary tracking-tight leading-[1.08]">Discipline over dopamine.</h1>
-            <p className="text-base text-secondary leading-relaxed font-normal">Join quantitative speculators and funded prop firm traders utilizing mathematically verified R:R expectancy and real-time behavioral guardrails.</p>
-          </div>
-
-          {/* Institutional Testimonial Card */}
-          <div className="p-6 rounded-2xl bg-surface-0 border border-border shadow-card relative overflow-hidden group hover:border-iris/40 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex gap-1 text-gold">
-                {[...Array(5)].map((_, i) => <Star key={i} size={15} fill="currentColor" strokeWidth={0} />)}
-              </div>
-              <span className="text-[11px] font-mono-stat font-extrabold px-2 py-0.5 rounded bg-success/15 text-success border border-success/30 flex items-center gap-1">
-                <CheckCircle2 size={12} /> AUDIT VERIFIED
-              </span>
-            </div>
-            
-            <p className="text-sm font-medium text-primary leading-relaxed italic mb-5">
-              "{VERIFIED_PROOF.quote}"
-            </p>
-
-            <div className="pt-4 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <p className="font-display font-bold text-sm text-primary">{VERIFIED_PROOF.author}</p>
-                <p className="text-xs text-tertiary">{VERIFIED_PROOF.role}</p>
-              </div>
-              <span className="text-xs font-mono-stat font-extrabold text-iris bg-surface-2 px-2.5 py-1 rounded border border-border">
-                {VERIFIED_PROOF.metric}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Security Footer */}
-        <div className="relative z-10 pt-6 border-t border-border/60 flex items-center justify-between text-xs font-mono-stat text-tertiary">
-          <span className="flex items-center gap-1.5"><Lock size={13} className="text-success" /> 256-BIT SOC-2 VAULT</span>
-          <span className="flex items-center gap-1.5"><Terminal size={13} className="text-iris" /> READ-ONLY BROKER OAUTH</span>
-        </div>
-      </div>
-
-      {/* ── Right Panel — Interactive Auth Form ── */}
-      <div className="flex-1 flex flex-col relative bg-canvas p-6 sm:p-12 h-full overflow-y-auto">
-        
-        {/* Top Navigation */}
-        <div className="flex items-center justify-between mb-6 shrink-0 w-full">
-          <div className="lg:hidden">
-            <Link to="/" className="flex items-center outline-none focus-ring rounded-lg">
-              <Logo variant="full" size="md" />
-            </Link>
-          </div>
-          <Link 
-            to="/" 
-            className="flex items-center gap-1.5 text-sm font-semibold text-secondary hover:text-primary transition-colors focus-ring rounded-lg py-1.5 px-3 bg-surface-1/50 border border-border/50 hover:bg-surface-2 lg:ml-auto"
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-secondary transition-colors hover:bg-surface-1 lg:ml-auto"
           >
-            <ArrowLeft size={16} />
-            <span>Back to Home</span>
+            <ArrowLeft size={16} aria-hidden="true" />
+            Back to home
           </Link>
         </div>
 
-        <div className="w-full max-w-[420px] relative z-10 mx-auto my-auto lg:py-0">
+        <div className="mx-auto my-auto w-full max-w-[420px] py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 }}
+              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="mb-8 text-center sm:text-left">
-                <h2 className="font-display text-3xl font-extrabold text-primary tracking-tight mb-2">{title}</h2>
-                <p className="text-base text-secondary">{subtitle}</p>
+              <div className="mb-8">
+                <h2 className="font-display text-[32px] font-bold leading-[1.1] tracking-[-0.03em] text-primary">{title}</h2>
+                <p className="mt-2 text-[15px] leading-6 text-secondary">{subtitle}</p>
               </div>
-              
+
               {children}
 
-              {/* Trust & Legal Footer */}
-              <div className="mt-12 pt-6 border-t border-border flex items-center justify-between text-[12px] font-semibold text-tertiary">
-                <span className="flex items-center gap-1.5">
-                  <Lock size={14} className="text-success" />
-                  <span>256-Bit TLS Encryption</span>
-                </span>
-                <div className="flex items-center gap-2">
-                  <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Terms of Execution ↗</Link>
-                  <span className="opacity-30">•</span>
-                  <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Privacy ↗</Link>
-                </div>
-              </div>
+              <p className={cn('mt-10 border-t border-primary/10 pt-5 text-[12.5px] leading-5 text-tertiary')}>
+                By continuing you agree to the{' '}
+                <Link to="/terms" target="_blank" rel="noopener noreferrer" className="font-medium text-accent ">Terms</Link>
+                {' '}and{' '}
+                <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-accent ">Privacy Policy</Link>.
+              </p>
             </motion.div>
           </AnimatePresence>
         </div>
-
-      </div>
-
+      </main>
     </div>
   );
 }

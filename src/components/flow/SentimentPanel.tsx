@@ -48,11 +48,11 @@ export function SentimentPanel() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
       {/* 1. Buying / Support Force */}
-      <div className="p-5 rounded-[12px] border border-[rgba(var(--color-border-rgb),0.08)] bg-[rgb(var(--color-surface-1))] flex flex-col justify-between">
+      <div className="desk-panel flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-[rgb(var(--color-success))]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[rgb(var(--color-success))]">
+            <h3 className="text-sm font-semibold text-[rgb(var(--color-success))]">
               BUYING / SUPPORT FORCE
             </h3>
           </div>
@@ -65,11 +65,11 @@ export function SentimentPanel() {
       </div>
 
       {/* 2. Selling / Resistance Force */}
-      <div className="p-5 rounded-[12px] border border-[rgba(var(--color-border-rgb),0.08)] bg-[rgb(var(--color-surface-1))] flex flex-col justify-between">
+      <div className="desk-panel flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-2 mb-3">
             <TrendingDown className="w-4 h-4 text-[rgb(var(--color-danger))]" />
-            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[rgb(var(--color-danger))]">
+            <h3 className="text-sm font-semibold text-[rgb(var(--color-danger))]">
               SELLING / RESISTANCE FORCE
             </h3>
           </div>
@@ -82,12 +82,12 @@ export function SentimentPanel() {
       </div>
       
       {/* 3. Market Strength (PCR) */}
-      <div className="p-5 rounded-[12px] border border-[rgba(var(--color-border-rgb),0.08)] bg-[rgb(var(--color-surface-1))] flex flex-col justify-between">
+      <div className="desk-panel flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-secondary" />
-              <h3 className="text-[12px] font-bold uppercase tracking-wider text-secondary flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-secondary flex items-center gap-1.5">
                 MARKET STRENGTH (PCR)
                 <Tooltip content="Put-Call Ratio (PCR) = Total Put OI ÷ Total Call OI. PCR > 1.3 indicates bullish support (put writing). PCR < 0.7 indicates bearish resistance (call writing).">
                   <Info className="w-3.5 h-3.5 cursor-help opacity-60 shrink-0" />

@@ -1,3 +1,4 @@
+import { useAuthStore } from './authStore';
 import { create } from 'zustand';
 import { api } from '../lib/api';
 
@@ -66,6 +67,7 @@ export interface AffiliateStatusData {
 }
 
 interface AffiliateState {
+  loadedFor: string | null;
   referralCode: string;
   referralLink: string;
   commissionPercent: number;
@@ -88,30 +90,24 @@ interface AffiliateState {
 }
 
 export const useAffiliateStore = create<AffiliateState>((set, get) => ({
-  referralCode: 'RISKRULE',
-  referralLink: `${getAppOrigin()}/r/RISKRULE`,
+  loadedFor: null,
+  referralCode: '',
+  referralLink: '',
   commissionPercent: 20,
   monthlyRewardPerPro: 400,
   fixedRewardAmount: 400,
   userPlan: 'FREE',
-  bankDetails: {
-    type: 'BANK',
-    accountHolder: 'Registered Partner',
-    accountNumber: '50100492814092',
-    ifsc: 'HDFC0001842',
-    bankName: 'HDFC Bank',
-    upiId: 'trader@okhdfcbank',
-  },
+  bankDetails: {type: 'BANK', accountHolder: '', accountNumber: '', ifsc: '', bankName: '', upiId: ''},
   metrics: {
     clicks: 0,
     signups: 0,
     conversions: 0,
     totalEarnings: 0,
     availableBalance: 0,
-    clicksGrowth: 15,
-    signupsGrowth: 28,
-    conversionsGrowth: 19,
-    earningsGrowth: 32,
+    clicksGrowth: 0,
+    signupsGrowth: 0,
+    conversionsGrowth: 0,
+    earningsGrowth: 0,
   },
   status: {
     active: true,
@@ -128,22 +124,29 @@ export const useAffiliateStore = create<AffiliateState>((set, get) => ({
   error: null,
 
   fetchStats: async () => {
+    const owner = useAuthStore.getState().user?.id;
+    if (!owner) return;
     set({ loading: true, error: null });
     try {
       const data = await api.get<any>('/affiliate/stats');
+      if (owner !== useAuthStore.getState().user?.id) return;
       set({
-        referralCode: data.referralCode || 'RISKRULE',
-        referralLink: `${getAppOrigin()}/r/${data.referralCode || 'RISKRULE'}`,
+        loadedFor: owner,
+        referralCode: data.referralCode || '',
+        referralLink: data.referralCode ? getAppOrigin() + '/r/' + encodeURIComponent(data.referralCode) : '',
         commissionPercent: data.commissionPercent || 20,
         monthlyRewardPerPro: data.monthlyRewardPerPro || 400,
         fixedRewardAmount: data.monthlyRewardPerPro || data.fixedRewardAmount || 400,
         userPlan: data.userPlan || 'FREE',
-        bankDetails: data.bankDetails || get().bankDetails,
+        bankDetails: data.bankDetails && (data.bankDetails.updatedAt || data.bankDetails.accountNumber !== '50100492814092' || data.bankDetails.upiId !== 'trader@okhdfcbank') ? data.bankDetails : {type: 'BANK', accountHolder: '', accountNumber: '', ifsc: '', bankName: '', upiId: ''},
         metrics: data.metrics || get().metrics,
         status: data.status || get().status,
         referredUsers: data.referredUsers || [],
         earningsHistory: data.earningsHistory || [],
-        payouts: data.payouts || [],
+        payouts: (data.payouts ?? []).map((record: PayoutItem & {createdAt?: string}) => ({
+          ...record,
+          date: record.createdAt ? new Date(record.createdAt).toLocaleDateString('en-IN') : record.date,
+        })),
         loading: false,
       });
     } catch (err: any) {

@@ -154,9 +154,9 @@ export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, di
       {/* Main input container */}
       <div className={cn(
         "relative rounded-2xl border bg-surface-0 transition-all duration-200 overflow-hidden",
-        "shadow-[0_2px_16px_rgba(0,0,0,0.12)]",
+
         input.length > 0 || isTyping
-          ? "border-accent/40 shadow-[0_0_0_1px_rgba(16,185,129,0.15),0_2px_16px_rgba(0,0,0,0.12)]"
+          ? "border-accent"
           : "border-border/60 hover:border-border"
       )}>
         <textarea
@@ -164,7 +164,7 @@ export default function SmartInput({ onSubmit, onStop, isTyping, hasMessages, di
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          aria-label="Message Lunar AI" placeholder={placeholder}
           disabled={disabled}
           className="w-full bg-transparent px-4 pt-3.5 pb-3 pr-14 text-sm text-primary placeholder:text-tertiary/60 focus:outline-none resize-none min-h-[50px] max-h-[200px] leading-relaxed disabled:opacity-50"
           rows={1}

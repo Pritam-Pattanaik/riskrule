@@ -8,6 +8,7 @@ import AIInsightsPanel from '../components/ai/AIInsightsPanel';
 export default function AICoach() {
   // Use granular selectors — prevents full re-render on unrelated state changes
   const activeConversationId = useInsightStore(s => s.activeConversationId);
+  const error = useInsightStore(s => s.error);
   const sendMessage = useInsightStore(s => s.sendMessage);
   const [showInsights, setShowInsights] = useState(false); // Default hidden for more chat space
 
@@ -44,12 +45,15 @@ export default function AICoach() {
 
   return (
     // Mobile: pl-0 (hamburger button provides access), Desktop: normal layout
-    <div className="flex w-full h-[calc(100vh-64px)] overflow-hidden">
+    <div className="flex h-[calc(100dvh-3rem)] min-w-0 flex-col">
+      <header className="flex items-center justify-between border-b border-border bg-surface py-3 pl-14 pr-4 lg:px-6"><h1>Lunar AI</h1></header>
+      {error && <p role="alert" className="border-b border-border bg-surface px-5 py-2 text-sm text-danger">{error}</p>}
+      <div className="flex min-h-0 flex-1">
       {/* Sidebar — responsive (desktop always visible, mobile = drawer in sidebar component) */}
       <AICoachSidebar />
 
       {/* Main workspace — takes remaining space, mobile needs left padding for hamburger */}
-      <div className="flex-1 flex flex-col h-full bg-canvas relative overflow-hidden lg:pl-0 pl-10">
+      <div className="flex-1 flex flex-col h-full min-w-0 bg-surface relative overflow-hidden">
         {activeConversationId ? (
           <AIChatWorkspace
             conversationId={activeConversationId}
@@ -67,6 +71,7 @@ export default function AICoach() {
           <AIInsightsPanel />
         </div>
       )}
+      </div>
     </div>
   );
 }

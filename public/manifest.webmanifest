@@ -1,11 +1,11 @@
 {
   "name": "RiskRule",
   "short_name": "RiskRule",
-  "description": "Institutional Trading Journal & AI Behavioral Coach",
+  "description": "Trading journal, P&L analytics, and AI trading coach",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#090b12",
-  "theme_color": "#090b12",
+  "background_color": "#F8FAFC",
+  "theme_color": "#F8FAFC",
   "icons": [
     {
       "src": "/icon-192x192.png",

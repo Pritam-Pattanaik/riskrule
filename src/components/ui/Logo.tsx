@@ -25,7 +25,7 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', size = 'md', class
   if (variant === 'wordmark') {
     return (
       <span className={`font-display font-bold tracking-tight text-primary ${textClasses[size]} ${className}`}>
-        RiskRule
+        Risk<span className="riskrule-wordmark-rule">Rule</span>
       </span>
     );
   }
@@ -44,11 +44,11 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', size = 'md', class
     <div className={`flex items-center gap-2.5 ${className}`}>
       <img
         src={logoUrl}
-        alt="RiskRule"
+        alt=""
         className={`${sizeClasses[size]} object-contain drop-shadow-md shrink-0`}
       />
       <span className={`font-display font-bold tracking-tight text-primary ${textClasses[size]} leading-none`}>
-        RiskRule
+        Risk<span className="riskrule-wordmark-rule">Rule</span>
       </span>
     </div>
   );

@@ -74,7 +74,7 @@ export default function BetaModal() {
               {step === 2 ? (
                 <button
                   onClick={() => setStep(1)}
-                  className="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition-colors focus-ring rounded-lg px-2 py-1 -ml-2"
+                  className="flex items-center gap-2 text-sm font-medium text-secondary transition-colors focus-ring rounded-lg px-2 py-1 -ml-2"
                 >
                   <ArrowLeft size={16} />
                   <span>Back</span>
@@ -87,7 +87,7 @@ export default function BetaModal() {
               )}
               <button
                 onClick={handleClose}
-                className="p-2 text-secondary hover:text-primary transition-colors focus-ring rounded-xl hover:bg-surface-2 ml-auto"
+                className="p-2 text-secondary transition-colors focus-ring rounded-xl hover:bg-surface-2 ml-auto"
                 aria-label="Close modal"
               >
                 <X size={20} />
@@ -166,7 +166,7 @@ export default function BetaModal() {
                         handleClose();
                         navigate('/login');
                       }}
-                      className="w-full sm:w-auto inline-flex justify-center items-center h-11 px-8 rounded-xl text-secondary hover:text-primary font-medium text-sm transition-colors focus-ring"
+                      className="w-full sm:w-auto inline-flex justify-center items-center h-11 px-8 rounded-xl text-secondary font-medium text-sm transition-colors focus-ring"
                     >
                       Don't want
                     </button>

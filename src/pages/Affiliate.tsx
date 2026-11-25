@@ -1,257 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
-import {
-  Zap,
-  Crown,
-  Users,
-  RefreshCw,
-} from 'lucide-react';
+import { Users, Crown } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useAffiliateStore } from '../stores/affiliateStore';
-import { useRazorpayCheckout } from '../hooks/useRazorpayCheckout';
-import AffiliateHero from '../components/affiliate/AffiliateHero';
-import AffiliateMetrics from '../components/affiliate/AffiliateMetrics';
-import ReferralShareCard from '../components/affiliate/ReferralShareCard';
-import ReferralQRCodeCard from '../components/affiliate/ReferralQRCodeCard';
-import AffiliateStatusCard from '../components/affiliate/AffiliateStatusCard';
-import HowItWorksSection from '../components/affiliate/HowItWorksSection';
-import WhyRecommendSection from '../components/affiliate/WhyRecommendSection';
-import CommissionCalculator from '../components/affiliate/CommissionCalculator';
-import MarketingResourcesSection, { ResourceItem } from '../components/affiliate/MarketingResourcesSection';
-import PayoutHistoryTable from '../components/affiliate/PayoutHistoryTable';
-import ProviderPayoutOverview from '../components/affiliate/ProviderPayoutOverview';
-import TermsModal from '../components/affiliate/TermsModal';
-import ResourcePreviewModal from '../components/affiliate/ResourcePreviewModal';
 import { Card } from '../components/ui/Card';
+import ReferralShareCard from '../components/affiliate/ReferralShareCard';
+import ProviderPayoutOverview from '../components/affiliate/ProviderPayoutOverview';
+import PayoutHistoryTable from '../components/affiliate/PayoutHistoryTable';
+import TermsModal from '../components/affiliate/TermsModal';
+import ReferralQRCodeCard from '../components/affiliate/ReferralQRCodeCard';
 
 export default function Affiliate() {
-  const { profile } = useAuthStore();
-  const {
-    referralCode,
-    referralLink,
-    commissionPercent,
-    monthlyRewardPerPro,
-    userPlan,
-    metrics,
-    status,
-    payouts,
-    referredUsers,
-    loading,
-    fetchStats,
-    updateCustomCode,
-  } = useAffiliateStore();
-
-  const [isTermsOpen, setIsTermsOpen] = useState<boolean>(false);
-  const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(null);
-
-  // Real-time pro referrals count
-  const proUsersCount = referredUsers && referredUsers.length > 0
-    ? referredUsers.filter((u) => u.plan === 'PRO').length
-    : (metrics?.conversions || 1);
-
-  // Fetch real-time affiliate stats from database on load
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
-  const referralCardRef = useRef<HTMLDivElement>(null);
-  const howItWorksRef = useRef<HTMLDivElement>(null);
-  const payoutHistoryRef = useRef<HTMLDivElement>(null);
-
-  const scrollToReferral = () => {
-    referralCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
-  const scrollToHowItWorks = () => {
-    howItWorksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const scrollToPayoutHistory = () => {
-    payoutHistoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // Razorpay checkout for Pro upgrade
-  const { openCheckout, isLoading: isCheckoutLoading } = useRazorpayCheckout({
-    onSuccess: (plan) => {
-      toast.success(`Your account is now on RiskRule ${plan}! 👑`, {
-        description: 'Welcome to RiskRule Pro workstation features.',
-      });
-      useAuthStore.getState().initialize();
-      fetchStats();
-    },
-    onFailure: (error) => {
-      if (error !== 'Payment cancelled') {
-        toast.error('Payment Failed', { description: error });
-      }
-    },
-  });
-
-  // Real-time upgrade of self via Razorpay payment
-  const handleUpgradeSelf = (plan: 'PRO' | 'ELITE') => {
-    openCheckout(plan, 'monthly');
-  };
-
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Real-time Status Notification Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl bg-gradient-to-r from-violet-950/40 via-surface-1 to-surface-1 border border-violet-500/20 p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0">
-            <Zap className="w-4 h-4 text-violet-300" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-primary">Dynamic Real-Time Partner Engine</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                Live
-              </span>
-            </div>
-            <p className="text-[11.5px] text-secondary mt-0.5">
-              <strong className="text-amber-400 font-bold">{commissionPercent}% Recurring Commission</strong> automatically credited every month for each active referred trader on Pro (~₹{monthlyRewardPerPro}/mo per trader).
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {userPlan === 'FREE' && (
-            <button
-              onClick={() => handleUpgradeSelf('PRO')}
-              disabled={isCheckoutLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-secondary hover:text-primary bg-surface-2 hover:bg-surface-3 border border-border transition-colors cursor-pointer disabled:opacity-50"
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isCheckoutLoading ? 'Processing...' : 'Upgrade to Pro'}</span>
-            </button>
-          )}
-
-          {userPlan !== 'ELITE' && (
-            <button
-              onClick={() => handleUpgradeSelf('ELITE')}
-              disabled={isCheckoutLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-400 bg-gold/10 hover:bg-gold/20 border border-amber-400/30 transition-colors cursor-pointer disabled:opacity-50"
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isCheckoutLoading ? 'Processing...' : 'Upgrade to Elite'}</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => fetchStats()}
-            title="Refresh Live Metrics"
-            className="w-8 h-8 rounded-xl bg-surface-2 hover:bg-surface-3 border border-border flex items-center justify-center text-tertiary hover:text-primary transition-colors cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </motion.div>
-
-      {/* 1. Master Hero Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <AffiliateHero
-          referralLink={referralLink}
-          referralCode={referralCode}
-          commissionPercent={commissionPercent}
-          monthlyRewardPerPro={monthlyRewardPerPro}
-          onScrollToHowItWorks={scrollToHowItWorks}
-          onScrollToReferralLink={scrollToReferral}
-        />
-      </motion.div>
-
-      {/* 2. Provider Payout Command Center (Real-Time Pro User Commission & Payouts) */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.04 }}
-      >
-        <ProviderPayoutOverview
-          proUsersCount={proUsersCount}
-          monthlyRewardPerPro={monthlyRewardPerPro}
-          commissionPercent={commissionPercent}
-          totalEarnings={metrics.totalEarnings}
-          availableBalance={metrics.availableBalance}
-          nextPayoutDate={status.nextPayoutDate}
-          onScrollToLedger={scrollToPayoutHistory}
-        />
-      </motion.div>
-
-      {/* 3. Performance Overview KPI Row (Dynamic Data) */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.08 }}
-      >
-        <AffiliateMetrics metrics={metrics} />
-      </motion.div>
-
-      {/* 3. Mid Grid: Referral Link + QR Code + Affiliate Status */}
-      <motion.div
-        ref={referralCardRef}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.1 }}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch"
-      >
-        {/* Referral Link & Social Sharing */}
-        <div className="lg:col-span-5 flex flex-col">
-          <ReferralShareCard
-            referralLink={referralLink}
-            referralCode={referralCode}
-            onUpdateCode={async (newCode) => {
-              const res = await updateCustomCode(newCode);
-              if (!res.success) {
-                toast.error(res.error || 'Failed to update code');
-              }
-            }}
-          />
-        </div>
-
-        {/* QR Code Card (Encodes real user referralLink) */}
-        <div className="lg:col-span-3 flex flex-col">
-          <ReferralQRCodeCard referralLink={referralLink} />
-        </div>
-
-        {/* Affiliate Status Card */}
-        <div className="lg:col-span-4 flex flex-col">
-          <AffiliateStatusCard
-            memberSince={status.memberSince}
-            referralTier={status.referralTier}
-            nextPayoutDate={status.nextPayoutDate}
-            activeReferrals={status.activeReferrals}
-            tierTarget={status.tierTarget}
-            onViewPayoutHistory={scrollToPayoutHistory}
-          />
-        </div>
-      </motion.div>
-
-      {/* 4. Three-Column Row: How It Works + Commission & Rewards + Marketing Resources */}
-      <motion.div
-        ref={howItWorksRef}
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.35 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch"
-      >
-        <div className="flex flex-col">
-          <HowItWorksSection />
-        </div>
-        <div className="flex flex-col">
-          <CommissionCalculator onOpenTerms={() => setIsTermsOpen(true)} />
-        </div>
-        <div className="flex flex-col">
-          <MarketingResourcesSection onSelectResource={(res) => setSelectedResource(res)} />
-        </div>
-      </motion.div>
-
+  const owner = useAuthStore(s => s.user?.id);
+  const { loadedFor, error, loading, fetchStats, referralLink, referralCode, updateCustomCode, referredUsers, metrics, payouts } = useAffiliateStore();
+  const [terms, setTerms] = useState(false);
+  useEffect(() => { if (owner) fetchStats(); }, [owner, fetchStats]);
+  return <div className="space-y-5"><header className="flex flex-wrap items-center justify-between gap-4">
+    <div><h1>Referrals</h1><p className="desk-description">Invite another trader and track signups, earnings and payouts.</p></div>
+    <button className="desk-button" disabled={loading} onClick={fetchStats}>{loading ? 'Refreshing…' : 'Refresh'}</button></header>
+    {error && <p role="alert" className="desk-panel">Could not refresh your referral account. Try again.</p>}
+    {owner && loadedFor === owner ? <>
+      <div className="grid items-start gap-5 xl:grid-cols-2"><ReferralShareCard referralCode={referralCode} referralLink={referralLink} onUpdateCode={updateCustomCode}/><ProviderPayoutOverview /></div>
+      <div className="desk-panel flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
+        <span><strong>{metrics.clicks}</strong> link clicks</span><span><strong>{metrics.signups}</strong> signups</span><span><strong>{metrics.conversions}</strong> plan upgrades</span>
+        <button className="desk-link" onClick={() => setTerms(true)}>Referral terms</button></div>
+      {referralLink && <details className="desk-panel"><summary className="cursor-pointer text-sm font-semibold">Share by QR code</summary><div className="max-w-xs pt-3"><ReferralQRCodeCard referralLink={referralLink}/></div></details>}
       {/* Referred Traders (Real-Time Live Roster) */}
       {referredUsers && referredUsers.length > 0 && (
         <motion.div
@@ -266,14 +39,14 @@ export default function Affiliate() {
                   <Users className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-primary">Your Referred Traders (Live Roster)</h3>
+                  <h3 className="text-base font-bold text-primary">Referred traders</h3>
                   <p className="text-xs text-secondary">
-                    Traders who joined RiskRules using your referral link.
+                    Traders who joined RiskRule using your referral link.
                   </p>
                 </div>
               </div>
               <span className="text-xs font-mono font-bold text-violet-400 bg-surface-2 px-2.5 py-1 rounded-lg border border-border">
-                {referredUsers.length} active referrals
+                {referredUsers.length} referrals
               </span>
             </div>
 
@@ -285,12 +58,11 @@ export default function Affiliate() {
                     <th className="py-2.5 px-4">Email</th>
                     <th className="py-2.5 px-4">Joined Date</th>
                     <th className="py-2.5 px-4">Plan Status</th>
-                    <th className="py-2.5 px-4 text-right">Commission Model</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {referredUsers.map((trader) => {
-                    const isPro = trader.plan === 'PRO';
+                    const isPro = trader.plan === 'PRO' || trader.plan === 'ELITE';
                     return (
                       <tr key={trader.id} className="hover:bg-surface-0/60 transition-colors">
                         <td className="py-3 px-4 font-semibold text-primary">{trader.name}</td>
@@ -308,13 +80,7 @@ export default function Affiliate() {
                             <span>{trader.plan}</span>
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold">
-                          {isPro ? (
-                            <span className="text-emerald-400">+₹{monthlyRewardPerPro}/mo (20% Recurring)</span>
-                          ) : (
-                            <span className="text-tertiary">Pending Pro Upgrade</span>
-                          )}
-                        </td>
+
                       </tr>
                     );
                   })}
@@ -325,42 +91,6 @@ export default function Affiliate() {
         </motion.div>
       )}
 
-      {/* 5. Why Recommend RiskRules (6 Pillars of Journal & Discipline) */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.35 }}
-      >
-        <WhyRecommendSection />
-      </motion.div>
-
-      {/* 6. Payout History Table (Dynamic Payout Records) */}
-      <motion.div
-        ref={payoutHistoryRef}
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.35 }}
-      >
-        <PayoutHistoryTable
-          payouts={payouts as any}
-          totalPaidOut={metrics.totalEarnings}
-          upcomingScheduled={Math.round(metrics.totalEarnings * 0.35) || 16400}
-        />
-      </motion.div>
-
-      {/* Modals */}
-      <TermsModal
-        isOpen={isTermsOpen}
-        onClose={() => setIsTermsOpen(false)}
-      />
-
-      <ResourcePreviewModal
-        resource={selectedResource}
-        onClose={() => setSelectedResource(null)}
-        referralLink={referralLink}
-      />
-    </div>
-  );
+      <PayoutHistoryTable payouts={payouts}/><TermsModal isOpen={terms} onClose={() => setTerms(false)}/>
+    </> : !error && <p role="status" className="desk-panel">Loading your referral account…</p>}</div>;
 }

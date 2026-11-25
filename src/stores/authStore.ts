@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '../lib/api';
+import { api, clearCsrfToken } from '../lib/api';
 
 interface Profile {
   id: string;
@@ -30,9 +30,9 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
-  // Check localStorage for backward compat with any existing sessions
-  session: localStorage.getItem('token') ? { token: localStorage.getItem('token')! } : null,
-  token: localStorage.getItem('token'),
+  // Resolve the existing session in initialize so the first render matches the public HTML.
+  session: null,
+  token: null,
   loading: true,
 
   initialize: async () => {
@@ -59,6 +59,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const data = await api.post<{ token: string; user: Profile }>('/auth/login', { email, password });
       // Store token in localStorage for backward compat with any code still reading it
+      clearCsrfToken();
       localStorage.setItem('token', data.token);
       set({ token: data.token, session: { token: data.token }, user: data.user, profile: data.user });
       return { error: null };
@@ -70,6 +71,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   signUp: async (email, password, fullName, phoneNumber, referralCode) => {
     try {
       const data = await api.post<{ token: string; user: Profile }>('/auth/signup', { email, password, fullName, phoneNumber, referralCode });
+      clearCsrfToken();
       localStorage.setItem('token', data.token);
       set({ token: data.token, session: { token: data.token }, user: data.user, profile: data.user });
       return { error: null };
@@ -80,7 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: () => {
     // Call server to clear the HttpOnly cookie
-    api.post('/auth/logout', {}).catch(() => {});
+    api.post('/auth/logout', {}).catch(() => {}).finally(clearCsrfToken);
     localStorage.removeItem('token');
     set({ token: null, session: null, user: null, profile: null });
   },
@@ -88,6 +90,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   deleteAccount: async () => {
     try {
       await api.delete('/auth/account');
+      clearCsrfToken();
       localStorage.removeItem('token');
       set({ token: null, session: null, user: null, profile: null });
       return { error: null };

@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, LayoutDashboard, BarChart3, BookOpen, Brain,
-  Target, Settings, Shield, Users, Link2, ScrollText, Globe, Zap,
+  Target, Settings, Shield, ScrollText, Globe, Zap,
   ChevronLeft, ChevronRight, X, Search, Bell, Handshake
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
@@ -15,12 +15,12 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import UserProfileDropdown from './UserProfileDropdown';
 import { prefetchRoute } from '../../lib/prefetch';
 import { Logo } from '../ui/Logo';
+import { CMD_KEY } from '../../lib/osUtils';
 
-type NavItem = { 
-  name: string; 
-  path: string; 
-  icon: React.ElementType; 
-  hasNotification?: boolean;
+type NavItem = {
+  name: string;
+  path: string;
+  icon: React.ElementType;
   badge?: string;
 };
 
@@ -29,29 +29,68 @@ type NavGroup = {
   items: NavItem[];
 };
 
-export default function Sidebar() {
+/** One easing and one duration for everything that moves, so the sidebar, labels and page margin stay in step. */
+const EASE = 'ease-[cubic-bezier(0.16,1,0.3,1)]';
+
+/**
+ * Icons sit at a fixed x position (12px gutter + 13px padding + 9px half icon = 34px, the centre of the 68px rail),
+ * so collapsing only fades the labels. Nothing slides, jumps or reflows.
+ */
+const rowBase =
+  'group relative flex h-9 w-full items-center gap-3 rounded-lg px-[13px] text-left text-[13px] font-medium outline-none ' +
+  'transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-accent';
+
+function Label({ expanded, children, className }: { expanded: boolean; children: React.ReactNode; className?: string }) {
+  return (
+    <span
+      aria-hidden={!expanded}
+      className={cn(
+        'min-w-0 flex-1 truncate transition-opacity duration-200',
+        expanded ? 'opacity-100 delay-75' : 'pointer-events-none opacity-0',
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function RailTip({ expanded, label, children }: { expanded: boolean; label: React.ReactNode; children: React.ReactElement }) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
+      {!expanded && (
+        <Tooltip.Portal>
+          <Tooltip.Content
+            side="right"
+            sideOffset={12}
+            className="animate-in z-50 flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-xs font-medium text-primary shadow-floating"
+          >
+            {label}
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      )}
+    </Tooltip.Root>
+  );
+}
+
+function SidebarBody({ expanded, onSearch, onNavigate, onClose, mobile }: {
+  expanded: boolean;
+  onSearch: () => void;
+  onNavigate?: () => void;
+  onClose?: () => void;
+  mobile?: boolean;
+}) {
   const location = useLocation();
-  const navigate = useNavigate();
   const { profile } = useAuthStore();
-  const { notifications, setPanelOpen, fetchNotifications, initializeSSE } = useNotificationStore();
+  const { notifications, setPanelOpen } = useNotificationStore();
   const unreadCount = notifications.filter(n => !n.isRead).length;
-  const { sidebarOpen, setSidebarOpen, desktopSidebarExpanded, toggleDesktopSidebar } = useUIStore();
 
   const navGroups: NavGroup[] = React.useMemo(() => {
     if (profile?.role === 'SUPER_ADMIN') {
       return [
-        {
-          label: 'Admin Portal',
-          items: [
-            { name: 'Admin Dashboard', path: '/app/admin', icon: Shield },
-          ]
-        },
-        {
-          label: 'System',
-          items: [
-            { name: 'Settings', path: '/app/settings', icon: Settings },
-          ]
-        }
+        { label: 'Admin Portal', items: [{ name: 'Admin Dashboard', path: '/app/admin', icon: Shield }] },
+        { label: 'System', items: [{ name: 'Settings', path: '/app/settings', icon: Settings }] },
       ];
     }
 
@@ -59,68 +98,200 @@ export default function Sidebar() {
       {
         label: 'Workspace',
         items: [
-          { name: 'Dashboard',  path: '/app',             icon: LayoutDashboard },
-          { name: 'Market & News', path: '/app/markets',  icon: Globe },
-          { name: 'Flow',       path: '/app/flow',        icon: Zap },
-          { name: 'Analytics',  path: '/app/analytics',   icon: TrendingUp },
-        ]
+          { name: 'Dashboard', path: '/app', icon: LayoutDashboard },
+          { name: 'Market & news', path: '/app/markets', icon: Globe },
+          { name: 'Flow', path: '/app/flow', icon: Zap },
+          { name: 'Lunar AI', path: '/app/ai-coach', icon: Brain },
+        ],
       },
       {
-        label: 'Trading',
+        label: 'Trading journal',
         items: [
-          { name: 'Trades',     path: '/app/trades',      icon: BarChart3 },
-          { name: 'Journal',    path: '/app/journal',     icon: BookOpen },
-          { name: 'Strategies', path: '/app/strategies',  icon: Target },
-        ]
+          { name: 'Trades', path: '/app/trades', icon: BarChart3 },
+          { name: 'Analytics', path: '/app/analytics', icon: TrendingUp },
+          { name: 'Journal', path: '/app/journal', icon: BookOpen },
+          { name: 'Strategies', path: '/app/strategies', icon: Target },
+          { name: 'Goals', path: '/app/goals', icon: Shield },
+          { name: 'Knowledge vault', path: '/app/vault', icon: ScrollText },
+        ],
       },
       {
-        label: 'AI',
+        label: 'Account',
         items: [
-          { name: 'Lunar AI',   path: '/app/ai-coach',    icon: Brain, hasNotification: true },
-        ]
+          { name: 'Referrals', path: '/app/affiliate', icon: Handshake },
+          { name: 'Settings', path: '/app/settings', icon: Settings },
+        ],
       },
-      {
-        label: 'GROW',
-        items: [
-          { name: 'Earn with RiskRules', path: '/app/affiliate', icon: Handshake, badge: 'NEW' },
-        ]
-      },
-      {
-        label: 'System',
-        items: [
-          { name: 'Settings',   path: '/app/settings',    icon: Settings },
-        ]
-      }
     ];
 
     if (profile?.role === 'ADMIN' || profile?.role === 'SUB_ADMIN') {
-      groups.push({
-        label: 'Admin',
-        items: [{ name: 'Admin Panel', path: '/app/admin', icon: Shield }]
-      });
+      groups.push({ label: 'Admin', items: [{ name: 'Admin Panel', path: '/app/admin', icon: Shield }] });
     }
-
     return groups;
   }, [profile?.role]);
 
-  // Handle mobile route change close
+  const isActive = (path: string) =>
+    location.pathname === path || (path !== '/app' && location.pathname.startsWith(path));
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden border-r border-border bg-surface">
+      {/* Brand */}
+      <div className="flex h-[68px] shrink-0 items-center px-3">
+        <Link to="/app" onClick={onNavigate} aria-label="RiskRule dashboard" className="flex h-9 min-w-0 items-center gap-2.5 rounded-lg px-[10px] outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <Logo variant="icon" size="md" />
+          <span
+            aria-hidden={!expanded}
+            className={cn(
+              'overflow-hidden whitespace-nowrap font-display text-xl font-bold leading-none tracking-tight text-primary transition-[max-width,opacity] duration-300',
+              EASE,
+              expanded ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'
+            )}
+          >
+            Risk<span className="riskrule-wordmark-rule">Rule</span>
+          </span>
+        </Link>
+        {mobile && (
+          <button
+            onClick={onClose}
+            aria-label="Close navigation"
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-tertiary transition-colors hover:bg-surface-2 hover:text-primary"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
+      {/* Search and notifications */}
+      <div className="shrink-0 space-y-1 px-3 pb-3">
+        <RailTip expanded={expanded} label={<>Search <kbd className="rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[10px]">{CMD_KEY} K</kbd></>}>
+          <button
+            onClick={() => { onNavigate?.(); onSearch(); }}
+            aria-label="Search workspace"
+            className={cn(rowBase, 'border border-border bg-surface-1 text-tertiary hover:bg-surface-2 hover:text-secondary')}
+          >
+            <Search className="h-[18px] w-[18px] shrink-0" />
+            <Label expanded={expanded} className="font-normal">Search workspace</Label>
+            <kbd
+              aria-hidden="true"
+              className={cn(
+                'rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-tertiary transition-opacity duration-200',
+                expanded ? 'opacity-100 delay-75' : 'pointer-events-none absolute right-2 opacity-0'
+              )}
+            >
+              {CMD_KEY} K
+            </kbd>
+          </button>
+        </RailTip>
+
+        <RailTip expanded={expanded} label={`Notifications${unreadCount ? ` (${unreadCount})` : ''}`}>
+          <button
+            onClick={() => { onNavigate?.(); setPanelOpen(true); }}
+            aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
+            className={cn(rowBase, 'text-secondary hover:bg-surface-1 hover:text-primary')}
+          >
+            <span className="relative shrink-0">
+              <Bell className="h-[18px] w-[18px] text-tertiary transition-colors group-hover:text-primary" />
+              {unreadCount > 0 && <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-surface bg-accent" aria-hidden="true" />}
+            </span>
+            <Label expanded={expanded}>Notifications</Label>
+            {unreadCount > 0 && (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold leading-none text-inverse transition-opacity duration-200',
+                  expanded ? 'opacity-100' : 'pointer-events-none absolute right-2 opacity-0'
+                )}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </RailTip>
+      </div>
+
+      {/* Navigation */}
+      <nav aria-label="Workspace" className="scrollbar-none min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4">
+        {navGroups.map(group => (
+          <div key={group.label} className="mb-1">
+            {/* Heading and divider share one 28px slot, so the list never shifts when the label fades. */}
+            <div className="relative flex h-7 items-center px-[13px]" aria-hidden={!expanded}>
+              <p className={cn('text-[11px] font-semibold text-tertiary transition-opacity duration-200', expanded ? 'opacity-100 delay-75' : 'opacity-0')}>
+                {group.label}
+              </p>
+              <span className={cn('absolute inset-x-[13px] top-1/2 h-px bg-border transition-opacity duration-200', expanded ? 'opacity-0' : 'opacity-100')} />
+            </div>
+
+            <ul className="space-y-0.5">
+              {group.items.map(item => {
+                const active = isActive(item.path);
+                return (
+                  <li key={item.path}>
+                    <RailTip expanded={expanded} label={item.name}>
+                      <Link
+                        to={item.path}
+                        aria-label={item.name}
+                        aria-current={active ? 'page' : undefined}
+                        onMouseEnter={() => prefetchRoute(item.path)}
+                        onFocus={() => prefetchRoute(item.path)}
+                        onClick={onNavigate}
+                        className={cn(rowBase, active ? 'bg-accent/10 text-accent' : 'text-secondary hover:bg-surface-1 hover:text-primary')}
+                      >
+                        {active && (
+                          <motion.span
+                            layoutId={mobile ? 'sidebar-active-mobile' : 'sidebar-active-desktop'}
+                            className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-accent"
+                            transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+                          />
+                        )}
+                        <item.icon className={cn('h-[18px] w-[18px] shrink-0 transition-colors', active ? 'text-accent' : 'text-tertiary group-hover:text-primary')} />
+                        <Label expanded={expanded}>{item.name}</Label>
+                        {item.badge && expanded && (
+                          <span className="rounded bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wider text-inverse">{item.badge}</span>
+                        )}
+                      </Link>
+                    </RailTip>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      {/* Profile */}
+      <div className="flex h-[60px] shrink-0 items-center gap-3 border-t border-border pl-[18px] pr-3">
+        <UserProfileDropdown collapsed={!expanded} />
+        <div
+          aria-hidden={!expanded}
+          className={cn('min-w-0 flex-1 transition-opacity duration-200', expanded ? 'opacity-100 delay-75' : 'pointer-events-none opacity-0')}
+        >
+          <p className="truncate text-[13px] font-semibold leading-4 text-primary">{profile?.fullName || 'Trader'}</p>
+          <p className="truncate text-[11px] leading-4 text-tertiary">{profile?.email}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Sidebar({ onSearch }: { onSearch: () => void }) {
+  const location = useLocation();
+  const { profile } = useAuthStore();
+  const { fetchNotifications, initializeSSE } = useNotificationStore();
+  const { sidebarOpen, setSidebarOpen, desktopSidebarExpanded, toggleDesktopSidebar } = useUIStore();
+
+  // Close the mobile drawer when the route changes
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname, setSidebarOpen]);
 
-  // Keyboard shortcut for search
+  // Escape closes the mobile drawer
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('global-search-input')?.focus();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    if (!sidebarOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSidebarOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sidebarOpen, setSidebarOpen]);
 
-  // Initialize Notifications
   useEffect(() => {
     if (profile) {
       fetchNotifications();
@@ -128,276 +299,58 @@ export default function Sidebar() {
     }
   }, [profile, fetchNotifications, initializeSSE]);
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full overflow-hidden bg-surface-1 border-r border-border">
-      
-      {/* Top Brand Area */}
-      <div className={cn(
-        "flex items-center p-4 shrink-0 h-[68px]",
-        desktopSidebarExpanded ? "justify-between" : "justify-center"
-      )}>
-        <AnimatePresence initial={false}>
-          {desktopSidebarExpanded ? (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.2 }}
-              className="whitespace-nowrap overflow-hidden"
-            >
-              <Logo variant="full" size="md" />
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Logo variant="icon" size="md" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Desktop Collapse Toggle */}
-        <button 
-          onClick={toggleDesktopSidebar}
-          className="hidden lg:flex items-center justify-center w-6 h-6 rounded-md hover:bg-surface-2 text-tertiary hover:text-secondary transition-colors shrink-0"
-          aria-label={desktopSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
-        >
-          {desktopSidebarExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
-
-        {/* Mobile Close Toggle */}
-        <button 
-          onClick={() => setSidebarOpen(false)}
-          className="lg:hidden items-center justify-center w-8 h-8 rounded-md hover:bg-surface-2 text-tertiary hover:text-secondary transition-colors shrink-0"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Global Actions (Search & Notifications) */}
-      <div className={cn("px-3 mb-4 shrink-0 transition-all duration-200", desktopSidebarExpanded ? "space-y-2" : "space-y-3")}>
-        {desktopSidebarExpanded ? (
-          <button 
-            className="w-full flex items-center gap-2 px-3 py-2 bg-surface-1 hover:bg-surface-2 border border-border rounded-lg text-tertiary hover:text-secondary transition-colors text-sm text-left group"
-          >
-            <Search className="w-4 h-4 shrink-0 group-hover:text-primary transition-colors" />
-            <span className="flex-1">Search...</span>
-            <kbd className="hidden md:inline-flex items-center gap-1 text-[10px] font-mono bg-surface-2 px-1.5 py-0.5 rounded border border-border">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          </button>
-        ) : (
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-              <button className="w-full flex items-center justify-center h-10 bg-surface-1 hover:bg-surface-2 border border-border rounded-lg text-tertiary hover:text-secondary transition-colors group">
-                <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
-              </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="right" sideOffset={10} className="bg-surface-elevated border border-border px-3 py-1.5 rounded-md shadow-floating text-xs font-medium text-primary z-50 flex items-center gap-2 animate-in fade-in zoom-in-95">
-                Search
-                <kbd className="inline-flex items-center text-[10px] font-mono bg-surface-2 px-1.5 py-0.5 rounded border border-border">⌘K</kbd>
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-        )}
-
-        {desktopSidebarExpanded ? (
-          <button 
-            onClick={() => setPanelOpen(true)}
-            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-surface-1 rounded-lg text-secondary transition-colors text-sm text-left group"
-          >
-            <div className="relative">
-              <Bell className="w-4 h-4 shrink-0 group-hover:text-primary transition-colors text-tertiary" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-accent rounded-full border border-surface-0"></span>
-              )}
-            </div>
-            <span className="flex-1 font-medium flex justify-between items-center">
-              Notifications
-              {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 bg-accent text-white rounded-md text-[10px] font-bold leading-none">
-                  {unreadCount}
-                </span>
-              )}
-            </span>
-          </button>
-        ) : (
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-              <button 
-                onClick={() => setPanelOpen(true)}
-                className="w-full flex items-center justify-center h-10 hover:bg-surface-1 rounded-lg text-secondary transition-colors group relative"
-              >
-                <Bell className="w-4 h-4 text-tertiary group-hover:text-primary transition-colors" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-accent rounded-full border border-surface-0"></span>
-                )}
-              </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content side="right" sideOffset={10} className="bg-surface-elevated border border-border px-3 py-1.5 rounded-md shadow-floating text-xs font-medium text-primary z-50 animate-in fade-in zoom-in-95">
-                Notifications {unreadCount > 0 && `(${unreadCount})`}
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-        )}
-      </div>
-
-      {/* Main Navigation Scroll Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none px-3 space-y-6 pb-4">
-        {navGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="space-y-1">
-            <AnimatePresence initial={false}>
-              {desktopSidebarExpanded && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="px-3 mb-2"
-                >
-                  <p className="text-[10px] font-bold text-tertiary uppercase tracking-widest">{group.label}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {group.items.map((item) => {
-              const isActive = location.pathname === item.path || (item.path !== '/app' && location.pathname.startsWith(item.path));
-              
-              const LinkContent = (
-                <Link
-                  to={item.path}
-                  onMouseEnter={() => prefetchRoute(item.path)}
-                  className={cn(
-                    "relative flex items-center rounded-lg transition-all duration-200 group h-10",
-                    desktopSidebarExpanded ? "px-3 gap-3" : "justify-center",
-                    isActive 
-                      ? "bg-accent/10 text-accent font-medium" 
-                      : "text-secondary hover:bg-surface-1 hover:text-primary"
-                  )}
-                >
-                  {/* Premium Active Indicator */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="sidebar-active-indicator"
-                      className="absolute left-0 top-1 bottom-1 w-1 bg-accent rounded-r-md"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-
-                  <div className="relative shrink-0">
-                    <item.icon className={cn(
-                      "w-[18px] h-[18px] transition-colors",
-                      isActive ? "text-accent" : "text-tertiary group-hover:text-primary"
-                    )} />
-                    {item.hasNotification && (
-                      <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-                      </span>
-                    )}
-                  </div>
-
-                  <AnimatePresence initial={false}>
-                    {desktopSidebarExpanded && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="truncate text-[13px] flex-1 text-left"
-                      >
-                        {item.name}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-
-                  {item.badge && desktopSidebarExpanded && (
-                    <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-[#6366F1] text-white shadow-xs shrink-0">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-
-              return desktopSidebarExpanded ? (
-                <div key={item.path}>{LinkContent}</div>
-              ) : (
-                <Tooltip.Root key={item.path}>
-                  <Tooltip.Trigger asChild>
-                    <div>{LinkContent}</div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content 
-                      side="right" 
-                      sideOffset={14} 
-                      className="bg-surface-elevated border border-border px-3 py-1.5 rounded-md shadow-floating text-xs font-medium text-primary z-50 animate-in fade-in zoom-in-95 flex items-center gap-1.5"
-                    >
-                      <span>{item.name}</span>
-                      {item.badge && (
-                        <span className="px-1 py-0.5 rounded text-[8px] font-bold bg-[#6366F1] text-white uppercase leading-none">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-
-      {/* Footer / User Profile Area */}
-      <div className={cn("p-3 border-t border-border shrink-0 mt-auto flex", desktopSidebarExpanded ? "" : "justify-center")}>
-        <UserProfileDropdown collapsed={!desktopSidebarExpanded} />
-      </div>
-    </div>
-  );
-
   return (
     <>
-    <Tooltip.Provider delayDuration={200}>
-      {/* Desktop Sidebar (Absolute position) */}
-      <div 
-        className={cn(
-          "hidden lg:block fixed inset-y-0 left-0 z-40 transition-all duration-250 ease-in-out",
-          desktopSidebarExpanded ? "w-[240px]" : "w-[68px]"
-        )}
-      >
-        <SidebarContent />
-      </div>
+      <Tooltip.Provider delayDuration={150} skipDelayDuration={300}>
+        {/* Desktop rail */}
+        <div
+          className={cn(
+            'fixed inset-y-0 left-0 z-40 hidden transition-[width] duration-300 lg:block',
+            EASE,
+            desktopSidebarExpanded ? 'w-[240px]' : 'w-[68px]'
+          )}
+        >
+          <SidebarBody expanded={desktopSidebarExpanded} onSearch={onSearch} />
+          <button
+            onClick={toggleDesktopSidebar}
+            aria-label={desktopSidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-expanded={desktopSidebarExpanded}
+            className="absolute -right-3 top-[22px] z-10 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface text-tertiary shadow-xs outline-none transition-colors hover:bg-surface-2 hover:text-primary focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            {desktopSidebarExpanded ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+          </button>
+        </div>
 
-      {/* Mobile Drawer */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[280px] z-50 lg:hidden"
-            >
-              <SidebarContent />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </Tooltip.Provider>
-    <NotificationPanel />
+        {/* Mobile drawer */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+                aria-hidden="true"
+              />
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+                className="fixed inset-y-0 left-0 z-50 w-[280px] lg:hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Navigation"
+              >
+                <SidebarBody expanded mobile onSearch={onSearch} onNavigate={() => setSidebarOpen(false)} onClose={() => setSidebarOpen(false)} />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </Tooltip.Provider>
+      <NotificationPanel />
     </>
   );
 }

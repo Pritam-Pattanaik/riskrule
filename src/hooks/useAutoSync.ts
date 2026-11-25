@@ -9,12 +9,12 @@ export function useAutoSync() {
   const initialize = useAuthStore(state => state.initialize);
   const fetchTrades = useTradeStore(state => state.fetchTrades);
   const token = useAuthStore(state => state.token);
-  const user = useAuthStore(state => state.user);
+  const userId = useAuthStore(state => state.user?.id);
   const loading = useAuthStore(state => state.loading);
   const fetchConnections = useBrokerStore(state => state.fetchConnections);
   const syncAll = useBrokerStore(state => state.syncAll);
 
-  const startupDoneRef = useRef(false);
+  const startedFor = useRef<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -22,32 +22,20 @@ export function useAutoSync() {
   }, [initialize]);
 
   useEffect(() => {
-    if (loading || !user || !token) {
-      if (!token || !user) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        startupDoneRef.current = false;
-      }
+    if (loading || !userId || !token) {
+      startedFor.current = null;
       return;
     }
 
-    if (startupDoneRef.current) return;
-    startupDoneRef.current = true;
-
-    const startup = async () => {
-      await fetchConnections();
-      await fetchTrades();
-
-      const { connections } = useBrokerStore.getState();
-      const hasActiveBrokers = connections.some(c => c.isActive);
-      if (hasActiveBrokers) {
-        syncAll().catch(err => console.warn('[AutoSync] Background sync error:', err));
-      }
-    };
-
-    startup();
+    if (startedFor.current !== userId) {
+      startedFor.current = userId;
+      void Promise.all([fetchTrades(), fetchConnections()]).then(() => {
+        if (useAuthStore.getState().user?.id !== userId) return;
+        if (useBrokerStore.getState().connections.some(c => c.isActive)) {
+          syncAll().catch(err => console.warn('[AutoSync] Background sync error:', err));
+        }
+      });
+    }
 
     intervalRef.current = setInterval(async () => {
       const { isSyncing, connections } = useBrokerStore.getState();
@@ -61,5 +49,5 @@ export function useAutoSync() {
         intervalRef.current = null;
       }
     };
-  }, [token, fetchTrades, fetchConnections, syncAll]);
+  }, [loading, userId, token, fetchTrades, fetchConnections, syncAll]);
 }

@@ -1,8 +1,7 @@
 import React from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, ReferenceLine, Tooltip, ResponsiveContainer, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, ReferenceLine, ReferenceDot, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
-import { motion } from 'framer-motion';
 import { formatCurrency, formatCompactCurrency, formatDate } from '../../lib/analytics';
 import { cn } from '../../lib/cn';
 
@@ -10,77 +9,81 @@ interface PnLCurveProps {
   data: { date: string; pnl: number }[];
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+const MONO = 'DM Mono, Geist Mono, ui-monospace, monospace';
+const tick = { fill: 'rgb(var(--color-text-tertiary))', fontSize: 11, fontFamily: MONO };
+
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: PnLCurveProps['data'][number] }[] }) => {
   if (!active || !payload?.length) return null;
   const dp = payload[0].payload;
   const val: number = dp.pnl;
   const isPos = val >= 0;
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 5, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.2 }}
-      className="glass-float px-3 py-2.5 min-w-[130px]"
-    >
-      <p className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1.5">{formatDate(dp.date)}</p>
-      <p className={cn('text-sm font-bold font-mono tabular-nums', isPos ? 'text-success' : 'text-danger')}>
+    <div className="rounded-sm border border-primary/10 bg-surface px-3 py-2 min-w-[128px] shadow-xs">
+      <p className="text-xs text-tertiary tabular-nums">{dp.date ? formatDate(dp.date) : 'Before first close'}</p>
+      <p className={cn('mt-1 text-sm font-medium font-mono tabular-nums', isPos ? 'text-success' : 'text-danger')}>
         {isPos ? '+' : ''}{formatCurrency(val)}
       </p>
-    </motion.div>
+    </div>
   );
 };
 
 export default function PnLCurve({ data }: PnLCurveProps) {
-  const lastVal = data.length > 0 ? data[data.length - 1].pnl : 0;
-  const isPositive = lastVal >= 0;
-  const strokeColor = isPositive ? 'rgb(var(--color-success))' : 'rgb(var(--color-danger))';
-  const gradientId = isPositive ? 'pnlPos' : 'pnlNeg';
-
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-primary/80">
-        <div className="w-12 h-12 rounded-2xl bg-surface-1 border border-border flex items-center justify-center">
-          <svg className="w-5 h-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-          </svg>
-        </div>
-        <p className="text-sm font-medium">No P&L data for this period</p>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-sm text-secondary">No P&amp;L data for this period</p>
       </div>
     );
   }
 
+  const last = data[data.length - 1];
+  const points = [{ date: '', pnl: 0 }, ...data].map((point, index) => ({ ...point, index }));
+  const ink = last.pnl < 0 ? 'rgb(var(--color-danger))' : 'rgb(var(--color-success))';
+
   return (
-    <div role="img" aria-label="Cumulative Profit and Loss curve chart" style={{ width: '100%', height: '100%' }}>
+    <div role="img" aria-label="Cumulative profit and loss curve" style={{ width: '100%', height: '100%' }}>
       <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 8, right: 4, left: -12, bottom: 0 }}>
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor={strokeColor} stopOpacity={0.7} />
-            <stop offset="100%" stopColor={strokeColor} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="rgb(var(--color-border) / 0.1)" verticalFill={['rgba(255,255,255,0.01)', 'transparent']} />
-        <XAxis
-          dataKey="date"
-          tickFormatter={d => formatDate(d)}
-          tick={{ fill: 'rgba(var(--color-text-primary), 0.7)', fontSize: 9, fontFamily: 'DM Mono, Geist Mono, monospace' }}
-          axisLine={false} tickLine={false} dy={12}
-        />
-        <YAxis
-          tickFormatter={v => formatCompactCurrency(v)}
-          tick={{ fill: 'rgba(var(--color-text-primary), 0.7)', fontSize: 9, fontFamily: 'DM Mono, Geist Mono, monospace' }}
-          axisLine={false} tickLine={false} dx={-4}
-        />
-        <ReferenceLine y={0} stroke="rgb(var(--color-border) / 0.2)" strokeDasharray="4 4" />
-        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgb(var(--color-iris) / 0.5)', strokeWidth: 1.5, strokeDasharray: '4 4' }} wrapperStyle={{ outline: 'none' }} isAnimationActive={true} animationDuration={250} />
-        <Area
-          type="monotone" dataKey="pnl"
-          stroke={strokeColor} strokeWidth={3}
-          dot={false}
-          activeDot={{ r: 6, fill: strokeColor, strokeWidth: 3, stroke: 'rgb(var(--color-canvas))' }}
-          fillOpacity={1} fill={`url(#${gradientId})`}
-        />
-      </AreaChart>
+        <AreaChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="pnlFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={ink} stopOpacity={0.16} />
+              <stop offset="100%" stopColor={ink} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} stroke="rgb(var(--color-text-primary) / 0.06)" />
+          <XAxis
+            dataKey="index"
+            tickFormatter={index => points[index]?.date ? formatDate(points[index].date) : 'Start'}
+            tick={tick}
+            axisLine={false} tickLine={false} dy={8} minTickGap={24}
+          />
+          <YAxis
+            tickFormatter={v => (v === 0 ? '₹0' : formatCompactCurrency(v))}
+            tick={tick}
+            axisLine={false} tickLine={false} width={64}
+          />
+          {/* Zero rule: the baseline every figure is read against */}
+          <ReferenceLine y={0} stroke="rgb(var(--color-text-primary) / 0.32)" strokeWidth={1} />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ stroke: 'rgb(var(--color-text-primary) / 0.24)', strokeWidth: 1 }}
+            wrapperStyle={{ outline: 'none' }}
+          />
+          <Area
+            type="linear" dataKey="pnl"
+            stroke={ink} strokeWidth={2.25}
+            dot={false}
+            activeDot={{ r: 4, fill: ink, strokeWidth: 2, stroke: 'rgb(var(--color-surface))' }}
+            fill="url(#pnlFill)" fillOpacity={1}
+            isAnimationActive={false}
+          />
+          {/* The accent marks where the curve stands now */}
+          <ReferenceDot
+            x={data.length} y={last.pnl} r={5}
+            fill={ink} stroke="rgb(var(--color-surface))" strokeWidth={2}
+            ifOverflow="visible"
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

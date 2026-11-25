@@ -296,7 +296,7 @@ export default function ResetPassword() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="text-tertiary hover:text-primary transition-colors p-1.5 focus-ring rounded-md"
+                  className="text-tertiary transition-colors p-1.5 focus-ring rounded-md"
                 >
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
@@ -352,7 +352,7 @@ export default function ResetPassword() {
       </motion.div>
 
       <div className="mt-8 flex justify-center">
-        <Link to="/login" className="inline-flex items-center gap-1.5 text-sm font-medium text-secondary hover:text-primary transition-colors focus-ring rounded">
+        <Link to="/login" className="inline-flex items-center gap-1.5 text-sm font-medium text-secondary transition-colors focus-ring rounded">
           <ArrowLeft className="w-4 h-4" />
           Back to Login
         </Link>

@@ -34,7 +34,7 @@ export default function Flow() {
   }, [fetchIntelligence]);
 
   return (
-    <div className="flex flex-col min-h-full gap-5 pb-12 animate-fade-slide">
+    <div className="flex flex-col min-h-full gap-4 pb-12">
 
       {/* ── Header ── */}
       <FlowHeader />
@@ -47,7 +47,7 @@ export default function Flow() {
               <KeyRound className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-primary">Broker Connection / Data API Action Required</p>
+              <p className="text-sm font-bold text-primary">Reconnect your broker</p>
               <p className="text-xs text-secondary mt-0.5">
                 {brokerError || 'Your Dhan SuperAPI session token has expired or Data APIs need activation. Daily re-authentication is required to stream real-time options flow.'}
               </p>
@@ -81,9 +81,9 @@ export default function Flow() {
               <PlugZap className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-primary">Broker Connection Required</p>
+              <p className="text-sm font-bold text-primary">Connect your broker</p>
               <p className="text-xs text-secondary mt-0.5">
-                Connect your Dhan SuperAPI in Settings to stream live real-time institutional options flow.
+                Connect Dhan in Settings to view live open interest and strike data.
               </p>
             </div>
           </div>

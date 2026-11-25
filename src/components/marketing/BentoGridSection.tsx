@@ -1,160 +1,132 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Shield, Zap, RefreshCw, Layers, Brain, Lock, CheckCircle, BarChart, 
-  Sliders, ArrowRight, Headphones, Volume2, Sparkles 
-} from 'lucide-react';
-import { Reveal, HoverLift } from '../ui/Motion';
+import { ArrowRight } from 'lucide-react';
+import { Section, card, textLink, SampleTag } from './MarketingBits';
+import { cn } from '../../lib/cn';
+import dhan from '../../assets/brokers/dhan.svg';
+import angelone from '../../assets/brokers/angelone.svg';
+import delta from '../../assets/brokers/delta_exchange_mark.svg';
 
+const hours = [
+  { h: '09', v: -0.9 }, { h: '10', v: 1.2 }, { h: '11', v: 1.9 }, { h: '12', v: 0.4 },
+  { h: '13', v: 1.4 }, { h: '14', v: -0.3 }, { h: '15', v: 0.9 },
+];
+
+const wave = [14, 26, 18, 34, 22, 40, 28, 16, 36, 24, 12, 30, 20, 38, 16, 26, 14, 22];
+
+/** Four features on a 12-column grid, each showing the state it produces. */
 export default function BentoGridSection() {
   return (
-    <section id="features" className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-20 relative z-20 scroll-mt-24" aria-label="Core Technical Pillars">
-      
-      {/* Chapter Title Bar */}
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <Reveal direction="up">
-          <p className="text-xs font-mono-stat font-bold uppercase tracking-widest text-iris mb-2.5">
-            Institutional Discipline Engine
-          </p>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight mb-4">
-            Engineered to defend your capital against psychological error.
-          </h2>
-          <p className="text-base sm:text-lg text-secondary leading-relaxed">
-            Standard retail tools record what you traded after the fact. RiskRule enforces positive expectancy in real-time before and while you pull the trigger.
-          </p>
-        </Reveal>
-      </div>
+    <Section
+      id="features"
+      title="See how your rules hold up"
+      lead="Compare each trading session with your risk limits and use the journal to review what happened."
+    >
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
 
-      {/* ── Asymmetric Bento Modular Grid Architecture ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        
-        {/* BENTO BOX 1 (Large 2-Col Span): Automated Daily Drawdown Lockout */}
-        <div className="md:col-span-2 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden group border-border hover:border-iris/40 transition-all duration-300">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-danger/10 rounded-full blur-3xl -z-10 group-hover:bg-danger/15 transition-colors" />
-          
+        <article className={cn(card, 'hover-lift flex flex-col justify-between gap-8 p-7 md:col-span-7')}>
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-danger/15 border border-danger/30 flex items-center justify-center text-danger mb-6 shadow-xs">
-              <Lock size={24} strokeWidth={2.5} />
-            </div>
-            <span className="text-[11px] font-mono-stat font-extrabold uppercase tracking-wider text-danger px-2.5 py-1 rounded bg-danger/10 border border-danger/20 inline-block mb-3">
-              PROP FIRM PROTECTION PROTOCOL
-            </span>
-            <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-3 tracking-tight">
-              Automated Daily Drawdown Guardrails
-            </h3>
-            <p className="text-sm sm:text-base text-secondary leading-relaxed max-w-xl mb-8">
-              Set maximum daily loss thresholds modeled directly on FTMO and Apex rules. When your daily stop-out barrier is triggered, RiskRule instantly blocks further API order transmissions to prevent tilt and revenge trading spirals.
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Daily loss tracking</h3>
+            <p className="mt-3 max-w-xl text-[15px] leading-6 text-secondary">
+              Set a daily loss limit. Your trade review shows where losses crossed the limit and flags trades taken afterward.
             </p>
           </div>
-
-          {/* Visual Interactive Proof Container */}
-          <div className="w-full p-4 rounded-xl bg-surface-1 border border-border flex items-center justify-between text-xs sm:text-sm font-mono-stat">
-            <span className="flex items-center gap-2 text-danger font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
-              DAILY LOSS LIMIT HIT (-₹2,000)
-            </span>
-            <span className="px-3 py-1 rounded-lg bg-surface-0 text-primary font-extrabold border border-border">
-              STATUS: TRADING LOCKED (24H)
-            </span>
-          </div>
-        </div>
-
-        {/* BENTO BOX 2 (2-Col Span): Real-Time AI Voice Guidance Co-Pilot */}
-        <div className="md:col-span-1 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden group border-border hover:border-iris/40 transition-all duration-300">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-iris/10 rounded-full blur-3xl -z-10 group-hover:bg-iris/15 transition-colors" />
-          
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-iris/15 border border-iris/30 flex items-center justify-center text-iris mb-6 shadow-xs">
-              <Headphones size={24} strokeWidth={2.5} />
+            <div className="mb-2 flex items-baseline justify-between text-[13px]">
+              <span className="text-secondary">Limit used</span>
+              <span className="font-mono-stat text-danger">₹2,100 of ₹2,000</span>
             </div>
-            <span className="text-[11px] font-mono-stat font-extrabold uppercase tracking-wider text-iris px-2.5 py-1 rounded bg-iris/10 border border-iris/20 inline-block mb-3">
-              REAL-TIME AUDIO CO-PILOT
-            </span>
-            <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-3 tracking-tight">
-              Spoken AI Voice Guidance While Trading
-            </h3>
-            <p className="text-sm sm:text-base text-secondary leading-relaxed max-w-xl mb-8">
-              Stay 100% focused on your price action without reading pop-ups. RiskRule speaks directly in your ears with sub-300ms latency—calling out sizing spikes, macroeconomic event countdowns, and psychological grounding cues.
-            </p>
-          </div>
-
-          {/* Voice Prompt Bar */}
-          <div className="w-full p-4 rounded-xl bg-surface-1 border border-border flex items-center justify-between text-xs font-mono-stat">
-            <span className="flex items-center gap-2 text-iris font-bold">
-              <Volume2 size={15} className="animate-pulse" />
-              "2nd loss detected. 3-minute cooldown advised."
-            </span>
-            <span className="px-3 py-1 rounded-lg bg-surface-0 text-success font-extrabold border border-border">
-              VOICE ACTIVE
-            </span>
-          </div>
-        </div>
-
-        {/* BENTO BOX 3 (2-Col Span): Automatic Broker Synchronization */}
-        <div className="md:col-span-1 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden group border-border hover:border-accent/40 transition-all duration-300">
-          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-accent/10 rounded-full blur-3xl -z-10 group-hover:bg-accent/15 transition-colors" />
-          
-          <div>
-            <div className="w-12 h-12 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent mb-6 shadow-xs">
-              <RefreshCw size={24} strokeWidth={2.5} />
+            <div className="relative h-3 overflow-hidden rounded-full bg-surface-2">
+              <div className="h-full w-full rounded-full bg-gradient-to-r from-[#22C55E] via-[#F59E0B] to-[var(--brand-red)]" />
+              <div className="absolute inset-y-0 right-[4.5%] w-0.5 bg-primary" aria-hidden="true" />
             </div>
-            <span className="text-[11px] font-mono-stat font-extrabold uppercase tracking-wider text-accent px-2.5 py-1 rounded bg-accent/10 border border-accent/20 inline-block mb-3">
-              ZERO SPREADSHEET FATIGUE
-            </span>
-            <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-3 tracking-tight">
-              Sub-second Broker &amp; Prop Account Sync
-            </h3>
-            <p className="text-sm sm:text-base text-secondary leading-relaxed max-w-xl mb-8">
-              Connect your MetaTrader, Interactive Brokers, Apex, or Tradovate credentials in seconds. RiskRule parses every trade fill, slippage delta, and execution fee automatically with zero manual entry required.
-            </p>
-          </div>
-
-          {/* Integration Status Bar */}
-          <div className="w-full grid grid-cols-3 gap-2 text-center text-xs font-mono-stat font-bold text-tertiary">
-            <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">MT4 &amp; MT5 SYNC</div>
-            <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">APEX TRADERS</div>
-            <div className="p-2.5 rounded-xl bg-surface-1 border border-border text-primary">TRADOVATE</div>
-          </div>
-        </div>
-
-        {/* BENTO BOX 4 (2-Col Span): R:R Expectancy Mathematics */}
-        <div className="md:col-span-2 lg:col-span-2 card p-7 sm:p-8 flex flex-col justify-between border-border hover:border-success/40 transition-all duration-300">
-          <div>
-            <div className="w-11 h-11 rounded-xl bg-success/15 border border-success/30 flex items-center justify-center text-success mb-5 shadow-xs">
-              <BarChart size={22} strokeWidth={2.5} />
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-display text-xl font-bold text-primary">
-                Verified R:R Expectancy Calculation
-              </h3>
-              <span className="text-xs font-mono-stat font-bold text-success bg-success/10 px-2.5 py-1 rounded-full border border-success/20">
-                EXPECTANCY: +1.8R
+            <div className="mt-4 flex items-center justify-between gap-4 border-t border-primary/10 pt-4 text-[13px]">
+              <span className="flex items-center gap-2 text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-red)]" aria-hidden="true" />
+                Daily loss limit reached
               </span>
+              <SampleTag>Example</SampleTag>
             </div>
-            <p className="text-sm text-secondary leading-relaxed max-w-xl">
-              Win rate is a vanity metric; expectancy is what keeps you funded. RiskRule isolates which setups yield positive mathematical edge and which specific time-of-day execution windows are steadily draining your accounts.
+          </div>
+        </article>
+
+        <article className="ink hover-lift flex flex-col justify-between gap-8 rounded-2xl border border-white/10 p-7 shadow-card md:col-span-5">
+          <div>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-white">Voice guidance</h3>
+            <p className="mt-3 text-[15px] leading-6 text-slate-300">
+              Listen to Lunar AI’s trade reviews and suggested next steps while you go through your journal.
             </p>
           </div>
-
-          <div className="mt-6 p-4 rounded-xl bg-surface-1 border border-border flex items-center justify-between text-xs font-mono-stat text-secondary">
-            <span>AVOID 09:30 AM OPEN VOLATILITY (+14% WIN RATE DELTA)</span>
-            <span className="font-bold text-primary">VERIFIED ALGORITHMIC EDGE</span>
+          <div>
+            <div className="flex h-12 items-center gap-[3px]" aria-hidden="true">
+              {wave.map((h, i) => (
+                <span key={i} className="w-1 rounded-full bg-[var(--brand-green)]" style={{ height: h, opacity: 0.35 + (i % 5) * 0.13 }} />
+              ))}
+            </div>
+            <p className="mt-4 border-t ink-line pt-4 text-[15px] leading-6 text-slate-100">
+              “Both losses came after you increased your usual position size.”
+            </p>
           </div>
-        </div>
+        </article>
 
+        <article className={cn(card, 'hover-lift flex flex-col justify-between gap-8 p-7 md:col-span-5')}>
+          <div>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Broker trade imports</h3>
+            <p className="mt-3 text-[15px] leading-6 text-secondary">
+              Bring trade history into your journal from Dhan, Angel One, or Delta Exchange. You can also enter trades manually.
+            </p>
+          </div>
+          <ul className="flex items-center gap-3 border-t border-primary/10 pt-4">
+            {[['Dhan', dhan], ['Angel One', angelone], ['Delta Exchange', delta]].map(([name, logo]) => (
+              <li key={name} className="flex items-center gap-2 rounded-lg border border-primary/10 bg-surface-1 py-1.5 pl-1.5 pr-3 text-[13px] font-medium text-primary">
+                <img src={logo} alt="" className="h-6 w-6 rounded object-contain" loading="lazy" />
+                {name}
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className={cn(card, 'hover-lift flex flex-col justify-between gap-8 p-7 md:col-span-7')}>
+          <div>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Expectancy by setup and hour</h3>
+            <p className="mt-3 max-w-xl text-[15px] leading-6 text-secondary">
+              Win rate hides more than it shows. RiskRule works out which setups and which times of day earn money and which
+              ones quietly drain the account.
+            </p>
+          </div>
+          <div className="border-t border-primary/10 pt-4">
+            <div className="flex items-end justify-between gap-6">
+              <div>
+                <p className="text-[13px] text-tertiary">Expectancy</p>
+                <p className="mt-2 font-mono-stat text-[30px] font-medium leading-none text-success">+1.8R</p>
+              </div>
+              <div className="flex h-20 flex-1 items-center gap-2" role="img" aria-label="Expectancy by hour of day: negative at 09, positive from 10 to 13, slightly negative at 14">
+                {hours.map(({ h, v }) => (
+                  <div key={h} className="relative flex h-full flex-1 flex-col items-center justify-center">
+                    <div className="absolute inset-x-0 top-1/2 h-px bg-primary/10" aria-hidden="true" />
+                    <span
+                      className={cn('absolute w-full rounded-[3px]', v >= 0 ? 'bg-[var(--brand-green)]' : 'bg-[var(--brand-red)]')}
+                      style={v >= 0 ? { bottom: '50%', height: `${v * 20}%` } : { top: '50%', height: `${-v * 20}%` }}
+                    />
+                    <span className="absolute -bottom-5 font-mono-stat text-[10px] text-tertiary">{h}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-8 flex items-center justify-between gap-4 text-[13px]">
+              <p className="text-secondary">Skipping the 09:30 open lifts win rate by 14 points</p>
+              <SampleTag>Example figures</SampleTag>
+            </div>
+          </div>
+        </article>
       </div>
 
-      {/* Deep-Dive Pillar Link */}
-      <div className="mt-12 text-center">
-        <Link
-          to="/features"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-surface-1 border border-border hover:border-iris/40 text-primary font-display font-bold text-sm transition-all shadow-xs hover:bg-surface-2"
-        >
-          <span>Explore All 7 Institutional Engineering Pillars &amp; Audio Co-Pilot</span>
-          <ArrowRight size={15} className="text-iris" />
+      <div className="mt-8">
+        <Link to="/features" className={textLink}>
+          See every feature
+          <ArrowRight size={16} strokeWidth={2} />
         </Link>
       </div>
-
-    </section>
+    </Section>
   );
 }

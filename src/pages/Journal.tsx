@@ -31,7 +31,7 @@ export default function Journal() {
   const { trades } = useTradeStore();
   
   const [selectedDateStr, setSelectedDateStr] = useState(() => getLocalYYYYMMDD());
-  const selectedDateObj = useMemo(() => new Date(selectedDateStr), [selectedDateStr]);
+  const selectedDateObj = useMemo(() => new Date(selectedDateStr + 'T00:00:00'), [selectedDateStr]);
   
   const [currentMonth, setCurrentMonth] = useState(() => new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), 1));
 
@@ -185,15 +185,11 @@ export default function Journal() {
 
   return (
     <div className="flex flex-col h-full gap-6 pb-20">
-      <div className="flex gap-2">
+      <header><h1>Trading journal</h1><p className="desk-description">Write down your plan before the open and review your decisions after the close.</p></header>
+      <div className="desk-tabs" role="group" aria-label="Journal view">
         {(['daily', 'weekly', 'monthly', 'vault'] as const).map(mode => (
           <button
-            key={mode}
-            onClick={() => setViewMode(mode)}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-widest transition-colors",
-              viewMode === mode ? "bg-primary text-inverse shadow-sm" : "bg-surface border border-border text-secondary hover:bg-surface-2 hover:text-primary"
-            )}
+            key={mode} aria-pressed={viewMode === mode} onClick={() => setViewMode(mode)} className="capitalize"
           >
             {mode}
           </button>
@@ -209,7 +205,7 @@ export default function Journal() {
       )}
       
       {viewMode === 'vault' && (
-        <KnowledgeVault />
+        <KnowledgeVault embedded />
       )}
 
       {viewMode === 'daily' && (

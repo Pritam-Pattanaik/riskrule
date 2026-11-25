@@ -17,37 +17,28 @@ export default function MarketIntelligenceCenter({ article }: MarketIntelligence
   const { trades } = useTradeStore();
   const [enriched, setEnriched] = useState<EnrichedNews | null>(null);
 
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    if (article) {
-      setEnriched(null);
-      enrichArticle(article).then((data) => {
-        if (data) setEnriched(data);
-      });
-    }
-  }, [article, enrichArticle]);
+    if (!article) return;
+    let active = true;
+    setFailed(false);
+    setEnriched(null);
+    enrichArticle(article).then(data => {
+      if (!active) return;
+      setEnriched(data);
+      setFailed(!data);
+    }).catch(() => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, [article, enrichArticle, attempt]);
 
   if (!article) return null;
-
-  if (enrichingId === article.id || !enriched) {
-    return (
-      <div className="w-full flex flex-col items-center justify-center py-32 text-center">
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl animate-pulse"></div>
-          <div className="w-24 h-24 rounded-full bg-surface-1 flex items-center justify-center relative z-10 border border-accent/30 shadow-lg shadow-accent/10">
-            <Brain className="w-10 h-10 text-accent animate-pulse" />
-          </div>
-        </div>
-        <h3 className="text-2xl font-bold text-primary mb-3">AI is Analyzing the Market</h3>
-        <p className="text-base text-secondary max-w-sm mx-auto">Extracting risk factors, determining probabilities, and scanning your portfolio for related trades.</p>
-        
-        <div className="w-full max-w-md mt-12 space-y-4">
-          <div className="h-4 bg-surface-2 rounded-lg w-full animate-pulse"></div>
-          <div className="h-4 bg-surface-2 rounded-lg w-5/6 mx-auto animate-pulse"></div>
-          <div className="h-4 bg-surface-2 rounded-lg w-3/4 mx-auto animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
+  if (!enriched) return <section className="desk-panel space-y-3">
+    <h1>{article.headline}</h1><p className="text-sm text-secondary">{article.source}</p>
+    <p role="status">{failed ? 'Article analysis is currently unavailable.' : 'Preparing article analysis…'}</p>
+    {failed && <button className="desk-button" onClick={() => setAttempt(n => n + 1)}>Retry analysis</button>}
+    {article.url && <a className="desk-link ml-2" href={article.url} target="_blank" rel="noreferrer">Read source article</a>}
+  </section>;
 
   // Find related trades
   const allTags = [...enriched.companies, ...enriched.sectors, ...enriched.categories].map(t => t.toLowerCase());

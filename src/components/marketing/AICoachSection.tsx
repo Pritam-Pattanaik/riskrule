@@ -1,130 +1,86 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Brain, CheckCircle2, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
-import { Reveal } from '../ui/Motion';
+import { ArrowRight, Check } from 'lucide-react';
+import { container, btnPrimary, SampleTag } from './MarketingBits';
+import { cn } from '../../lib/cn';
 
+const behaviours = [
+  'Spots position sizes that jump out of line with your average',
+  'Flags entries in hours that have cost you money before',
+  'Suggests a pause after consecutive losses',
+  'Scores each decision against your own rules',
+];
+
+/** Full-width ink band so the coach reads as a different room from the journal. */
 export default function AICoachSection() {
   return (
-    <section id="ai-coach" className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-24 relative z-20 scroll-mt-20" aria-label="AI Behavioral Coach">
-      
-      <div className="rounded-3xl bg-surface-1 border border-border p-8 sm:p-12 lg:p-16 shadow-card overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-iris/10 rounded-full blur-[140px] pointer-events-none -z-10" />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
-          {/* Left Text Explanation */}
-          <div className="lg:col-span-6 space-y-6">
-            <Reveal direction="up">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-2 border border-border text-xs font-semibold text-primary mb-2 shadow-xs">
-                <Brain size={14} className="text-iris" />
-                <span>Real-Time Behavioral Discipline Core</span>
-              </div>
-              
-              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight leading-[1.08]">
-                An institutional mentor that intervenes before tilt occurs.
-              </h2>
-              
-              <p className="text-base sm:text-lg text-secondary leading-relaxed font-normal">
-                Trading consistency cannot rely solely on human willpower during extended drawdown sequences. RiskRule’s embedded analytical core continuously evaluates your order submission patterns, contract sizing anomalies, and loss frequency in real-time.
-              </p>
+    <section id="ai-coach" className="ink relative scroll-mt-20 overflow-hidden py-16 sm:py-24" aria-label="AI coach">
+      <div className="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-[var(--brand-green)]/10 blur-[110px]" aria-hidden="true" />
+      <div className={cn(container, 'relative grid items-center gap-12 lg:grid-cols-12 lg:gap-16')}>
 
-              <div className="space-y-3.5 pt-4">
-                {[
-                  "Detects contract sizing anomalies immediately upon placement",
-                  "Flags order executions occurring in historically low-expectancy hours",
-                  "Enforces structured cooling-off intervals following consecutive losses",
-                  "Audits decision variance with objective expectancy scoring"
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 text-sm font-medium text-secondary">
-                    <CheckCircle2 size={18} className="text-success shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
+        <div className="lg:col-span-6">
+          <h2 className="font-display text-[32px] font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-[42px]" style={{ textWrap: 'balance' }}>
+            Review your decisions with Lunar AI
+          </h2>
+          <p className="mt-4 text-[17px] leading-7 text-slate-300">
+            The AI trading coach uses your journal to help you review position size, losing streaks, and the trades that broke your rules.
+          </p>
 
-              <div className="pt-4">
-                <Link
-                  to="/ai-coach"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-canvas font-display font-bold text-sm shadow-md hover:opacity-95 transition-all"
-                >
-                  <span>Launch Interactive AI Behavioral Simulator</span>
-                  <ArrowRight size={15} />
-                </Link>
-              </div>
-            </Reveal>
+          <ul className="mt-8 flex flex-col gap-3.5">
+            {behaviours.map(item => (
+              <li key={item} className="flex items-start gap-3 text-[15px] leading-6 text-slate-200">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--brand-green)]/15 text-[#4ADE80]" aria-hidden="true">
+                  <Check size={13} strokeWidth={3} />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-9">
+            <Link to="/ai-coach" className={btnPrimary}>
+              Try the AI coach
+              <ArrowRight size={16} strokeWidth={2} />
+            </Link>
           </div>
-
-          {/* Right Live Simulation Card */}
-          <div className="lg:col-span-6">
-            <Reveal direction="up" delay={0.15}>
-              <div className="rounded-3xl bg-surface-0 border border-border p-6 sm:p-8 shadow-card space-y-6">
-                
-                <div className="flex items-center justify-between border-b border-border/60 pb-5">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-iris text-white flex items-center justify-center font-bold shadow-md">
-                      <Brain size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-display font-bold text-base text-primary">RiskRule Behavioral Core</h4>
-                      <p className="text-xs text-secondary font-medium flex items-center gap-1.5 pt-0.5">
-                        <span className="w-2 h-2 rounded-full bg-success inline-block" />
-                        <span>Real-time Order Evaluation</span>
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold text-success bg-success/15 px-3 py-1 rounded-full border border-success/30">
-                    Active Guardrail
-                  </span>
-                </div>
-
-                {/* Simulated Interventions Feed */}
-                <div className="space-y-4 pt-1">
-                  
-                  <div className="p-5 rounded-2xl bg-surface-1/80 border border-border flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-danger/10 flex items-center justify-center text-danger shrink-0 mt-0.5">
-                      <AlertCircle size={18} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-semibold text-danger">
-                        <span>Sizing Variance Alert</span>
-                        <span className="text-tertiary font-normal">14:02 EST</span>
-                      </div>
-                      <p className="text-sm font-normal text-secondary leading-relaxed">
-                        Warning: Order submission for 10 contracts represents a <strong className="text-primary font-semibold">250% position sizing spike</strong> above your verified 30-day moving average.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-5 rounded-2xl bg-surface-1/80 border border-iris/40 flex items-start gap-4 shadow-sm">
-                    <div className="w-8 h-8 rounded-lg bg-iris/10 flex items-center justify-center text-iris shrink-0 mt-0.5">
-                      <Sparkles size={18} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-semibold text-iris">
-                        <span>Behavioral Intervention Triggered</span>
-                        <span className="text-success font-medium">Order Cancelled</span>
-                      </div>
-                      <p className="text-sm font-medium text-primary leading-relaxed">
-                        "Historical execution analytics indicate a 14% win-rate when increasing contract sizing immediately after a stopped-out trade. Order routing has been halted."
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-
-                <div className="p-4 rounded-xl bg-surface-1/50 border border-border/80 flex items-center justify-between text-xs font-semibold text-secondary">
-                  <span>Capital Preservation Value Recognized:</span>
-                  <span className="text-success font-bold text-sm">+₹114,200</span>
-                </div>
-
-              </div>
-            </Reveal>
-          </div>
-
         </div>
 
-      </div>
+        <div className="lg:col-span-6">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.8)] backdrop-blur sm:p-7">
+            <div className="flex items-center justify-between border-b ink-line pb-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-white">
+                <span className="h-2 w-2 rounded-full bg-[var(--brand-green)]" aria-hidden="true" />
+                Lunar AI
+              </p>
+              <SampleTag onInk>Sample trade review</SampleTag>
+            </div>
 
+            <ul className="divide-y divide-white/10">
+              <li className="py-5">
+                <p className="flex items-center justify-between text-[13px]">
+                  <span className="font-medium text-white">Position size</span>
+                  <span className="font-mono-stat text-slate-400">14:02</span>
+                </p>
+                <p className="mt-2 text-[15px] leading-6 text-slate-300">
+                  An order for 10 lots is <span className="font-semibold text-[#F87171]">250% above</span> your 30-day average size.
+                </p>
+              </li>
+              <li className="py-5 pb-0">
+                <p className="flex items-center justify-between text-[13px]">
+                  <span className="flex items-center gap-2 font-medium text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-green)]" aria-hidden="true" />
+                    Pattern to review
+                  </span>
+                  <span className="font-mono-stat text-slate-400">14:02</span>
+                </p>
+                <p className="mt-2 text-[15px] leading-6 text-slate-300">
+                  “Trades where you sized up after a stop-out won 14% of the time. Compare them with trades at your usual size.”
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

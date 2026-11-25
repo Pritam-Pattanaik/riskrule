@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { Plus, Download, RefreshCw, Loader2, ArrowUpRight, ArrowDownRight, Activity, Percent, Trash2, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { Trade } from '../types';
@@ -12,10 +13,12 @@ import { useTradeStore } from '../stores/tradeStore';
 import { useBrokerStore } from '../stores/brokerStore';
 import { formatCurrency, computeStats } from '../lib/analytics';
 import { notify } from '../lib/notify';
+import { inPeriod, periodBounds, tradeDate, type TradePeriod } from '../lib/tradePeriod';
 import { getLocalYYYYMMDD } from '../lib/dateUtils';
 import StatCard from '../components/dashboard/StatCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/cn';
+import { useTradeStrategies } from '../hooks/useTradeStrategies';
 import { useUrlState } from '../hooks/useUrlState';
 
 export default function Trades() {
@@ -45,6 +48,15 @@ export default function Trades() {
   const setViewMode = (val: 'table' | 'calendar') => setUrlParam('view', val);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [actionParams, setActionParams] = useSearchParams();
+  useEffect(() => {
+    if (actionParams.get('new') !== '1') return;
+    setTradeToEdit(null);
+    setIsFormOpen(true);
+    const next = new URLSearchParams(actionParams);
+    next.delete('new');
+    setActionParams(next, { replace: true });
+  }, [actionParams, setActionParams]);
   const [tradeToEdit, setTradeToEdit] = useState<Trade | null>(null);
 
   const [selectedTrades, setSelectedTrades] = useState<Set<string>>(new Set());
@@ -81,36 +93,18 @@ export default function Trades() {
     return hrs === 1 ? '1 hr ago' : `${hrs} hrs ago`;
   };
 
+  const catalog = useTradeStrategies(true);
+  const names = new Map(catalog.data?.map(strategy => [strategy.id, strategy.name]));
+  const bounds = periodBounds(dateFilter as TradePeriod);
   const filteredTrades = trades
+    .map(trade => trade.strategyId ? { ...trade, strategyName: names.get(trade.strategyId) ?? trade.strategyName } : trade)
     .filter(trade => {
       const matchesSearch = trade.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             trade.strategyName?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesMarket = marketFilter === 'All' || trade.market === marketFilter;
       const matchesStatus = statusFilter === 'All' || trade.status === statusFilter;
 
-      let matchesDate = true;
-      if (dateFilter !== 'all') {
-        const tradeDate = trade.isCarryForward && trade.exitTime ? new Date(trade.exitTime) : new Date(trade.date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (dateFilter === 'today') {
-          matchesDate = tradeDate >= today;
-        } else if (dateFilter === 'week') {
-          const firstDayOfWeek = new Date(today);
-          const day = today.getDay();
-          const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-          firstDayOfWeek.setDate(diff);
-          matchesDate = tradeDate >= firstDayOfWeek;
-        } else if (dateFilter === 'month') {
-          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          matchesDate = tradeDate >= firstDayOfMonth;
-        } else if (dateFilter === 'last_month') {
-          const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-          const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
-          matchesDate = tradeDate >= firstDayOfLastMonth && tradeDate <= lastDayOfLastMonth;
-        }
-      }
+      const matchesDate = inPeriod(tradeDate(trade), bounds);
 
       return matchesSearch && matchesMarket && matchesStatus && matchesDate;
     })
@@ -220,11 +214,11 @@ export default function Trades() {
         {/* Workspace Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-primary tracking-tight">Trade Workspace</h1>
-            <p className="text-sm text-secondary mt-1">Search, filter, and review your market executions.</p>
+            <h1 className="font-display text-2xl font-bold text-primary tracking-tight">Trades</h1>
+            <p className="text-sm text-secondary mt-1">Review entries and exits, match trades to setups, or log a new trade.</p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {lastSyncError && !isSyncing && (
               <span className="text-[10px] uppercase tracking-widest font-bold text-danger bg-danger/10 px-3 py-1.5 rounded-lg border border-danger/20">
                 Sync Error
@@ -414,6 +408,7 @@ export default function Trades() {
                       key={trade.id}
                       trade={trade}
                       onEdit={(t) => { setTradeToEdit(t); setIsFormOpen(true); }}
+                      strategies={catalog.data}
                       onUpdateTrade={updateTrade}
                       isSelected={selectedTrades.has(trade.id)}
                       onToggleSelect={() => {

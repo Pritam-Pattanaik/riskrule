@@ -1,34 +1,18 @@
 import React from 'react';
-import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { PageHero } from '../../components/marketing/MarketingBits';
 
 export default function Privacy() {
   return (
-    <div className="min-h-screen bg-canvas pt-32 pb-24 selection:bg-primary/20">
-      <div className="max-w-4xl mx-auto px-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-6">
-            <Shield className="w-4 h-4" />
-            <span>Data Protection</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-primary tracking-tight mb-6 font-display">
-            Privacy Policy
-          </h1>
-          <p className="text-xl text-secondary max-w-2xl leading-relaxed">
-            RiskRule is built for institutional trading desks and disciplined speculators. 
-            We protect your data with the same rigor you apply to risk management.
-          </p>
-        </motion.div>
+    <div className="w-full bg-canvas text-primary">
+      <PageHero title="Privacy Policy" lead="How RiskRule collects, uses and protects your data." />
+      <div className="mx-auto w-full max-w-[820px] px-5 py-14 sm:px-8 sm:py-20">
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-primary prose-p:text-secondary prose-a:text-iris prose-a:no-underline hover:prose-a:underline"
+          className="prose prose-slate dark:prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-primary prose-p:text-secondary prose-a:text-accent prose-a:no-underline hover:prose-a:underline"
         >
           <p className="text-tertiary text-sm">Last Updated: October 1, 2026</p>
 

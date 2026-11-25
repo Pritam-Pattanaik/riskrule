@@ -1,41 +1,26 @@
 import React from 'react';
-import { Scale, ShieldAlert, Zap, BookOpen, Crown, Bot } from 'lucide-react';
+import { ShieldAlert, Bot, Zap, Crown, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { PageHero } from '../../components/marketing/MarketingBits';
 
 export default function Terms() {
   return (
-    <div className="min-h-screen bg-canvas pt-32 pb-24 selection:bg-primary/20">
-      <div className="max-w-4xl mx-auto px-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-6 border border-primary/20">
-            <Scale className="w-4 h-4" />
-            <span>Comprehensive Legal Agreement</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-primary tracking-tight mb-6 font-display">
-            Terms & Conditions
-          </h1>
-          <p className="text-xl text-secondary max-w-2xl leading-relaxed">
-            By accessing or using RiskRule, you agree to be bound by these comprehensive terms. 
-            Designed for professional market participants, traders, and affiliates.
-          </p>
-        </motion.div>
+    <div className="w-full bg-canvas text-primary">
+      <PageHero title="Terms and Conditions" lead="The agreement between you and RiskRule. Please read it before you trade or invite others." />
+      <div className="mx-auto w-full max-w-[820px] px-5 py-14 sm:px-8 sm:py-20">
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-primary prose-p:text-secondary prose-li:text-secondary prose-strong:text-primary prose-a:text-iris prose-a:no-underline hover:prose-a:underline"
+          className="prose prose-slate dark:prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-primary prose-p:text-secondary prose-li:text-secondary prose-strong:text-primary prose-a:text-accent prose-a:no-underline hover:prose-a:underline"
         >
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-8">
-            <p className="text-amber-400 text-sm font-bold m-0 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-[var(--brand-red)]/[0.07] border border-danger/25 mb-8">
+            <p className="text-danger text-sm font-bold m-0 flex items-center gap-2">
               <ShieldAlert className="w-4 h-4" />
               IMPORTANT RISK DISCLOSURE
             </p>
-            <p className="text-amber-400/80 text-sm mt-2 mb-0">
+            <p className="text-secondary text-sm mt-2 mb-0">
               RiskRule is an analytics, journaling, and AI-coaching platform. We are NOT a broker-dealer or registered investment advisor. Trading involves significant risk of loss and is not suitable for everyone. Any insights, including AI Coach recommendations, are for educational purposes only.
             </p>
           </div>
@@ -78,7 +63,7 @@ export default function Terms() {
             <li><strong>Revocation:</strong> RiskRule reserves the right to withhold payouts and terminate affiliate accounts engaging in fraudulent self-referrals or deceptive marketing.</li>
           </ul>
 
-          <h2 className="flex items-center gap-2"><Crown className="w-6 h-6 text-amber-400" /> 5. Subscriptions, Pro Tier, & Billing</h2>
+          <h2 className="flex items-center gap-2"><Crown className="w-6 h-6 text-danger" /> 5. Subscriptions, Pro Tier, & Billing</h2>
           <p>
             Certain advanced features (like real-time flow, unlimited AI Coach queries, and advanced analytics) require a RiskRule Pro subscription.
           </p>

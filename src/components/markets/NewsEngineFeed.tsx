@@ -82,10 +82,10 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
               Breaking
             </span>
           )}
-          <span className="text-[11px] font-semibold text-primary/40 bg-white/[0.05] px-2 py-0.5 rounded-md">
+          <span className="text-[11px] font-semibold text-secondary bg-white/[0.05] px-2 py-0.5 rounded-md">
             {item.source}
           </span>
-          <span className="text-[11px] text-primary/25">{timeAgo(item.publishedAt)}</span>
+          <span className="text-[11px] text-secondary">{timeAgo(item.publishedAt)}</span>
 
           {/* Direction badge */}
           <span
@@ -97,7 +97,7 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
           </span>
 
           {/* Confidence dot */}
-          <span className="inline-flex items-center gap-1 text-[11px] text-primary/30">
+          <span className="inline-flex items-center gap-1 text-[11px] text-secondary">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: conf.dot }} />
             {conf.label}
           </span>
@@ -124,7 +124,7 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
         )}
 
         {/* Expand toggle */}
-        <div className="flex items-center gap-1 text-[11px] text-primary/25 mt-1">
+        <div className="flex items-center gap-1 text-[11px] text-secondary mt-1">
           <ChevronDown
             size={12}
             className="transition-transform duration-200"
@@ -145,18 +145,18 @@ function FeedCard({ item, expanded, onToggle }: { item: EngineFeedItem; expanded
         >
           <div className="pt-3">
             {/* Rationale */}
-            <p className="text-[13px] text-primary/65 leading-relaxed mb-3">{item.rationale}</p>
+            <p className="text-[13px] text-secondary leading-relaxed mb-3">{item.rationale}</p>
 
             {/* Historical analogues */}
             {item.historicalAnalogues?.length > 0 && (
               <div className="mb-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-primary/30 mb-2">Historical Context</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">Historical Context</p>
                 <div className="flex flex-col gap-1.5">
                   {item.historicalAnalogues.slice(0, 2).map((a) => (
                     // L1 fix: stable key from content prefix (not array index)
                     <p
                       key={a.slice(0, 40)}
-                      className="text-[12px] text-primary/50 pl-3 leading-relaxed"
+                      className="text-[12px] text-secondary pl-3 leading-relaxed"
                       style={{ borderLeft: '2px solid rgba(139,92,246,0.3)' }}
                     >
                       {a}
@@ -226,36 +226,10 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
     ? engineFeed
     : engineFeed.filter(i => i.direction === dirFilter);
 
-  const breakingCount = engineFeed.filter(i => i.urgency === 'breaking').length;
-  const counts = {
-    all: engineFeed.length,
-    positive: engineFeed.filter(i => i.direction === 'positive').length,
-    negative: engineFeed.filter(i => i.direction === 'negative').length,
-    mixed:    engineFeed.filter(i => i.direction === 'mixed').length,
-  };
-
   return (
     <div className="flex flex-col h-full">
 
-      {/* ─── Stats bar ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
-        {[
-          { label: 'Total',    val: counts.all,      color: 'text-primary/70' },
-          { label: 'Bullish',  val: counts.positive, color: 'text-emerald-400' },
-          { label: 'Bearish',  val: counts.negative, color: 'text-red-400' },
-          { label: 'Mixed',    val: counts.mixed,    color: 'text-amber-400' },
-        ].map(({ label, val, color }) => (
-          <div
-            key={label}
-            className="rounded-xl p-3 text-center"
-            style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
-          >
-            <p className={`text-xl font-bold font-mono tabular-nums ${color}`}>{val}</p>
-            <p className="text-[10px] text-primary/30 font-medium mt-0.5">{label}</p>
-          </div>
-        ))}
-      </div>
-
+      <header className="mb-4"><h2 className="text-lg font-semibold">Market headlines</h2></header>
       {/* ─── Filter row ────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {/* Direction filter */}
@@ -267,10 +241,10 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-150"
               style={{
                 background: dirFilter === d ? 'rgba(139,92,246,0.25)' : 'transparent',
-                color: dirFilter === d ? '#a78bfa' : 'rgba(var(--color-border-rgb),0.35)',
+                color: dirFilter === d ? 'rgb(var(--color-accent))' : 'rgb(var(--color-text-secondary))',
               }}
             >
-              {d === 'all' ? `All (${counts.all})` : d.charAt(0).toUpperCase() + d.slice(1)}
+              {d === 'all' ? `All (${engineFeed.length})` : d.charAt(0).toUpperCase() + d.slice(1)}
             </button>
           ))}
         </div>
@@ -278,7 +252,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
         {/* Refresh */}
         <button
           onClick={handleRefresh}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-primary/40 hover:text-primary/70 transition-colors"
+          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-secondary hover:text-primary/70 transition-colors"
           style={{ background: 'rgba(var(--color-border-rgb),0.04)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
         >
           <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
@@ -299,7 +273,7 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               className="flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-150 whitespace-nowrap"
               style={{
                 background: selectedSector === s ? 'rgba(139,92,246,0.2)' : 'rgba(var(--color-border-rgb),0.04)',
-                color: selectedSector === s ? '#a78bfa' : 'rgba(var(--color-border-rgb),0.35)',
+                color: selectedSector === s ? 'rgb(var(--color-accent))' : 'rgb(var(--color-text-secondary))',
                 border: selectedSector === s ? '1px solid rgba(139,92,246,0.3)' : '1px solid rgba(var(--color-border-rgb),0.07)',
               }}
             >
@@ -335,8 +309,8 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               <AlertTriangle size={20} className="text-red-400" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold text-red-400 mb-1">Pipeline Unavailable</p>
-              <p className="text-xs text-primary/30">The AI engine is starting up. Try again shortly.</p>
+              <p className="text-sm font-semibold text-red-400 mb-1">Headlines unavailable</p>
+              <p className="text-xs text-secondary">Try refreshing the feed.</p>
             </div>
             <button
               onClick={handleRefresh}
@@ -355,9 +329,9 @@ export function NewsEngineFeed({ compact = false }: { compact?: boolean }) {
               <Zap size={24} className="text-violet-400/60" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold text-primary/50 mb-1">No items yet</p>
-              <p className="text-xs text-primary/25 max-w-xs">
-                {selectedSector ? `No ${dirFilter === 'all' ? '' : dirFilter + ' '}items for ${selectedSector} yet.` : 'The pipeline is warming up. Items appear during market hours.'}
+              <p className="text-sm font-semibold text-secondary mb-1">No headlines</p>
+              <p className="text-xs text-secondary max-w-xs">
+                {selectedSector ? `No ${dirFilter === 'all' ? '' : dirFilter + ' '}items for ${selectedSector} yet.` : 'No headlines match this view.'}
               </p>
             </div>
           </div>

@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { useLiveChartData, ChartCandle } from '../../hooks/useLiveMarketData';
-import { isMarketOpen } from '../../lib/dateUtils';
+import { useLiveMarketData } from '../../hooks/useMarketData';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -60,9 +60,9 @@ const SYMBOLS = [
 const CHART_COLORS = {
   up: '#22C55E',
   down: '#EF4444',
-  grid: 'rgba(var(--color-border-rgb),0.06)',
+  grid: 'rgba(128,145,160,0.15)',
   text: '#6B7280',
-  accent: '#3B82F6',
+  accent: '#0E9F6E',
   bg: 'rgba(0,0,0,0)',
 };
 
@@ -112,10 +112,11 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
 
   // Track when fresh data arrives (MKT-06 fix)
   useEffect(() => {
-    if (!loading && data.length > 0) {
+    if (!loading && !error && data.length > 0) {
       setDataFetchedAt(new Date());
     }
-  }, [loading, data]);
+  }, [loading, error, data]);
+  useEffect(() => { setDataFetchedAt(null); setTooltip(null); }, [symbol, timeframe]);
 
   // Keep dataRef in sync for the crosshair callback without adding it as a dep
   useEffect(() => {
@@ -295,7 +296,8 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
   const applyData = useCallback((candles: ChartCandle[]) => {
     const series = seriesRef.current;
     const chart  = chartRef.current;
-    if (!series || !chart || candles.length === 0) return;
+    if (!series || !chart) return;
+    if (!candles.length) { series.setData([]); return; }
 
     try {
       if (chartType === 'area') {
@@ -364,7 +366,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
   // ── Download: composite chart onto opaque bg ───────────────────────────────
 
   const downloadSnapshot = useCallback(() => {
-    const canvas = containerRef.current?.querySelector('canvas');
+    const canvas = chartRef.current?.takeScreenshot();
     if (!canvas) return;
 
     const offscreen = document.createElement('canvas');
@@ -373,7 +375,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     const ctx = offscreen.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#0F172A' : '#FFFFFF';
     ctx.fillRect(0, 0, offscreen.width, offscreen.height);
     ctx.drawImage(canvas, 0, 0);
 
@@ -392,7 +394,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
   // ── Derived display ────────────────────────────────────────────────────────
 
   const currentSymbolLabel = SYMBOLS.find(s => s.key === symbol)?.label ?? symbol.toUpperCase();
-  const isLive = timeframe === '1D' && isMarketOpen();
+  const { data: quotes } = useLiveMarketData();
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -401,10 +403,10 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
       ref={wrapperRef}
       className={cn(
         'flex flex-col relative select-none',
-        'rounded-2xl border border-white/[0.06] bg-[#0d1117]/90 backdrop-blur-xl shadow-xl',
+        'rounded-xl border border-border bg-surface',
         isFullscreen
           ? 'fixed inset-0 z-[200] rounded-none border-0 p-0'
-          : 'mb-8 w-full'
+          : 'w-full'
       )}
     >
       {/* ─── Header ───────────────────────────────────────────────────── */}
@@ -422,43 +424,30 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                 aria-label="Select market symbol"
                 className="
                   appearance-none pl-3 pr-7 py-1.5
-                  bg-white/[0.06] hover:bg-white/[0.09] active:bg-white/[0.12]
-                  border border-white/[0.1] rounded-lg
+                  bg-surface-1 hover:bg-white/[0.09] active:bg-white/[0.12]
+                  border border-border rounded-lg
                   text-xs font-bold text-primary/90
-                  outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  outline-none focus-visible:ring-2 focus-visible:ring-accent
                   transition-colors cursor-pointer
                 "
               >
-                {SYMBOLS.map(s => (
-                  <option key={s.key} value={s.key} className="bg-[#0d1117] text-primary/90">
+                {[...SYMBOLS, ...quotes.filter(q => !SYMBOLS.some(s => s.key === q.id)).map(q => ({key: q.id, label: q.name}))].map(s => (
+                  <option key={s.key} value={s.key} className="bg-surface text-primary/90">
                     {s.label}
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-primary/40 text-[10px]">▾</span>
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-secondary text-[10px]">▾</span>
             </div>
 
-            {!loading && (
-              isLive ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-widest uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  LIVE
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-primary/30 text-[10px] font-bold tracking-widest uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                  CLOSED
-                </span>
-              )
-            )}
           </div>
 
           {/* Price display */}
           <div className="flex items-end gap-3 h-12">
             {loading && data.length === 0 ? (
               <>
-                <div className="h-10 w-44 bg-white/[0.06] rounded-lg animate-pulse" />
-                <div className="h-6 w-28 bg-white/[0.04] rounded-md mb-1 animate-pulse" />
+                <div className="h-10 w-44 bg-surface-1 rounded-lg animate-pulse" />
+                <div className="h-6 w-28 bg-surface-1 rounded-md mb-1 animate-pulse" />
               </>
             ) : latest ? (
               <>
@@ -471,8 +460,8 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                 <div className={cn(
                   'flex items-center gap-1.5 text-[13px] font-semibold mb-1.5 px-2.5 py-1 rounded-md border transition-all duration-200',
                   displayIsPositive
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                    : 'bg-red-500/10    text-red-400    border-red-500/20'
+                    ? 'bg-emerald-500/10 text-success border-emerald-500/20'
+                    : 'bg-red-500/10    text-danger    border-red-500/20'
                 )}>
                   {displayIsPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                   <span>{displayIsPositive ? '+' : ''}{displayChange.toFixed(2)}</span>
@@ -480,7 +469,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                 </div>
 
                 {tooltip && (
-                  <span className="text-[11px] text-primary/30 font-mono mb-1.5 whitespace-nowrap">
+                  <span className="text-[11px] text-secondary font-mono mb-1.5 whitespace-nowrap">
                     {tooltip.time}
                   </span>
                 )}
@@ -493,7 +482,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
         <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
 
           {/* Timeframe pills */}
-          <div className="flex items-center bg-white/[0.04] border border-white/[0.07] rounded-xl p-1 gap-0.5">
+          <div className="flex items-center bg-surface-1 border border-border rounded-xl p-1 gap-0.5">
             {TIMEFRAMES.map(tf => (
               <button
                 key={tf}
@@ -503,8 +492,8 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                 className={cn(
                   'px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-150',
                   timeframe === tf
-                    ? 'bg-blue-500/20 text-blue-400 shadow-sm shadow-blue-500/10'
-                    : 'text-primary/35 hover:text-primary/70 hover:bg-white/[0.05]'
+                    ? 'bg-accent/20 text-accent shadow-sm shadow-none'
+                    : 'text-secondary hover:text-primary/70 hover:bg-white/[0.05]'
                 )}
               >
                 {tf}
@@ -517,8 +506,8 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
             {/* Staleness indicator — always visible (MKT-06 fix) */}
             <div className="flex items-center gap-2">
               {dataFetchedAt && (
-                <span className="text-[9px] text-primary/25 font-mono whitespace-nowrap">
-                  Data as of {dataFetchedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST
+                <span className="text-[10px] text-secondary font-mono whitespace-nowrap">
+                  Fetched {dataFetchedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST
                 </span>
               )}
               {/* Manual refresh for non-auto-polling timeframes */}
@@ -527,7 +516,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                   onClick={() => { setDataFetchedAt(null); refresh(); }}
                   disabled={loading}
                   title="Refresh chart data"
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.07] text-primary/30 hover:text-primary/70 hover:bg-white/[0.08] transition-colors disabled:opacity-40"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-1 border border-border text-secondary hover:text-primary/70 hover:bg-white/[0.08] transition-colors disabled:opacity-40"
                 >
                   <RefreshCw size={10} className={loading ? 'animate-spin' : ''} />
                   <span className="text-[9px] font-bold">Refresh</span>
@@ -538,7 +527,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
             <div className="flex items-center gap-1.5">
 
             {/* Chart-type group */}
-            <div className="flex items-center bg-white/[0.04] border border-white/[0.07] rounded-xl p-1 gap-0.5">
+            <div className="flex items-center bg-surface-1 border border-border rounded-xl p-1 gap-0.5">
               <ToolBtn
                 active={!magnet}
                 onClick={() => setMagnet(false)}
@@ -634,28 +623,27 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
       <div className="relative flex-1 min-h-0 px-4 pb-4 pt-4">
         <div
           ref={containerRef}
-          className="w-full h-full min-h-[380px] relative rounded-xl overflow-hidden border border-white/[0.05] bg-[#0a0e14]"
+          className="w-full h-full min-h-[380px] relative rounded-xl overflow-hidden border border-border bg-surface"
           style={isFullscreen ? { minHeight: 'calc(100vh - 200px)' } : {}}
         >
           {/* Loading overlay */}
           {loading && data.length === 0 && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0e14]/90 backdrop-blur-sm">
-              <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
-              <p className="text-xs font-semibold text-primary/40 tracking-wide">Loading {currentSymbolLabel}…</p>
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface/90 backdrop-blur-sm">
+              <div className="w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3" />
+              <p className="text-xs font-semibold text-secondary tracking-wide">Loading {currentSymbolLabel}…</p>
             </div>
           )}
 
           {/* Error state */}
-          {error && !loading && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0e14]/90 backdrop-blur-sm gap-3">
+          {!loading && (error || !data.length) && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-surface/90 backdrop-blur-sm gap-3">
               <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                <span className="text-red-400 text-lg">!</span>
+                <span className="text-danger text-lg">!</span>
               </div>
-              <p className="text-sm font-semibold text-red-400">Chart data unavailable</p>
-              <p className="text-xs text-primary/30 max-w-[200px] text-center">{error}</p>
+              <p className="text-sm font-semibold text-danger">Chart data unavailable</p>
               <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 rounded-lg text-xs font-bold text-primary/70 transition-colors"
+                onClick={refresh}
+                className="px-4 py-1.5 bg-surface-1 hover:bg-white/[0.10] border border-white/10 rounded-lg text-xs font-bold text-primary/70 transition-colors"
               >
                 Retry
               </button>
@@ -671,13 +659,13 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
       </div>
 
       {/* ─── Bottom status bar ────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-5 pb-3.5 text-[10px] text-primary/25 font-mono">
+      <div className="flex items-center justify-between px-5 pb-3.5 text-[10px] text-secondary font-mono">
         <span>
           {currentSymbolLabel} · {timeframe}
           {data.length > 0 && ` · ${data.length} candles`}
         </span>
         <span>
-          Powered by Yahoo Finance · Educational only
+          Historical prices
         </span>
       </div>
     </div>
@@ -697,11 +685,11 @@ function ToolBtn({ active, standalone, children, className, ...props }: ToolBtnP
       type="button"
       className={cn(
         'flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-        standalone && 'bg-white/[0.04] border border-white/[0.07]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+        standalone && 'bg-surface-1 border border-border',
         active
-          ? 'bg-blue-500/20 text-blue-400'
-          : 'text-primary/35 hover:text-primary/75 hover:bg-white/[0.07]',
+          ? 'bg-accent/20 text-accent'
+          : 'text-secondary hover:text-primary/75 hover:bg-white/[0.07]',
         className,
       )}
       {...props}
@@ -747,30 +735,30 @@ function OHLCTooltip({ tooltip, isPositive }: { tooltip: TooltipData; isPositive
       style={{ top: pos.top, left: pos.left, width: TOOLTIP_W }}
       className="absolute z-30 pointer-events-none transition-all duration-75 ease-out"
     >
-      <div className="bg-[#1A2235]/95 backdrop-blur-xl border border-white/[0.15] rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
+      <div className="bg-surface border border-border rounded-xl shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
         {/* Top: Time */}
-        <div className="px-3.5 py-1.5 text-[9px] font-bold tracking-widest text-primary/50 uppercase border-b border-white/[0.05] bg-white/[0.02]">
+        <div className="px-3.5 py-1.5 text-[9px] font-bold tracking-widest text-secondary uppercase border-b border-border bg-white/[0.02]">
           {tooltip.time}
         </div>
 
         {/* Middle: Price & Change */}
-        <div className="px-3.5 py-2.5 border-b border-white/[0.05] flex items-center justify-between">
+        <div className="px-3.5 py-2.5 border-b border-border flex items-center justify-between">
           <span className={cn(
             'text-[17px] font-display font-bold tabular-nums tracking-tight',
-            isPositive ? 'text-emerald-400' : 'text-red-400',
+            isPositive ? 'text-success' : 'text-danger',
           )}>
             {fmt(tooltip.price)}
           </span>
           <span className={cn(
             'text-[10px] font-bold px-1.5 py-0.5 rounded-md',
-            isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400',
+            isPositive ? 'bg-emerald-500/10 text-success' : 'bg-red-500/10 text-danger',
           )}>
             {isPositive ? '+' : ''}{tooltip.pctChange.toFixed(2)}%
           </span>
         </div>
 
         {/* Bottom: OHLC */}
-        <div className="px-3.5 py-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5 bg-black/20">
+        <div className="px-3.5 py-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5 bg-surface-1">
           {[
             ['O', tooltip.open],
             ['H', tooltip.high],
@@ -778,7 +766,7 @@ function OHLCTooltip({ tooltip, isPositive }: { tooltip: TooltipData; isPositive
             ['C', tooltip.close],
           ].map(([lbl, val]) => (
             <div key={lbl as string} className="flex items-center justify-between">
-              <span className="text-[9px] font-bold text-primary/40">{lbl}</span>
+              <span className="text-[9px] font-bold text-secondary">{lbl}</span>
               <span className="text-[10px] font-mono font-medium text-primary/90 tabular-nums">{fmt(val as number)}</span>
             </div>
           ))}

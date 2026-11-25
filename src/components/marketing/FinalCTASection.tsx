@@ -1,66 +1,40 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Shield, CheckCircle, Zap, Sparkles } from 'lucide-react';
-import { Reveal } from '../ui/Motion';
-import { MagneticButton } from '../ui/MagneticButton';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { btnPrimary, btnOnInk } from './MarketingBits';
+import { TypedHeading } from './Perspective';
+import { Reveal } from './Typewriter';
+import { cn } from '../../lib/cn';
 
 export default function FinalCTASection() {
-  const navigate = useNavigate();
-
   return (
-    <section className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-20 pb-32 relative z-20" aria-label="Final Onboarding Conversion Trigger">
-      
-      <Reveal direction="up">
-        <div className="w-full rounded-[2.5rem] bg-gradient-to-br from-surface-1 via-surface-0 to-surface-1 border border-border-hover p-8 sm:p-14 md:p-20 shadow-floating relative overflow-hidden text-center flex flex-col items-center justify-center">
-          
-          {/* Ambient Lighting Background Core */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[140px] bg-gradient-to-tr from-accent/25 via-iris/20 to-transparent pointer-events-none -z-10" />
+    <section className="px-5 pb-16 sm:px-8 sm:pb-24" aria-label="Get started">
+      <div className="ink relative mx-auto max-w-[1200px] overflow-hidden rounded-3xl px-6 py-16 text-center shadow-raised sm:px-14 sm:py-24">
+        <div className="floor-grid floor-grid-ink pointer-events-none" aria-hidden="true" />
+        <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-[var(--brand-green)]/20 blur-[100px]" aria-hidden="true" />
 
-          {/* Verification Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-2 border border-border text-xs font-mono-stat font-bold text-iris mb-6">
-            <Sparkles size={14} />
-            <span>ZERO DOPAMINE · INSTITUTIONAL EXCELLENCE</span>
-          </div>
-
-          <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold text-primary tracking-tight max-w-3xl mb-6 leading-tight">
-            Ready to trade with verifiable algorithmic discipline?
-          </h2>
-
-          <p className="text-base sm:text-xl text-secondary max-w-2xl mb-10 leading-relaxed font-normal">
-            Stop letting psychological tilt and unverified intuition drain your trading capital. Synchronize your broker account in 30 seconds and activate your AI behavioral guardrails today.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto mb-8">
-            <MagneticButton
-              onClick={() => navigate('/signup')}
-              variant="primary"
-              className="w-full sm:w-auto px-10 py-5 text-base sm:text-lg font-extrabold shadow-[0_6px_36px_rgba(59,114,255,0.45)]"
-              magneticPull={0.25}
-            >
-              <span>Create Free Account Now</span>
-              <ArrowRight size={20} className="text-white/80" />
-            </MagneticButton>
-          </div>
-
-          {/* Risk Reversal Footer Credentials */}
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm font-semibold text-tertiary border-t border-border/60 pt-8 w-full max-w-2xl">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle size={16} className="text-success stroke-[2.5]" />
-              <span>Free forever tier available</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle size={16} className="text-success stroke-[2.5]" />
-              <span>No credit card required</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle size={16} className="text-success stroke-[2.5]" />
-              <span>30-second read-only setup</span>
-            </span>
-          </div>
-
+        <div className="relative">
+          <TypedHeading
+            cps={34}
+            start="top 80%"
+            className="mx-auto max-w-4xl font-display text-[clamp(34px,6vw,68px)] font-bold leading-[1.04] tracking-[-0.03em] text-white"
+            style={{ textWrap: 'balance' }}
+          >
+            Your next session starts with a plan you can check.
+          </TypedHeading>
+          <Reveal as="p" delay={1.2} start="top 80%" className="mx-auto mt-7 max-w-xl text-[18px] leading-[1.6] text-slate-300">
+            Log your first trade or connect a supported broker. See where your rules held and where they did not.
+          </Reveal>
+          <Reveal delay={1.4} start="top 85%" className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/signup" className={cn(btnPrimary, 'h-12 px-6 text-base')}>
+              Start free
+              <ArrowRight size={17} strokeWidth={2} />
+            </Link>
+            <Link to="/pricing" className={cn(btnOnInk, 'h-12 px-6 text-base')}>See pricing</Link>
+          </Reveal>
+          <p className="mt-4 text-[13px] text-slate-400">Free plan, no credit card</p>
         </div>
-      </Reveal>
-
+      </div>
     </section>
   );
 }

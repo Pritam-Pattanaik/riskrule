@@ -48,14 +48,14 @@ export function FlowHeader() {
     'text-[rgb(var(--color-warning))] bg-[rgba(var(--color-warning),0.12)] border-[rgba(var(--color-warning),0.25)]';
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 desk-panel">
       {/* Left: Title block */}
       <div>
         <h1 className="text-[22px] font-bold text-primary leading-none tracking-tight">
-          Options Flow
+          Flow
         </h1>
         <p className="text-secondary text-[13px] mt-1">
-          Real-time institutional options flow and market insights
+          Read open interest, put/call ratios and key levels for your selected index.
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export function FlowHeader() {
         {/* Index selector */}
         <div className="relative">
           <select
-            value={selectedIndex}
+            aria-label="Flow index" value={selectedIndex}
             onChange={e => setSelectedIndex(e.target.value)}
             className="appearance-none pl-3 pr-7 py-1.5 bg-[rgb(var(--color-surface-1))] text-[rgb(var(--color-text-primary))] border border-[rgba(var(--color-border-rgb),0.10)] rounded-[8px] text-[13px] font-semibold cursor-pointer hover:border-[rgba(var(--color-border-rgb),0.20)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--color-iris))] transition-colors"
           >

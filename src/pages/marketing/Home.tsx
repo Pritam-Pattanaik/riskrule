@@ -1,20 +1,22 @@
 import React, { useEffect } from 'react';
 import HeroSection from '../../components/marketing/HeroSection';
 import TrustTicker from '../../components/marketing/TrustTicker';
-import DisciplineSimulatorSection from '../../components/marketing/DisciplineSimulatorSection';
+import BehavioursFloorSection from '../../components/marketing/BehavioursFloorSection';
+import RealityStatSection from '../../components/marketing/RealityStatSection';
+import LeakCalculatorSection from '../../components/marketing/LeakCalculatorSection';
+import WhoItsForSection from '../../components/marketing/WhoItsForSection';
 import TraderJourneySection from '../../components/marketing/TraderJourneySection';
-import EdgeLeakCheckerSection from '../../components/marketing/EdgeLeakCheckerSection';
 import InteractiveDashboard from '../../components/marketing/InteractiveDashboard';
 import BentoGridSection from '../../components/marketing/BentoGridSection';
-import MarketNewsSection from '../../components/marketing/MarketNewsSection';
 import AICoachSection from '../../components/marketing/AICoachSection';
-import SocialProofSection from '../../components/marketing/SocialProofSection';
 import PricingSection from '../../components/marketing/PricingSection';
 import FAQSection from '../../components/marketing/FAQSection';
 import FinalCTASection from '../../components/marketing/FinalCTASection';
 
+// SocialProofSection is left out on purpose: its testimonials and headline figures
+// are unverified. Add it back once they are real and sourced.
+
 export default function Home() {
-  // Ensure view starts at top on direct navigation
   useEffect(() => {
     if (!window.location.hash) {
       window.scrollTo(0, 0);
@@ -22,51 +24,20 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="w-full relative overflow-hidden bg-canvas text-primary">
-      
-      {/* 01. Hero Positioning & Value Conversion Section */}
+    <div className="relative w-full overflow-hidden bg-canvas text-primary">
       <HeroSection />
-
-      {/* 02. Institutional Broker Ecosystem Marquee */}
       <TrustTicker />
-
-      {/* 03. Live Product Preview & Interactive Command Center Showcase */}
-      <div id="workspace" className="pt-10 scroll-mt-20">
-        <InteractiveDashboard />
-      </div>
-
-      {/* 04. Concrete Trader Benefits & Engineering Pillars Bento Grid */}
-      <BentoGridSection />
-
-      {/* 05. AI Behavioral Coach Deep-Dive Engine */}
-      <AICoachSection />
-
-      {/* 06. Macroeconomic News Protection & Event Lockouts */}
-      <MarketNewsSection />
-
-      {/* 07. The 4-Step Blueprint to Trader Consistency */}
+      <RealityStatSection />
+      <BehavioursFloorSection />
+      <LeakCalculatorSection />
       <TraderJourneySection />
-
-      {/* 08. Interactive Discipline-to-Profit Simulator */}
-      <div id="discipline-simulator" className="pt-8 scroll-mt-20">
-        <DisciplineSimulatorSection />
-      </div>
-
-      {/* 09. Interactive Diagnostic: Where are you leaking capital right now? */}
-      <EdgeLeakCheckerSection />
-
-      {/* 10. Verified Social Proof & Audited Prop Performance */}
-      <SocialProofSection />
-
-      {/* 11. Transparent Investment Plans & ROI Calculator */}
+      <InteractiveDashboard />
+      <BentoGridSection />
+      <WhoItsForSection />
+      <AICoachSection />
       <PricingSection />
-
-      {/* 12. Objection Resolution FAQ Accordion Vault */}
       <FAQSection />
-
-      {/* 13. High-Conversion Closing Trigger */}
       <FinalCTASection />
-
     </div>
   );
 }

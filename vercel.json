@@ -22,8 +22,16 @@
       "destination": "/server/src/index.ts"
     },
     {
-      "source": "/(.*)",
+      "source": "/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/:page(workspace|features|ai-coach|prop-traders|pricing|faq|changelog|about|privacy|terms)",
+      "destination": "/:page.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/spa.html"
     }
   ]
 }

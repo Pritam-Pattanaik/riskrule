@@ -15,14 +15,6 @@ interface StatCardProps {
 }
 
 function StatCard({ label, value, sub, icon, accent = 'default', chart }: StatCardProps) {
-  const accentClasses: Record<string, string> = {
-    default: 'border-[rgba(var(--color-border-rgb),0.08)] bg-[rgb(var(--color-surface-1))]',
-    success: 'border-[rgba(var(--color-success),0.20)] bg-[rgba(var(--color-success),0.06)]',
-    danger:  'border-[rgba(var(--color-danger),0.20)]  bg-[rgba(var(--color-danger),0.06)]',
-    warning: 'border-[rgba(var(--color-warning),0.20)] bg-[rgba(var(--color-warning),0.06)]',
-    iris:    'border-[rgba(var(--color-iris),0.20)]    bg-[rgba(var(--color-iris),0.06)]',
-  };
-
   const labelColorClasses: Record<string, string> = {
     default: 'text-secondary',
     success: 'text-[rgb(var(--color-success))]',
@@ -32,7 +24,7 @@ function StatCard({ label, value, sub, icon, accent = 'default', chart }: StatCa
   };
 
   return (
-    <div className={`flow-card p-4 flex flex-col gap-2 min-w-0 rounded-[12px] border ${accentClasses[accent]}`}>
+    <div className="desk-panel min-w-0 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <p className={`flow-stat-label ${labelColorClasses[accent]}`}>{label}</p>
         {icon && <div className="opacity-70 shrink-0">{icon}</div>}
@@ -151,7 +143,7 @@ export function FlowStatCards() {
         value={<span className="text-[20px] font-extrabold uppercase tracking-tight">{overallBias}</span>}
         sub={
           <div className="w-full space-y-1.5 mt-1">
-            <span className="text-[12px] text-secondary">{agreementScore}% conviction</span>
+            <span className="text-[12px] text-secondary">{agreementScore}% indicator agreement</span>
             <MoodGauge bias={overallBias} />
           </div>
         }

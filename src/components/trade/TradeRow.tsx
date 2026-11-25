@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, Activity, Edit2, AlertCircle, BrainCircuit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trade } from '../../types';
+import { Trade, Strategy } from '../../types';
 import { formatCurrency } from '../../lib/analytics';
 import DisciplineRater from '../ui/DisciplineRater';
 import { TableRow, TableCell } from '../ui/Table';
+import { notify } from '../../lib/notify';
 import { cn } from '../../lib/cn';
 import { Button } from '../ui/Button';
 
@@ -14,47 +15,29 @@ interface TradeRowProps {
   onEdit?: (trade: Trade) => void;
   isSelected?: boolean;
   onToggleSelect?: () => void;
+  strategies?: Strategy[];
   onUpdateTrade?: (id: string, updates: Partial<Trade>) => Promise<void>;
 }
 
-export default function TradeRow({ trade, onEdit, isSelected, onToggleSelect, onUpdateTrade }: TradeRowProps) {
+export default function TradeRow({ trade, onEdit, isSelected, onToggleSelect, onUpdateTrade, strategies }: TradeRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const [isEditingStrategy, setIsEditingStrategy] = useState(false);
-  const [strategyInput, setStrategyInput] = useState(trade.strategyName || '');
-  
-  const [isSuccess, setIsSuccess] = useState(false);
-  const strategyInputRef = useRef<HTMLInputElement>(null);
+  const [savingStrategy, setSavingStrategy] = useState(false);
   const navigate = useNavigate();
 
   const isProfit = trade.netPnl >= 0;
 
-  useEffect(() => {
-    if (isEditingStrategy && strategyInputRef.current) {
-      strategyInputRef.current.focus();
-      strategyInputRef.current.select();
-    }
-  }, [isEditingStrategy]);
-
-  const handleStrategySave = async () => {
-    const trimmed = strategyInput.trim();
-    if (trimmed !== trade.strategyName && onUpdateTrade) {
-      await onUpdateTrade(trade.id, { strategyName: trimmed });
-      setIsSuccess(true);
-      setTimeout(() => setIsSuccess(false), 1500);
-    }
-    setIsEditingStrategy(false);
-  };
-
-  const handleStrategyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleStrategySave();
-    } else if (e.key === 'Escape') {
-      setIsEditingStrategy(false);
-      setStrategyInput(trade.strategyName || '');
+  const changeStrategy = async (id: string) => {
+    if (!onUpdateTrade) return;
+    setSavingStrategy(true);
+    try {
+      await onUpdateTrade(trade.id, { strategyId: id || null });
+    } catch {
+      notify.error('Could not update the strategy');
+    } finally {
+      setSavingStrategy(false);
     }
   };
-
 
   return (
     <>
@@ -103,30 +86,13 @@ export default function TradeRow({ trade, onEdit, isSelected, onToggleSelect, on
           </div>
         </TableCell>
 
-        <TableCell 
-          className="text-secondary text-sm font-medium max-w-[120px] truncate cursor-pointer group/strategy"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditingStrategy(true);
-          }}
-        >
-          {isEditingStrategy ? (
-            <input
-              ref={strategyInputRef}
-              type="text"
-              value={strategyInput}
-              onChange={e => setStrategyInput(e.target.value)}
-              onBlur={handleStrategySave}
-              onKeyDown={handleStrategyKeyDown}
-              className="w-full h-6 px-1 py-0 text-sm bg-surface text-primary border border-accent rounded outline-none focus:ring-2 focus:ring-accent/50"
-            />
-          ) : trade.strategyName ? (
-            <span className="text-secondary group-hover/strategy:text-primary transition-colors">{trade.strategyName}</span>
-          ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded border border-dashed border-border-subtle/40 text-[10px] font-bold uppercase tracking-widest text-secondary/30 group-hover:text-secondary group-hover:border-border-subtle transition-colors">
-              + Add Strategy
-            </span>
-          )}
+        <TableCell onClick={e => e.stopPropagation()}>
+          <select aria-label={'Strategy for ' + trade.symbol} className="max-w-32 rounded border border-primary/10 bg-surface px-1 py-1 text-xs text-primary"
+            value={trade.strategyId ?? ''} disabled={savingStrategy || !strategies || !onUpdateTrade}
+            onChange={e => changeStrategy(e.target.value)}>
+            <option value="">No strategy</option>
+            {strategies?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
         </TableCell>
 
         <TableCell className="text-secondary font-mono text-sm text-right">

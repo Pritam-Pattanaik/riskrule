@@ -163,7 +163,7 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
         <div className="hidden md:flex items-center gap-2 shrink-0">
           {/* Live context badge */}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-1/80 border border-border text-[10px] font-mono text-tertiary">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_ease-in-out_infinite]" />
+            <div className="hidden" />
             {trades?.length || 0}T · {entries?.length || 0}J
           </div>
 
@@ -301,7 +301,7 @@ export default function AIChatWorkspace({ conversationId, showInsights, onToggle
       </div>
 
       {/* ── Input Area ── */}
-      <div className="shrink-0 px-4 pb-4 pt-3 bg-gradient-to-t from-canvas via-canvas/98 to-transparent">
+      <div className="shrink-0 px-4 pb-4 pt-3 border-t border-border bg-surface">
         <div className="max-w-2xl mx-auto">
           <SmartInput
             onSubmit={(text) => sendMessage(text)}

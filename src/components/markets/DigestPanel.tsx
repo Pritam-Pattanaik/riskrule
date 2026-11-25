@@ -16,73 +16,10 @@ const DIR_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: s
 // ─── Empty / Not-Yet-Generated State ─────────────────────────────────────────
 
 function DigestEmptyState({ message }: { message?: string }) {
-  const now = new Date();
-  const istHour = (now.getUTCHours() + 5) % 24 + (now.getUTCMinutes() >= 30 ? 0.5 : 0);
-  const isPreMarket = istHour < 7.5;
-
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      {/* Icon */}
-      <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
-        style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}
-      >
-        <Calendar size={28} className="text-blue-400/70" />
-      </div>
-
-      {/* Title */}
-      <h3 className="text-base font-bold text-primary/70 mb-2">
-        {isPreMarket ? 'Digest Preparing…' : 'Pre-Market Digest'}
-      </h3>
-
-      {/* Message */}
-      <p className="text-sm text-primary/35 leading-relaxed max-w-xs mb-6">
-        {message ?? 'Pre-market digest not yet generated for today. Check back at 7:30 AM IST.'}
-      </p>
-
-      {/* Schedule info */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 rounded-xl mb-6"
-        style={{ background: 'rgba(var(--color-border-rgb),0.03)', border: '1px solid rgba(var(--color-border-rgb),0.07)' }}
-      >
-        <Clock size={14} className="text-blue-400/60 flex-shrink-0" />
-        <div className="text-left">
-          <p className="text-[11px] font-semibold text-primary/50">Published daily at</p>
-          <p className="text-[13px] font-bold text-primary/70">7:30 AM IST — Trading Days</p>
-        </div>
-      </div>
-
-      {/* What to expect */}
-      <div
-        className="w-full max-w-sm rounded-xl p-4 text-left"
-        style={{ background: 'rgba(var(--color-border-rgb),0.02)', border: '1px solid rgba(var(--color-border-rgb),0.06)' }}
-      >
-        <p className="text-[10px] font-bold uppercase tracking-wider text-primary/25 mb-3">Digest Includes</p>
-        <div className="flex flex-col gap-2">
-          {[
-            'Breaking overnight news with sector impact',
-            'Global market movements (US, EU, Asia)',
-            'RBI / SEBI regulatory updates',
-            'Earnings & results summary',
-            'AI-scored sentiment per sector',
-          ].map((item, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
-                style={{ background: 'rgba(139,92,246,0.15)' }}>
-                <span className="text-[8px] text-violet-400 font-bold">{i + 1}</span>
-              </span>
-              <p className="text-[12px] text-primary/40">{item}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="mt-6 rounded-lg px-3 py-2 w-full max-w-sm" style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.1)' }}>
-        <p className="text-[10px] text-amber-400/50 text-center">⚠️ For educational use only. Not investment advice.</p>
-      </div>
-    </div>
-  );
+  return <div className="space-y-2 py-5">
+    <h2 className="text-lg font-semibold">Daily digest</h2>
+    <p className="text-sm text-secondary">{message || 'Today’s pre-market digest is not available yet.'}</p>
+  </div>;
 }
 
 // ─── Digest Item Card ─────────────────────────────────────────────────────────
@@ -100,7 +37,7 @@ function DigestItem({ item, index }: { item: any; index: number }) {
     >
       {/* Index + Direction icon */}
       <div className="flex flex-col items-center gap-1 flex-shrink-0">
-        <span className="text-[10px] text-primary/20 font-mono">{String(index + 1).padStart(2, '0')}</span>
+        <span className="text-[10px] text-secondary font-mono">{String(index + 1).padStart(2, '0')}</span>
         <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: cfg.bg }}>
           <Icon size={11} style={{ color: cfg.color }} />
         </div>
@@ -153,13 +90,13 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
               <BookOpen size={14} className="text-violet-400" />
               <span className="text-sm font-bold text-primary/85">Pre-Market Digest</span>
             </div>
-            <p className="text-[12px] text-primary/40">
+            <p className="text-[12px] text-secondary">
               {allItems.length} events · {sectors.length} sectors analysed
             </p>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="text-[10px] text-primary/30 mb-0.5">Generated</p>
-            <p className="text-[12px] font-bold text-primary/60">
+            <p className="text-[10px] text-secondary mb-0.5">Generated</p>
+            <p className="text-[12px] font-bold text-secondary">
               {digest?.generatedAt
                 ? new Date(digest.generatedAt).toLocaleTimeString('en-IN', {
                     hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata',
@@ -171,7 +108,7 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
 
         {/* Dominant sentiment bar */}
         <div className="mt-3 pt-3 flex items-center gap-2" style={{ borderTop: '1px solid rgba(var(--color-border-rgb),0.06)' }}>
-          <span className="text-[11px] text-primary/30">Overall Tone:</span>
+          <span className="text-[11px] text-secondary">Overall Tone:</span>
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: domColor }}>
             <DomIcon size={11} />
             {dominant.charAt(0).toUpperCase() + dominant.slice(1)}
@@ -191,7 +128,7 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
       {/* Active sectors */}
       {sectors.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-primary/25 mb-2.5">Active Sectors</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-secondary mb-2.5">Active Sectors</p>
           <div className="flex flex-wrap gap-2">
             {sectors.map(s => (
               <span
@@ -219,7 +156,7 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
             >
               <Icon size={14} className="mx-auto mb-1" style={{ color: cfg.color }} />
               <p className="text-lg font-bold tabular-nums" style={{ color: cfg.color }}>{count as number}</p>
-              <p className="text-[10px] text-primary/30 capitalize">{dir}</p>
+              <p className="text-[10px] text-secondary capitalize">{dir}</p>
             </div>
           );
         })}
@@ -227,7 +164,7 @@ function DigestContent({ digest, allItems, sectors }: { digest: any; allItems: a
 
       {/* News items */}
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-primary/25 mb-2.5">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-secondary mb-2.5">
           All Items ({allItems.length})
         </p>
         <div className="flex flex-col gap-2">

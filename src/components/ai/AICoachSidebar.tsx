@@ -324,7 +324,7 @@ export default function AICoachSidebar() {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-[72px] left-3 z-40 w-8 h-8 rounded-lg bg-surface-0 border border-border flex items-center justify-center shadow-sm hover:bg-surface-1 transition-colors"
+        className="lg:hidden fixed top-[62px] left-3 z-40 w-8 h-8 rounded-lg bg-surface-0 border border-border flex items-center justify-center shadow-sm hover:bg-surface-1 transition-colors"
         aria-label="Open conversation history"
       >
         <Menu className="w-4 h-4 text-secondary" />
@@ -339,10 +339,7 @@ export default function AICoachSidebar() {
       )}
 
       {/* Mobile drawer */}
-      <div className={cn(
-        "lg:hidden fixed top-0 left-0 z-50 h-full w-[260px] bg-surface-0 border-r border-border flex flex-col shadow-2xl transition-transform duration-300 ease-in-out",
-        mobileOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      {mobileOpen && <div className="lg:hidden fixed top-0 left-0 z-50 h-full w-[260px] bg-surface-0 border-r border-border flex flex-col shadow-2xl">
         <div className="flex items-center justify-between px-3 pt-4 pb-2">
           <span className="text-xs font-bold text-primary">History</span>
           <button onClick={() => setMobileOpen(false)} className="p-1 rounded-lg hover:bg-surface-1 text-tertiary hover:text-primary transition-colors" aria-label="Close sidebar">
@@ -352,10 +349,10 @@ export default function AICoachSidebar() {
         <div className="flex-1 flex flex-col min-h-0">
           <SidebarContent onClose={() => setMobileOpen(false)} />
         </div>
-      </div>
+      </div>}
 
       {/* Desktop sidebar — always visible */}
-      <div className="hidden lg:flex flex-col h-full w-[240px] xl:w-[260px] bg-surface-0 border-r border-border shrink-0">
+      <div className="hidden lg:flex flex-col h-full w-[200px] xl:w-[220px] bg-surface-0 border-r border-border shrink-0">
         <SidebarContent />
       </div>
     </>

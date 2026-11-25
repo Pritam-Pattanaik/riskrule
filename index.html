@@ -1,58 +1,26 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <meta name="theme-color" content="#090b12" />
-    
-    <!-- Comprehensive SEO & Metadata -->
-    <title>RiskRule — Institutional Trading Journal & AI Behavioral Coach for Pro Traders</title>
-    <meta name="description" content="Master your trading psychology with RiskRule. Automated broker synchronization, advanced mathematical analytics, and an AI behavioral coach engineered to protect funded prop traders and quantitative speculators." />
-    <meta name="keywords" content="trading journal, AI trading coach, futures trading, quantitative analytics, funded trader, FTMO, Apex Trader Funding, trading discipline, algorithmic edge" />
-    <meta name="author" content="RiskRule Inc." />
-    <link rel="canonical" href="https://riskrule.app" />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://riskrule.app/" />
-    <meta property="og:title" content="RiskRule — Institutional Trading Journal & AI Behavioral Coach" />
-    <meta property="og:description" content="Master your trading psychology with RiskRule. Automated broker synchronization, advanced mathematical analytics, and an AI behavioral coach engineered for professional traders." />
-    <meta property="og:image" content="https://riskrule.app/og-image.png" />
-    <meta property="og:locale" content="en_US" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://riskrule.app/" />
-    <meta name="twitter:title" content="RiskRule — Institutional Trading Journal & AI Behavioral Coach" />
-    <meta name="twitter:description" content="Master your trading psychology with RiskRule. Automated broker synchronization, advanced mathematical analytics, and an AI behavioral coach engineered for professional traders." />
-    <meta name="twitter:image" content="https://riskrule.app/og-preview.jpg" />
-
-    <!-- Structured JSON-LD Application Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "RiskRule",
-      "applicationCategory": "FinanceApplication",
-      "operatingSystem": "Web, iOS, Android, macOS, Windows",
-      "description": "Institutional quantitative trading journal and AI behavioral discipline coach featuring automated synchronization with major brokerages and proprietary funding firms.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0.00",
-        "priceCurrency": "USD",
-        "description": "Free starter tier available with instant API connectivity."
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "ratingCount": "1420",
-        "bestRating": "5"
-      }
-    }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F8FAFC" />
+    <script>
+      document.documentElement.classList.add('js');
+      try {
+        if (localStorage.getItem('tv-theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.querySelector('meta[name="theme-color"]').content = '#0F172A';
+        }
+      } catch {}
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&family=Geist:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet" />
+    <title>RiskRule</title>
+    <!-- page-metadata -->
   </head>
   <body class="bg-canvas text-primary antialiased selection:bg-iris/20 selection:text-primary">
     <div id="root"></div>
