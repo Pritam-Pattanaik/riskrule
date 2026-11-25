@@ -244,7 +244,7 @@ export async function synthesizeSpeech(options: TTSOptions): Promise<TTSResult> 
       try {
         const errObj = JSON.parse(response.body);
         if (errObj.error?.message) parsedErr = errObj.error.message;
-      } catch {}
+      } catch { /* non-JSON error body: keep the raw error message */ }
       throw new Error(`TTS synthesis failed: ${parsedErr}`);
     }
 
@@ -334,7 +334,7 @@ export async function transcribeSpeech(options: STTOptions): Promise<STTResult> 
     try {
       const errObj = JSON.parse(response.body);
       if (errObj.error?.message) parsedErr = errObj.error.message;
-    } catch {}
+    } catch { /* non-JSON error body: keep the raw error message */ }
     throw new Error(parsedErr);
   }
 

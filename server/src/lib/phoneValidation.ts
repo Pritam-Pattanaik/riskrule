@@ -9,7 +9,7 @@
 export function normalizePhoneNumber(phone: string): string {
   if (!phone || typeof phone !== 'string') return '';
   // Remove spaces, tabs, dashes, parentheses, dots
-  let cleaned = phone.trim().replace(/[\s\-\(\)\.]/g, '');
+  let cleaned = phone.trim().replace(/[\s\-().]/g, '');
   // If starts with 00 (international prefix), replace with +
   if (cleaned.startsWith('00')) {
     cleaned = '+' + cleaned.slice(2);

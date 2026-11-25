@@ -134,7 +134,7 @@ export async function syncDeltaExchangeTrades(
           if (errJson.error?.message || errJson.message) {
             cleanError = `Delta Exchange: ${errJson.error?.message || errJson.message}`;
           }
-        } catch {}
+        } catch { /* non-JSON error body: keep the raw error message */ }
         throw new Error(cleanError);
       }
 

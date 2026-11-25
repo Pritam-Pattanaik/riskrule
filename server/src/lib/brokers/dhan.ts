@@ -217,7 +217,7 @@ export async function syncDhanTrades(
             if (errJson.errorMessage) {
               cleanError = `DhanHQ: ${errJson.errorMessage}`;
             }
-          } catch(e) {}
+          } catch { /* non-JSON error body: keep the raw error message */ }
           throw new Error(cleanError);
         }
 
@@ -286,7 +286,7 @@ export async function syncDhanTrades(
       }
     }
 
-    let allTrades = Array.from(uniqueExecutions.values());
+    const allTrades = Array.from(uniqueExecutions.values());
 
     // Sort chronologically by resolved timestamp
     allTrades.sort((a, b) => {
@@ -341,7 +341,7 @@ export async function syncDhanTrades(
         const execTime = parseDhanTime(getBestTime(rawTrade));
 
         // Traded quantity in Dhan API v2 is already in actual contract units (barrels, shares, etc.).
-        let tradeQty = parseInt(rawTrade.tradedQuantity || 0, 10);
+        const tradeQty = parseInt(rawTrade.tradedQuantity || 0, 10);
 
         let parsedBrokerage = parseFloat(rawTrade.brokerageCharges || 0);
         if (

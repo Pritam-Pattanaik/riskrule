@@ -25,11 +25,11 @@ async function getOrCompute<T>(key: string, ttlSec: number, computeFn: () => Pro
     if (cached) {
       return JSON.parse(cached);
     }
-  } catch {}
+  } catch { /* cache unavailable or corrupt entry: recompute below */ }
   const result = await computeFn();
   try {
     await cache.set(key, JSON.stringify(result), ttlSec);
-  } catch {}
+  } catch { /* cache write failure is non-fatal: still return the computed result */ }
   return result;
 }
 

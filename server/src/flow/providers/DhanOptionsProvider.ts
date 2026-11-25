@@ -70,7 +70,7 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
           const meta = typeof broker.metadata === 'string' ? JSON.parse(broker.metadata) : broker.metadata;
           token = meta.accessToken || meta.token || meta.apiKey;
           if (!clientId) clientId = meta.clientId;
-        } catch {}
+        } catch { /* malformed broker metadata: continue without metadata credentials */ }
       }
 
       if (clientId && token) {
@@ -172,7 +172,7 @@ export class DhanOptionsProvider implements IOptionsDataProvider {
           return nearest;
         }
       }
-    } catch (_e) {}
+    } catch { /* network/parse failure: fall back to the computed expiry below */ }
 
     return fallbackExpiry;
   }
