@@ -303,20 +303,19 @@ export default function HeroSection() {
           className="mx-auto max-w-[1000px] font-display text-[clamp(42px,7.4vw,92px)] font-bold leading-[1.02] tracking-[-0.03em] text-primary"
           style={{ textWrap: 'balance' }}
         >
-          Find the trade that broke your day.
+          Master your trading psychology—in real time.
         </TypedHeading>
 
         <Reveal as="p" trigger="load" delay={1.2} className={cn(leadClass, 'mx-auto mt-8 max-w-[38rem]')}>
-          RiskRule syncs your Dhan, Angel One and Delta Exchange trades, checks every session against the limits you set,
-          and shows which habits are costing you money.
+          Most journals only tell you what went wrong after the market closes. RiskRule tracks your behavior, emotions, and discipline live—coaching you before one bad habit ruins your day.
         </Reveal>
 
         <Reveal trigger="load" delay={1.4} className="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-4">
           <Link to="/signup" className={cn(btnPrimary, 'h-12 px-6 text-base')}>
-            Start free
+            Start Free
             <ArrowRight size={17} strokeWidth={2} />
           </Link>
-          <a href="#leak" className={cn(btnSecondary, 'h-12 px-6 text-base')}>What is it costing me?</a>
+          <a href="#leak" className={cn(btnSecondary, 'h-12 px-6 text-base')}>See What Bad Habits Cost Me</a>
         </Reveal>
         <Reveal as="p" trigger="load" delay={1.6} className="mt-4 text-[13px] text-tertiary">Free plan. No credit card needed.</Reveal>
       </div>

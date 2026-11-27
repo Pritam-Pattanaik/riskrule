@@ -3,8 +3,8 @@ const previewImage = `${siteUrl}/og-image.png`;
 
 export const publicPages = {
   '/': {
-    title: 'RiskRule | Trading Journal, P&L Analytics & AI Coach',
-    description: 'Import broker trades, track P&L and trading discipline, and review your trading habits with Lunar AI. Start your RiskRule trading journal for free.',
+    title: 'RiskRule | Real-Time Trading Psychology & Discipline Coach',
+    description: 'Master your trading psychology in real time. RiskRule tracks your behavior, emotions, and discipline live—coaching you before one bad habit ruins your day.',
   },
   '/workspace': {
     title: 'Trading Journal Workspace | RiskRule',

@@ -20,10 +20,10 @@ export default function FinalCTASection() {
             className="mx-auto max-w-4xl font-display text-[clamp(34px,6vw,68px)] font-bold leading-[1.04] tracking-[-0.03em] text-white"
             style={{ textWrap: 'balance' }}
           >
-            Your next session starts with a plan you can check.
+            Master your discipline before the next bad habit hits.
           </TypedHeading>
           <Reveal as="p" delay={1.2} start="top 80%" className="mx-auto mt-7 max-w-xl text-[18px] leading-[1.6] text-slate-300">
-            Log your first trade or connect a supported broker. See where your rules held and where they did not.
+            Connect your broker or enter trades manually. Track your behavior live and get coached in real time.
           </Reveal>
           <Reveal delay={1.4} start="top 85%" className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Link to="/signup" className={cn(btnPrimary, 'h-12 px-6 text-base')}>

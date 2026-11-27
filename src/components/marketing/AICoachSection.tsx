@@ -5,10 +5,10 @@ import { container, btnPrimary, SampleTag } from './MarketingBits';
 import { cn } from '../../lib/cn';
 
 const behaviours = [
-  'Spots position sizes that jump out of line with your average',
-  'Flags entries in hours that have cost you money before',
-  'Suggests a pause after consecutive losses',
-  'Scores each decision against your own rules',
+  'Alerts you the moment your lot size jumps after a loss',
+  'Flags entries during the tilt hours where your focus drops',
+  'Prompts a pause before revenge trading sets in',
+  'Gives you a daily Discipline Score against your own plan',
 ];
 
 /** Full-width ink band so the coach reads as a different room from the journal. */
@@ -20,10 +20,10 @@ export default function AICoachSection() {
 
         <div className="lg:col-span-6">
           <h2 className="font-display text-[32px] font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-[42px]" style={{ textWrap: 'balance' }}>
-            Review your decisions with Lunar AI
+            Get coached in real time by Lunar AI
           </h2>
           <p className="mt-4 text-[17px] leading-7 text-slate-300">
-            The AI trading coach uses your journal to help you review position size, losing streaks, and the trades that broke your rules.
+            Lunar AI watches your trading behavior live, alerts you when fear, greed, or tilt take over, and reviews every session with you.
           </p>
 
           <ul className="mt-8 flex flex-col gap-3.5">
