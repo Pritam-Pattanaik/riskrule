@@ -5,14 +5,14 @@ import { UnfoldHeading } from './Perspective';
 import { Reveal, revealText, useTypewriter } from './Typewriter';
 import { cn } from '../../lib/cn';
 
-/** Each row is something a session review looks for, and the part of RiskRule that looks for it. */
+/** Six behavioral leaks RiskRule catches automatically. */
 const rows = [
-  { text: 'Traded past the daily limit', by: 'Daily loss limit' },
-  { text: 'Sized up after a loss', by: 'Position size against your average' },
-  { text: 'Re-entered seconds after a stop-out', by: 'Time between trades' },
-  { text: 'Took one trade too many', by: 'Trades per day rule' },
-  { text: 'Traded in your worst hour', by: 'Expectancy by hour' },
-  { text: 'Broke your own plan', by: 'Discipline score' },
+  { text: 'Breaking Limits', desc: 'Trading past your daily loss cap' },
+  { text: 'Tilt & Oversizing', desc: 'Jumping your lot size right after a loss' },
+  { text: 'Revenge Trading', desc: 'Re-entering the market too quickly' },
+  { text: 'Overtrading', desc: 'Taking low-quality trades out of boredom or FOMO' },
+  { text: 'Tilt Hours', desc: 'The exact times of day when your focus drops' },
+  { text: 'Discipline Score', desc: 'A clear daily rating of how well you stuck to your plan' },
 ];
 
 // Where each row starts in the single stream of typed characters.
@@ -33,10 +33,10 @@ export default function BehavioursFloorSection() {
       <div className={cn(container, 'relative grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16')}>
         <div>
           <UnfoldHeading className="font-display text-[34px] font-bold leading-[1.06] tracking-[-0.035em] text-white sm:text-[46px]" style={{ textWrap: 'balance' }}>
-            <span id="behaviours-title">Six ways traders break their own rules.</span>
+            <span id="behaviours-title">6 Behavioral Leaks RiskRule Catches Automatically</span>
           </UnfoldHeading>
           <Reveal as="p" delay={0.4} className="mt-5 max-w-md text-[17px] leading-7 text-slate-300">
-            Each one leaves a mark in your trade history. RiskRule looks for all six, in every session you import.
+            Each one shows up in your live behavior. RiskRule catches all six automatically while you trade.
           </Reveal>
         </div>
 
@@ -63,7 +63,7 @@ export default function BehavioursFloorSection() {
                   <p className="font-sans text-[19px] font-semibold leading-snug tracking-[-0.01em] text-white sm:text-[22px]">
                     {revealText(r.text, shown - starts[i], live)}
                   </p>
-                  <p className="mt-1 text-[13.5px] text-slate-400">Found by {r.by}</p>
+                  <p className="mt-1 text-[13.5px] text-slate-400">{r.desc}</p>
                 </div>
               </li>
             );

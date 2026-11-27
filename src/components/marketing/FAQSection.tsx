@@ -6,24 +6,24 @@ import { cn } from '../../lib/cn';
 
 const faqs = [
   {
-    q: 'Which brokers can I import trades from?',
-    a: 'RiskRule supports trade imports from Dhan, Angel One, and Delta Exchange. You can also enter trades manually in your journal.',
+    q: 'Which brokers can I connect to RiskRule?',
+    a: 'Connect Dhan, Angel One, or Delta Exchange—or enter trades manually. Charges and net P&L are calculated automatically.',
   },
   {
     q: 'How does RiskRule track my daily loss limit?',
-    a: 'Set your daily loss limit in your trading rules. The discipline review flags trades taken after your recorded losses crossed that limit.',
+    a: 'Set your daily loss cap in your discipline rules. RiskRule monitors your session live, alerts you the moment you cross your limit, and flags any trades taken afterward.',
   },
   {
-    q: 'Can I use the journal without connecting a broker?',
-    a: 'Yes. Add trades manually to track net P&L, strategy performance, and adherence to your trading rules.',
+    q: 'Can I use RiskRule without connecting a broker?',
+    a: 'Yes. Enter trades manually to track net P&L, behavioral leaks, discipline rules, and your daily Discipline Score.',
   },
   {
-    q: 'What can I track in my trading journal?',
-    a: 'You can track entry and exit prices, fees, net P&L, strategies, and notes about the decisions behind your trades.',
+    q: 'What can I track in RiskRule?',
+    a: 'You can track behavioral leaks like revenge trading, oversizing, overtrading, and tilt hours alongside your emotions, Discipline Score, charges, and net P&L.',
   },
   {
     q: 'How is the AI coach different from a trading bot?',
-    a: 'Lunar AI reviews your trading history and helps you identify habits such as sizing up after losses or trading outside your planned hours.',
+    a: 'Lunar AI never places trades for you. It watches your behavior in real time, alerts you when emotions take over, and reviews every session with you.',
   },
   {
     q: 'Can I cancel my subscription without losing my history?',
@@ -41,7 +41,7 @@ export default function FAQSection() {
         <header className="lg:col-span-4">
           <h2 className={h2Class}>Questions traders ask</h2>
           <p className="mt-4 text-[17px] leading-7 text-secondary">
-            Broker imports, trade reviews, and account settings.
+            Broker sync, real-time coaching, and account settings.
           </p>
           <div className="mt-6">
             <Link to="/faq" className={textLink}>

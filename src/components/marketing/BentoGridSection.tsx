@@ -19,16 +19,16 @@ export default function BentoGridSection() {
   return (
     <Section
       id="features"
-      title="See how your rules hold up"
-      lead="Compare each trading session with your risk limits and use the journal to review what happened."
+      title="Stay disciplined while the market is open"
+      lead="Track your live risk limits, get coached in real time, and spot the habits draining your account."
     >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
 
         <article className={cn(card, 'hover-lift flex flex-col justify-between gap-8 p-7 md:col-span-7')}>
           <div>
-            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Daily loss tracking</h3>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Live daily loss alerts</h3>
             <p className="mt-3 max-w-xl text-[15px] leading-6 text-secondary">
-              Set a daily loss limit. Your trade review shows where losses crossed the limit and flags trades taken afterward.
+              Set your daily loss cap. RiskRule monitors your session in real time and flags the moment you cross your limit—before one bad trade spirals.
             </p>
           </div>
           <div>
@@ -52,9 +52,9 @@ export default function BentoGridSection() {
 
         <article className="ink hover-lift flex flex-col justify-between gap-8 rounded-2xl border border-white/10 p-7 shadow-card md:col-span-5">
           <div>
-            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-white">Voice guidance</h3>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-white">Real-time voice coaching</h3>
             <p className="mt-3 text-[15px] leading-6 text-slate-300">
-              Listen to Lunar AI’s trade reviews and suggested next steps while you go through your journal.
+              Hear Lunar AI step in with calm, timely voice coaching when emotions run high, plus full session debriefs.
             </p>
           </div>
           <div>
@@ -71,9 +71,9 @@ export default function BentoGridSection() {
 
         <article className={cn(card, 'hover-lift flex flex-col justify-between gap-8 p-7 md:col-span-5')}>
           <div>
-            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Broker trade imports</h3>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Automatic broker sync</h3>
             <p className="mt-3 text-[15px] leading-6 text-secondary">
-              Bring trade history into your journal from Dhan, Angel One, or Delta Exchange. You can also enter trades manually.
+              Link Dhan, Angel One, or Delta Exchange—or enter trades manually. Charges and net P&amp;L are calculated automatically.
             </p>
           </div>
           <ul className="flex items-center gap-3 border-t border-primary/10 pt-4">
@@ -88,10 +88,9 @@ export default function BentoGridSection() {
 
         <article className={cn(card, 'hover-lift flex flex-col justify-between gap-8 p-7 md:col-span-7')}>
           <div>
-            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Expectancy by setup and hour</h3>
+            <h3 className="font-display text-[24px] font-semibold leading-tight tracking-tight text-primary">Tilt hours &amp; setup expectancy</h3>
             <p className="mt-3 max-w-xl text-[15px] leading-6 text-secondary">
-              Win rate hides more than it shows. RiskRule works out which setups and which times of day earn money and which
-              ones quietly drain the account.
+              Win rate hides more than it shows. RiskRule pinpoints the setups and hours where your focus holds—and the tilt hours that quietly drain your account.
             </p>
           </div>
           <div className="border-t border-primary/10 pt-4">
