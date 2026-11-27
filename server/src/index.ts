@@ -49,6 +49,7 @@ import flowRoutes from './routes/flow.routes';
 import voiceRoutes from './routes/voice';
 import affiliateRoutes from './routes/affiliate';
 import paymentRoutes from './routes/payment';
+import publicChatRoutes from './routes/publicChat';
 import { startNewsEngine, stopNewsEngine } from './news-engine';
 import { marketWorker } from './services/MarketWorker';
 import { flowDataWorker } from './flow/workers/FlowDataWorker';
@@ -165,6 +166,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/news-engine', newsEngineRoutes);
 app.use('/api/v1/flow', flowRoutes);
 app.use('/api/voice', voiceRoutes);
+app.use('/api/public-chat', publicChatRoutes);
 
 // Global Error Handler (catches CSRF errors and unhandled exceptions)
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
