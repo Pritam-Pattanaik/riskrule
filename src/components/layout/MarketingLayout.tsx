@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../ui/Logo';
 import { useUIStore } from '../../stores/uiStore';
 import BetaModal from '../marketing/BetaModal';
+import ChatbotWidget from '../chatbot/ChatbotWidget';
 import { container, btnPrimary } from '../marketing/MarketingBits';
 
 const navLinks = [
@@ -271,6 +272,9 @@ export default function MarketingLayout() {
       </AnimatePresence>
 
       <BetaModal />
+      <ChatbotWidget
+        liftOnMobile={!token && pastHero && !mobileMenuOpen && !location.pathname.startsWith('/privacy') && !location.pathname.startsWith('/terms')}
+      />
     </div>
   );
 }
