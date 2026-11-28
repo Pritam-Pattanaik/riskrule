@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -17,6 +17,9 @@ import { AsyncStateBoundary } from './components/ui/AsyncStateBoundary';
 import { useMarketQuoteStore } from './stores/marketQuoteStore';
 import { useSystemNotifications } from './hooks/useSystemNotifications';
 import { cn } from './lib/cn';
+import { SYSTEM_COLOR_QUERY } from './lib/workspaceAppearance';
+
+const useBrowserLayoutEffect = typeof window === 'undefined' ? useEffect : React.useLayoutEffect;
 
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Trades = React.lazy(() => import('./pages/Trades'));
@@ -62,7 +65,7 @@ const SystemHealth = React.lazy(() => import('./pages/SystemHealth'));
 
 function MainLayout() {
   const [searchOpen, setSearchOpen] = React.useState(false);
-  const { desktopSidebarExpanded } = useUIStore();
+  const desktopSidebarExpanded = useUIStore(state => state.desktopSidebarExpanded);
   const initSSE = useMarketQuoteStore(s => s.initSSE);
 
   // Initialize singleton SSE connection once per authenticated session (MKT-01 fix)
@@ -129,6 +132,19 @@ function SessionSync() {
 }
 
 export default function App() {
+  const { pathname } = useLocation();
+  useBrowserLayoutEffect(() => {
+    useUIStore.getState().syncThemePath(pathname);
+  }, [pathname]);
+  useEffect(() => {
+    const query = window.matchMedia?.(SYSTEM_COLOR_QUERY);
+    if (!query) return;
+    const sync = () => useUIStore.getState().syncSystemTheme(query.matches);
+    sync();
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, []);
+
   // Ctrl+Shift+D — navigate to developer diagnostics page
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -10,7 +10,16 @@
     <script>
       document.documentElement.classList.add('js');
       try {
-        if (localStorage.getItem('tv-theme') === 'dark') {
+        let dark = localStorage.getItem('tv-theme') === 'dark';
+        try {
+          if (/^\/app(?:\/|$)/i.test(location.pathname) && !/^\/app\/admin(?:\/|$)/i.test(location.pathname)) {
+            const saved = JSON.parse(localStorage.getItem('riskrule-workspace-appearance'));
+            if (['light', 'warm'].includes(saved?.theme)) dark = false;
+            if (['dark', 'midnight'].includes(saved?.theme)) dark = true;
+            if (saved?.theme === 'system') dark = matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+        } catch {}
+        if (dark) {
           document.documentElement.classList.add('dark');
           document.querySelector('meta[name="theme-color"]').content = '#0F172A';
         }

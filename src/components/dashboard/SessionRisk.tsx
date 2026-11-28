@@ -28,7 +28,7 @@ export default function SessionRisk({ userId, opened, net }: { userId: string; o
     queryKey: ['dashboard-rules', userId], queryFn: () => api.get<TradingRules | null>('/trading-rules'), staleTime: 0,
   });
   return (
-    <section className="flex flex-col rounded-xl bg-[#0F172A] p-5 text-white dark:border dark:border-white/15 sm:p-6" aria-labelledby="session-title">
+    <section className="flex flex-col rounded-xl bg-[var(--workspace-risk-background,#0F172A)] p-5 text-white dark:border dark:border-white/15 sm:p-6" aria-labelledby="session-title">
       <div className="flex items-center gap-2"><ShieldCheck size={20} className="text-emerald-300" /><h2 id="session-title" className="font-semibold">Today’s risk limits</h2></div>
       <p className="mt-6 text-sm text-slate-300">Realized P&amp;L today</p>
       <p className={'mt-1 text-3xl font-semibold tabular-nums ' + (net < 0 ? 'text-red-300' : net > 0 ? 'text-emerald-300' : 'text-white')}>{net > 0 ? '+' : ''}{formatCurrency(net)}</p>

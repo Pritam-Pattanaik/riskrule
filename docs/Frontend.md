@@ -186,6 +186,12 @@ interface TradeStore {
 | `reflectionStore` | `reflectionStore.ts` | Post-market reflections |
 | `tradingRulesStore` | `tradingRulesStore.ts` | Risk rule enforcement |
 
+### Workspace appearance
+
+Open **Settings → Appearance** or use **Appearance** in the profile menu and command palette. Choose RiskRule Light, RiskRule Dark, Midnight, Warm Slate, or Match system. The preview shows the selected theme, accent, and market chart colors before applying them.
+
+Appearance is stored per browser in `riskrule-workspace-appearance`. The workspace uses the legacy `tv-theme` preference when no saved appearance exists. Presets and chart color schemes are defined in [workspaceAppearance.ts](../src/lib/workspaceAppearance.ts). Market chart preferences control rising and falling candles. Ledger P&L and risk indicators use their own color tokens.
+
 ---
 
 ## 6. Routing Structure

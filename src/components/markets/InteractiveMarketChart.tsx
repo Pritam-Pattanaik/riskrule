@@ -42,6 +42,8 @@ import {
 import { cn } from '../../lib/cn';
 import { useLiveChartData, ChartCandle } from '../../hooks/useLiveMarketData';
 import { useLiveMarketData } from '../../hooks/useMarketData';
+import { getWorkspacePalette } from '../../lib/workspaceAppearance';
+import { useUIStore } from '../../stores/uiStore';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -57,14 +59,26 @@ const SYMBOLS = [
 
 // ─── Theme helpers ────────────────────────────────────────────────────────────
 
-const CHART_COLORS = {
-  up: '#22C55E',
-  down: '#EF4444',
-  grid: 'rgba(128,145,160,0.15)',
-  text: '#6B7280',
-  accent: '#0E9F6E',
-  bg: 'rgba(0,0,0,0)',
-};
+const CHART_GRID = 'rgba(128,145,160,0.15)';
+
+function chartThemeOptions(palette: ReturnType<typeof getWorkspacePalette>) {
+  const crosshairLine = {
+    color: palette.accent,
+    width: 1 as const,
+    style: LineStyle.Dashed,
+    labelBackgroundColor: palette.text,
+  };
+
+  return {
+    layout: {
+      background: { type: ColorType.Solid as const, color: 'transparent' },
+      textColor: palette.secondary,
+      fontFamily: 'Geist, system-ui, sans-serif',
+      fontSize: 11,
+    },
+    crosshair: { vertLine: crosshairLine, horzLine: crosshairLine },
+  };
+}
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
 
@@ -99,6 +113,9 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
   const [magnet, setMagnet]       = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [tooltip, setTooltip]     = useState<TooltipData | null>(null);
+  const appearance = useUIStore(state => state.appearance);
+  const systemDark = useUIStore(state => state.systemDark);
+  const palette = useMemo(() => getWorkspacePalette(appearance, systemDark), [appearance, systemDark]);
   // Track when data was last fetched (MKT-06 fix)
   const [dataFetchedAt, setDataFetchedAt] = useState<Date | null>(null);
 
@@ -191,38 +208,18 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     if (!containerRef.current) return;
 
     const chart = createChart(containerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: CHART_COLORS.bg },
-        textColor:  CHART_COLORS.text,
-        fontFamily: 'Inter, "DM Sans", system-ui, sans-serif',
-        fontSize:   11,
-      },
+      ...chartThemeOptions(palette),
       grid: {
-        vertLines: { color: CHART_COLORS.grid, style: LineStyle.SparseDotted },
-        horzLines: { color: CHART_COLORS.grid, style: LineStyle.SparseDotted },
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: {
-          color: CHART_COLORS.accent,
-          width: 1,
-          style: LineStyle.Dashed,
-          labelBackgroundColor: CHART_COLORS.accent,
-        },
-        horzLine: {
-          color: CHART_COLORS.accent,
-          width: 1,
-          style: LineStyle.Dashed,
-          labelBackgroundColor: CHART_COLORS.accent,
-        },
+        vertLines: { color: CHART_GRID, style: LineStyle.SparseDotted },
+        horzLines: { color: CHART_GRID, style: LineStyle.SparseDotted },
       },
       rightPriceScale: {
-        borderColor: CHART_COLORS.grid,
+        borderColor: CHART_GRID,
         autoScale:   true,
         scaleMargins: { top: 0.08, bottom: 0.08 },
       },
       timeScale: {
-        borderColor:    CHART_COLORS.grid,
+        borderColor:    CHART_GRID,
         timeVisible:    true,
         secondsVisible: false,
         fixLeftEdge:    false,
@@ -256,32 +253,18 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
       seriesRef.current = null;
     }
 
-    const isUp     = (dataRef.current.length > 1)
-      ? dataRef.current[dataRef.current.length - 1].close >= dataRef.current[0].close
-      : true;
-    const lineColor = isUp ? CHART_COLORS.up : CHART_COLORS.down;
-
     if (chartType === 'area') {
       const area = chart.addAreaSeries({
-        lineColor,
-        topColor:    `${lineColor}33`,
-        bottomColor: `${lineColor}00`,
         lineWidth:   2,
         priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
         crosshairMarkerVisible:         true,
         crosshairMarkerRadius:          5,
-        crosshairMarkerBorderColor:     '#FFFFFF',
         crosshairMarkerBorderWidth:     1.5,
-        crosshairMarkerBackgroundColor: lineColor,
       });
       seriesRef.current = area;
     } else {
       const candle = chart.addCandlestickSeries({
-        upColor:   CHART_COLORS.up,
-        downColor: CHART_COLORS.down,
         borderVisible:  false,
-        wickUpColor:   CHART_COLORS.up,
-        wickDownColor: CHART_COLORS.down,
         priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
       });
       seriesRef.current = candle;
@@ -300,18 +283,6 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     if (!candles.length) { series.setData([]); return; }
 
     try {
-      if (chartType === 'area') {
-        const isUp      = candles[candles.length - 1].close >= candles[0].close;
-        const lineColor = isUp ? CHART_COLORS.up : CHART_COLORS.down;
-        // Update series colors without recreation
-        (series as ISeriesApi<'Area'>).applyOptions({
-          lineColor,
-          topColor:    `${lineColor}33`,
-          bottomColor: `${lineColor}00`,
-          crosshairMarkerBackgroundColor: lineColor,
-        });
-      }
-
       // Build unique sorted time-value pairs
       const seen = new Set<number>();
       const formatted = candles
@@ -327,13 +298,35 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     } catch (err) {
       console.warn('[Chart] setData failed:', err);
     }
-  }, [chartType]);
+  }, []);
 
   useEffect(() => {
     applyData(data);
     // Reset tooltip on data change
     setTooltip(null);
   }, [data, applyData]);
+
+  useEffect(() => {
+    chartRef.current?.applyOptions(chartThemeOptions(palette));
+  }, [palette]);
+
+  useEffect(() => {
+    const { up, down } = palette.chart;
+    if (chartType === 'area') {
+      const lineColor = defaultChange.isUp ? up : down;
+      (seriesRef.current as ISeriesApi<'Area'> | null)?.applyOptions({
+        lineColor,
+        topColor: `${lineColor}33`,
+        bottomColor: `${lineColor}00`,
+        crosshairMarkerBorderColor: palette.surface,
+        crosshairMarkerBackgroundColor: lineColor,
+      });
+    } else {
+      (seriesRef.current as ISeriesApi<'Candlestick'> | null)?.applyOptions({
+        upColor: up, downColor: down, wickUpColor: up, wickDownColor: down,
+      });
+    }
+  }, [chartType, defaultChange.isUp, palette]);
 
   // ── Sync crosshair / magnet mode imperatively ──────────────────────────────
 
@@ -375,7 +368,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     const ctx = offscreen.getContext('2d');
     if (!ctx) return;
 
-    ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#0F172A' : '#FFFFFF';
+    ctx.fillStyle = palette.surface;
     ctx.fillRect(0, 0, offscreen.width, offscreen.height);
     ctx.drawImage(canvas, 0, 0);
 
@@ -383,7 +376,7 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
     link.download = `RiskRule_${symbol.toUpperCase()}_${timeframe}_${Date.now()}.png`;
     link.href = offscreen.toDataURL('image/png');
     link.click();
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, palette.surface]);
 
   // ── Reset zoom ─────────────────────────────────────────────────────────────
 
@@ -457,15 +450,11 @@ export default function InteractiveMarketChart({ symbol: propSymbol, onSymbolCha
                   </span>
                 </div>
 
-                <div className={cn(
-                  'flex items-center gap-1.5 text-[13px] font-semibold mb-1.5 px-2.5 py-1 rounded-md border transition-all duration-200',
-                  displayIsPositive
-                    ? 'bg-emerald-500/10 text-success border-emerald-500/20'
-                    : 'bg-red-500/10    text-danger    border-red-500/20'
-                )}>
+                <div className="flex items-center gap-1.5 text-[13px] font-semibold mb-1.5 px-2.5 py-1 rounded-md border border-border bg-surface-1"
+                  style={{ color: displayIsPositive ? palette.chart.up : palette.chart.down }}>
                   {displayIsPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                   <span>{displayIsPositive ? '+' : ''}{displayChange.toFixed(2)}</span>
-                  <span className="opacity-70">({displayIsPositive ? '+' : ''}{displayPct.toFixed(2)}%)</span>
+                  <span>({displayIsPositive ? '+' : ''}{displayPct.toFixed(2)}%)</span>
                 </div>
 
                 {tooltip && (
@@ -743,16 +732,12 @@ function OHLCTooltip({ tooltip, isPositive }: { tooltip: TooltipData; isPositive
 
         {/* Middle: Price & Change */}
         <div className="px-3.5 py-2.5 border-b border-border flex items-center justify-between">
-          <span className={cn(
-            'text-[17px] font-display font-bold tabular-nums tracking-tight',
-            isPositive ? 'text-success' : 'text-danger',
-          )}>
+          <span className="text-[17px] font-display font-bold tabular-nums tracking-tight"
+            style={{ color: isPositive ? 'var(--workspace-chart-up)' : 'var(--workspace-chart-down)' }}>
             {fmt(tooltip.price)}
           </span>
-          <span className={cn(
-            'text-[10px] font-bold px-1.5 py-0.5 rounded-md',
-            isPositive ? 'bg-emerald-500/10 text-success' : 'bg-red-500/10 text-danger',
-          )}>
+          <span className="rounded-md bg-surface-1 px-1.5 py-0.5 text-[10px] font-bold"
+            style={{ color: isPositive ? 'var(--workspace-chart-up)' : 'var(--workspace-chart-down)' }}>
             {isPositive ? '+' : ''}{tooltip.pctChange.toFixed(2)}%
           </span>
         </div>

@@ -4,7 +4,7 @@ import { Command } from 'cmdk';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
   LayoutDashboard, BarChart3, BookOpen, Brain, Target, Settings,
-  Plus, Moon, PenTool, TrendingUp, Search, Loader2, CornerDownLeft, Globe, Zap, Handshake
+  Plus, Moon, Palette, PenTool, TrendingUp, Search, Loader2, CornerDownLeft, Globe, Zap, Handshake
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { CMD_KEY } from '../../lib/osUtils';
@@ -155,6 +155,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (ope
                 <Item icon={Zap} onSelect={go('/app/flow')}>Flow</Item>
                 <Item icon={Handshake} onSelect={go('/app/affiliate')}>Referrals</Item>
                 <Item icon={Settings} onSelect={go('/app/settings')}>Settings</Item>
+                <Item icon={Palette} onSelect={go('/app/settings?tab=appearance')}>Appearance</Item>
               </Command.Group>
 
               <Command.Group heading="Actions" className={groupClass}>

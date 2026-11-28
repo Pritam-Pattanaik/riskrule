@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun, LogOut, Settings } from 'lucide-react';
+import { Moon, Sun, LogOut, Settings, Palette } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuthStore } from '../../stores/authStore';
@@ -27,7 +27,7 @@ export default function UserProfileDropdown({ collapsed }: { collapsed?: boolean
         <button
           className={cn(
             'flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl select-none',
-            'bg-gradient-to-br from-iris to-accent text-[12px] font-bold text-white',
+            'bg-gradient-to-br from-iris to-accent text-[12px] font-bold text-[color:var(--desk-accent-text,white)]',
             'shadow-iris hover:shadow-raised transition-all duration-200',
             'outline-none focus-ring hover:scale-105 active:scale-95'
           )}
@@ -46,7 +46,7 @@ export default function UserProfileDropdown({ collapsed }: { collapsed?: boolean
           {/* Profile header */}
           <div className="px-3 py-3 mb-1 border-b border-border">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-iris to-accent text-[12px] font-bold text-white shadow-xs shrink-0">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-iris to-accent text-[12px] font-bold text-[color:var(--desk-accent-text,white)] shadow-xs shrink-0">
                 {initials}
               </div>
               <div className="min-w-0">
@@ -79,6 +79,14 @@ export default function UserProfileDropdown({ collapsed }: { collapsed?: boolean
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             </div>
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Item
+            onSelect={() => navigate('/app/settings?tab=appearance')}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium text-secondary hover:text-primary hover:bg-surface-1 transition-colors cursor-pointer outline-none select-none"
+          >
+            <Palette className="w-4 h-4" />
+            Appearance
           </DropdownMenu.Item>
 
           <DropdownMenu.Item

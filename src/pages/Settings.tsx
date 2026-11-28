@@ -26,12 +26,13 @@ import { getBrokerProvider } from '../lib/brokers/brokerRegistry';
 import { PREBUILT_RULES, PREBUILT_RULE_CATEGORIES, PrebuiltRule } from '../constants/prebuiltRules';
 import { RuleDetailModal } from '../components/settings/RuleDetailModal';
 import { VoiceSettingsTab } from '../components/settings/VoiceSettingsTab';
+import AppearanceSettings from '../components/settings/AppearanceSettings';
 
 const NotificationSettings = React.lazy(() => import('../components/settings/NotificationSettings'));
 
 const INSTRUMENTS = ['CE', 'PE', 'FUT', 'EQ'];
 const MARKETS = ['F&O', 'NSE', 'BSE', 'MCX'];
-const VALID_TABS = ['brokers', 'rules', 'voice', 'notifications', 'profile', 'security'] as const;
+const VALID_TABS = ['brokers', 'rules', 'appearance', 'voice', 'notifications', 'profile', 'security'] as const;
 
 export default function Settings() {
   const { profile, signOut, updateProfile, deleteAccount } = useAuthStore();
@@ -39,7 +40,7 @@ export default function Settings() {
   const { rules, fetchRules, saveRules } = useTradingRulesStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabFromUrl = searchParams.get('tab') as 'brokers' | 'rules' | 'voice' | 'profile' | 'security' | 'notifications' | null;
+  const tabFromUrl = searchParams.get('tab') as (typeof VALID_TABS)[number] | null;
 
   useEffect(() => { fetchConnections(); fetchRules(); }, [fetchConnections, fetchRules]);
 
@@ -295,6 +296,7 @@ export default function Settings() {
   const tabs = [
     { id: 'brokers', label: 'Brokers', count: connections.length },
     { id: 'rules', label: 'Trading rules' },
+    { id: 'appearance', label: 'Appearance' },
     { id: 'voice', label: 'Voice' },
     { id: 'notifications', label: 'Notifications' },
     { id: 'profile', label: 'Profile' },
@@ -311,7 +313,7 @@ export default function Settings() {
 
           <h1 className="font-display text-3xl font-black text-primary tracking-tight">Settings</h1>
           <p className="text-sm text-tertiary mt-1 max-w-2xl leading-relaxed">
-            Manage broker connections, trading rules, notifications and account details.
+            Manage broker connections, trading rules, appearance, notifications and account details.
           </p>
         </div>
         
@@ -877,6 +879,8 @@ export default function Settings() {
           />
         </div>
       )}
+
+      {activeTab === 'appearance' && <AppearanceSettings />}
 
       {/* TAB: VOICE & AUDIO AI SETTINGS */}
       {activeTab === 'voice' && (

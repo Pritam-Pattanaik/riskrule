@@ -219,6 +219,35 @@
     --color-danger: 248 113 113;
   }
 
+  html[data-workspace-appearance] :is(body, .trading-desk) {
+    --color-canvas: var(--workspace-canvas);
+    --color-surface: var(--workspace-surface);
+    --color-surface-0: var(--workspace-surface);
+    --color-surface-1: var(--workspace-raised);
+    --color-surface-2: var(--workspace-control);
+    --color-surface-3: var(--workspace-edge);
+    --color-surface-elevated: var(--workspace-surface);
+    --color-text-primary: var(--workspace-text);
+    --color-text-secondary: var(--workspace-secondary);
+    --color-text-tertiary: var(--workspace-tertiary);
+    --color-border-rgb: var(--workspace-text);
+    --color-accent: var(--workspace-accent);
+    --color-accent-hover: var(--workspace-accent-hover);
+    --color-iris: var(--workspace-accent);
+    --desk-accent-text: var(--workspace-accent-text);
+    --color-success: 4 120 87;
+    --brand-action: var(--workspace-action);
+    --brand-action-hover: var(--workspace-action-hover);
+    --brand-action-text: var(--workspace-action-text);
+    color-scheme: light;
+  }
+
+  html.dark[data-workspace-appearance] :is(body, .trading-desk) {
+    --color-surface-elevated: var(--workspace-raised);
+    --color-success: 34 197 94;
+    color-scheme: dark;
+  }
+
   :is(.landing, .trading-desk) .riskrule-wordmark-rule {
     color: rgb(var(--color-danger));
   }
@@ -1158,15 +1187,15 @@ body:has(.trading-desk) {
 .trading-desk .desk-primary,
 body:has(.trading-desk) .desk-primary,
 .landing .desk-primary {
-  background: #22c55e;
-  color: #0f172a;
+  background: var(--brand-action, #22c55e);
+  color: var(--brand-action-text, #0f172a);
   box-shadow: none;
 }
 
 .trading-desk .desk-primary:hover,
 body:has(.trading-desk) .desk-primary:hover,
 .landing .desk-primary:hover {
-  background: #0e9f6e;
+  background: var(--brand-action-hover, #0e9f6e);
 }
 
 .trading-desk .desk-table th {

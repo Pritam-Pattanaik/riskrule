@@ -64,7 +64,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Trading dashboard</h1></div>
         <div className="flex flex-wrap gap-2">
           <Link to="/app/settings?tab=brokers" className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-primary/15 bg-surface px-3 text-sm font-medium hover:bg-surface-1"><Unplug size={16} />Brokers</Link>
-          <button onClick={() => setFormOpen(true)} disabled={waiting} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#22C55E] px-4 text-sm font-semibold text-[#0F172A] hover:bg-[#0E9F6E] disabled:opacity-50"><Plus size={17} />Log trade</button>
+          <button onClick={() => setFormOpen(true)} disabled={waiting} className="desk-primary inline-flex min-h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold disabled:opacity-50"><Plus size={17} />Log trade</button>
         </div>
       </header>
 
